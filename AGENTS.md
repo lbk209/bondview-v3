@@ -6,9 +6,9 @@ Stable working instructions for coding agents in `lbk209/bondview-v3`. This file
 
 ## Project context
 
-Bondview-v3 is a new project for analyzing U.S. bond-market conditions and supporting decisions about Korean-listed U.S. bond ETFs.
+Bondview-v3 is a new project whose ultimate purpose is practical selection, purchase, holding and review decisions for Korean-listed U.S. bond ETFs, supported by analysis of U.S. bond-market conditions.
 
-The current research direction is to apply established fixed-income quantitative methods to observable market data and the actual economic characteristics of each ETF. The intended outputs include numerical analysis, within-ETF comparisons across market conditions, cross-ETF comparisons, and useful bond-market interpretation. The project does not require forecasting future ETF prices or returns.
+The current research direction is to apply established fixed-income methods to observable market data and actual ETF characteristics. Numerical analysis and market interpretation serve useful ETF comparisons and practical investment judgments. Reasonable, explicit conventional assumptions and bounded decision policies are acceptable; forecasting future yields, ETF prices or realized returns is not a prerequisite. Do not invent arbitrary rules merely to force a recommendation.
 
 **This is a direction, not a finalized calculation, investment-policy, data, or result contract.** Do not infer that particular formulas, decision labels, thresholds, model layers, or examples have been accepted merely from this summary.
 
@@ -16,11 +16,32 @@ The current research direction is to apply established fixed-income quantitative
 
 ## Design sources and authority
 
-- Consult the current v3 repository and the user-identified design documents for each task.
-- The present working documents are `docs/bond_etf_decision_architecture.md` and `docs/bond_etf_decision_examples.md`. **Both are provisional research drafts**, not automatically accepted model contracts.
+- Consult only the documents authorized for the current task. The user/Design Chat owns the `docs/` archive; it is not part of the S0 implementation inputs and must not be browsed automatically. For later financial stages, access a particular design document only when the accepted stage handoff expressly names it.
+- Existing architecture and examples in `docs/` remain provisional until explicitly accepted. Mere repository presence does not make a financial model authoritative.
 - A specifically accepted v3 design or task instruction takes precedence over a provisional draft. Follow the most specific applicable accepted specification while respecting accepted higher-level constraints.
 - Identify material inconsistencies between documents, examples, and code; do not resolve them silently by treating existing implementation or illustrative outputs as authoritative.
 - In an explicit design-review task, critically test and revise proposals rather than preserving an earlier draft for its own sake. Do not change accepted design merely to rationalize a coding deviation.
+
+## Named roles and Work task boundary
+
+- **Alisa (A) — Designer / Design Chat:** Works with the user to approve financial design, stage specifications, and final acceptance. Chat-to-Work handoffs are **manual and user-mediated**; no agent should claim to message Alisa automatically.
+- **Branson (B) — Work Orchestrator / Supervisor:** Leads an explicitly authorized Work task, directs subagents, independently checks implementation evidence, handles objections, and authors one consolidated final report.
+- **Clara (C) — Fixed-Income Reviewer:** A separate actual reviewer subagent, tasked by Branson to challenge economic correctness and ETF decision usefulness. Clara reports only to Branson.
+- **Devon (D) — Developer / Coding Agent:** A separate actual coding subagent, tasked by Branson to implement and test. Devon reports only to Branson.
+
+The names are **role aliases**, not accounts, model identities, preconfigured agents, or proof that subagent spawning is available. A stage assignment determines permitted actions and iteration limits. Do not simulate the existence of child agents; report unavailable tooling honestly. For substantial financial implementation assignments, use the approved Alisa–user understanding-review and authorization gate when specified in the handoff. Once authorized, Branson manages internal workstreams and their reviews without routine user intervention. Subsequent Branson–Clara–Devon iterations are bounded by the approved workflow contract; internal coding or financial-aspect tasks are not automatically new user-facing stages. Significant departures from accepted financial design remain reserved for the user and Alisa.
+
+**Special case S0 (single user-facing Work assignment):** The user authorizes one S0 task covering two **Branson-managed internal steps**. First, **S0-A** runs a disposable subagent smoke test without opening or depending on the Bondview repository, including this file, `docs/`, or `workflow/`; the complete smoke-test instructions are included in the user-pasted S0 launch prompt. Only when S0-A genuinely passes may **S0-B** inspect the repository, read these instructions and the reusable `workflow/` contracts, and create the authorized report/evidence folders through the established Git workflow. No additional user handoff is required between these steps; platform-required permissions still apply. If S0-A fails, do not attempt S0-B. The single final S0 report must distinguish both results.
+
+## Source and output directory ownership
+
+- `docs/`: user/Alisa-owned design archive. Branson and subagents must not create reports, reviews or generated documents there. Reading or modifying a specific design file in a later stage requires an explicit stage instruction; S0 does not require it.
+- `workflow/`: user/Alisa-owned reusable Work contracts and stage instructions. Read the specified existing contracts once per task; do not put Branson-generated results here or silently modify these contracts.
+- `reports/`: Branson's unique, durable final task reports, using the report naming pattern below.
+- `artifacts/work_runs/<run_id>/`: concise manifests and verifiable evidence, with unique run IDs. Avoid committing unnecessary large logs, market-data caches or disposable probe files.
+- `src/` and `tests/`: actual code and reproducible tests when needed; S0 should not create empty application scaffolding.
+
+Use the named, approved `workflow/` contracts and task brief for evidence, file naming, delegation, stop conditions and handoff requirements; these augment but do not replace `AGENTS.md`. For S0-B, verify the currently available standing contracts; do not republish duplicates. B-generated files must never be placed under `docs/` or `workflow/`. Repository output must be created on the authorized task/session branches and linked to a verified PR. Report actual usage only when exposed; do not invent token counts. Never overwrite an earlier run's deliverables.
 
 ## Agent role and implementation practice
 
@@ -45,9 +66,9 @@ The current research direction is to apply established fixed-income quantitative
 
 ## Git and GitHub workflow
 
-Retain the established session-branch review workflow for v3 unless the user directs otherwise.
+Retain the established session-branch review workflow for v3 unless the user directs otherwise. Subtasks inside one authorized Branson assignment need not become separately user-approved stages; apply the Git task/PR rules to repository changes, not to every reasoning or review round.
 
-1. Before editing, inspect the current branch, working tree, recent commits, and live remote branches; fetch/prune remote tracking references. Protect uncommitted or unpushed work.
+1. Before editing, inspect the current branch, working tree (when a checkout is available), recent commits and live remote branches. Fetch/prune remote references when using Git locally; if operating only through GitHub APIs, verify the equivalent accessible remote state and disclose unavailable checks. Protect uncommitted or unpushed work.
 2. Use `main` as the source branch unless directed otherwise. Never commit or push directly to `main` without explicit authorization.
 3. Work on a remote-visible session branch named `codex/session/YYMMDD_HHMM`. If exactly one live session branch exists, reuse it; if none exists, create one from the source branch. If multiple valid session branches exist, ask the user which to use. An explicit request to start a new session overrides reuse.
 4. For each task, create `codex/task/YYMMDD_HHMM_<short_task_name>` from the session branch. Commit and push the task, then open a PR **into the session branch**.

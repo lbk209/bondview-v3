@@ -1,28 +1,28 @@
 # Bondview-v3 — Work Supervisor Operating Contract
 
-**Status:** Proposed reusable operating contract for user/Design Chat approval; not yet an accepted repository policy.  
+**Status:** Revised proposed reusable operating contract; requires Alisa/user approval before use.  
 **Prepared:** 2026-10-15  
 **Intended repository location:** `workflow/` (user/Design Chat-managed).  
-**Scope:** All implementation stages delegated to ChatGPT Work, except that an explicitly scoped S0 smoke test may use the simplified execution described in its task brief.
+**Scope:** All implementation assignments delegated to ChatGPT Work. S0 is one user-facing Work assignment with two conditional internal steps managed by Branson.
 
 ## 1. Purpose and boundary
 
 The final purpose of Bondview-v3 is **practical Korean-listed U.S. bond ETF selection and trading decision support**. Conventional fixed-income methods, current market observations and actual ETF exposures serve that purpose. Reasonable documented assumptions and practical judgments are permitted; do not invent scoring machinery or refuse useful comparisons merely because returns are uncertain.
 
-The user and **A (Design Chat)** establish and approve designs and implementation assignments. The user transfers the approved assignment to **B (Work Supervisor)** and, when complete, transfers B's consolidated output back to A. The A–B channel is **manual**. The autonomous execution boundary begins only after the user authorizes B to implement.
+The user and **Alisa (A, Designer in Chat)** establish and approve designs and implementation assignments. The user transfers the approved assignment to **Branson (B, Work Orchestrator)** and, when complete, transfers Branson's consolidated output back to Alisa. The Alisa–Branson channel is **manual**. The autonomous execution boundary begins only after the user authorizes Branson to implement.
 
-Within that boundary B manages **D (Coding Agent)** and **C (Fixed-Income Reviewer)**. These are distinct actual subagents where Work supports them; do not simulate their dialogue. A normal Work subagent is not assumed to be an independent Codex session. If unavailable, report the actual limitation and do not claim agent orchestration happened.
+Within that boundary Branson manages **Devon (D, Developer/Coding Agent)** and **Clara (C, Fixed-Income Reviewer)**. These are distinct actual subagents where Work supports them; do not simulate their dialogue. A normal Work subagent is not assumed to be an independent Codex session. If unavailable, report the actual limitation and do not claim agent orchestration happened.
 
-## 2. Mandatory preflight: what B reads first
+## 2. Mandatory preflight: what Branson reads
 
-For every stage, before any repository modification:
+For ordinary implementation assignments, before any repository modification:
 
 1. The **current stage assignment** supplied by A/user, including explicit implementation authorization and scope.
 2. Repository-root `AGENTS.md` for Git workflow, validation, project-specific rules and safety.
 3. This **Operating Contract** in `workflow/` (or attached by the user if S0 has not created the directory).
-4. `workflow/bondview_v3_work_handoff_output_contract_20261015_v01.md` for standard input, evidence and final output requirements.
+4. `workflow/bondview_v3_work_handoff_output_contract_20261015_v02.md` for standard input, evidence and final output requirements.
 5. The **specifically named accepted design documents/revisions** relevant to that stage; read only the sections necessary for implementation. `docs/` is readable, but existing provisional drafts are **not automatically accepted**.
-6. `workflow/bondview_v3_stage_gates_and_s0_setup_20261015_v01.md` for stage context, **not** as authority to change the economic model. For S0 also read its specific task brief and the existing `docs/bondview_v3_work_subagent_smoke_test_20261014.md`.
+6. `workflow/bondview_v3_stage_gates_and_s0_setup_20261015_v02.md` for task/milestone context, **not** as authority to change the economic model. For S0, follow the self-contained launch instructions supplied by the user; do **not** open the repository or any `docs/` files during S0-A.
 
 If any listed file is not yet present in the repository, use the user-provided attachment; otherwise identify the missing input. Do not claim that a local file in Design Chat is automatically accessible from Work Cloud.
 
@@ -30,29 +30,29 @@ If any listed file is not yet present in the repository, use the user-provided a
 
 ## 3. Roles and delegation
 
-**B — Supervisor and sole integrator**
+**Branson (B) — Orchestrator and sole integrator**
 - Interpret approved requirements; independently examine actual changes, tests, and economic outputs.
 - Delegate coding to D and economic evaluation to C; reconcile their findings, direct appropriate changes, and produce one consolidated report.
 - Do not treat D's completion narrative or C's approval as sufficient proof.
 - Maintain a compact issue/decision ledger: issue, evidence, severity, action, owner, disposition.
 
-**D — Coding Agent**
+**Devon (D) — Developer / Coding Agent**
 - Implement accepted requirements, run targeted tests, return changed-file references and observed results.
 - Raise economically material ambiguities to B; do not choose a financial model simply because it is convenient to code.
 - Do not independently submit final work to A or user.
 
-**C — Fixed-Income Reviewer**
+**Clara (C) — Fixed-Income Reviewer**
 - Review implemented formulas, assumptions, exposure mapping, ETF decision usefulness, representative outputs, and missing economic relationships.
 - Consider established simpler alternatives; distinguish a calculation mistake from a design objection and from a discretionary alternative.
 - Report and discuss findings with B, not directly with A. Disagreement does not automatically veto a result.
 
 ## 4. Execution phases
 
-### Phase 1 — manual understanding review (normal implementation stages)
+### Phase 1 — manual understanding review (when required for substantial implementation assignments)
 
-B reads the handoff, restates requirements and boundaries, identifies assumptions/objections and presents the intended delegation and verification plan. **No agents or implementation until the user explicitly authorizes execution in Work.** The user brings the understanding review to A and returns any corrections. S0's isolated orchestration smoke test may be launched under its narrower, one-shot task instructions.
+Branson reads the handoff, restates requirements and boundaries, identifies assumptions/objections and presents the intended delegation and verification plan. **No implementation until the user explicitly authorizes execution in Work**, when this review gate is part of the approved handoff. The user brings the understanding review to Alisa and returns any corrections. **S0 is an explicit one-shot exception:** its launch prompt authorizes the complete S0 task, with no manual stop between its internal steps.
 
-### Phase 2 — autonomous supervised implementation
+### Phase 2 — autonomous supervised implementation (one authorized assignment)
 
 1. Record approved task and base Git revision.
 2. B delegates implementation and tests to D.
@@ -62,7 +62,17 @@ B reads the handoff, restates requirements and boundaries, identifies assumption
 6. B runs final integration checks, records deviations and unresolved issues, and produces the artifacts/report required by the output contract.
 7. User takes B's consolidated result to A for **manual independent review** and then conducts user-facing usability inspection.
 
+**Internal task separation is not a user-facing stage boundary.** Branson may partition work into financial aspects, code tasks, targeted reviews, and checkpoints without requesting a new Work session or user approval each time. Significant unapproved design changes still return to Alisa/user as reserved decisions.
+
 **No silent redesign:** B may fix implementation/math errors and make explicitly delegated equivalent choices. B must not silently change an accepted core economic question, ETF decision objective or authoritative formula. If blocked by a reserved design decision, preserve the accepted baseline where safe, document the issue and return `PARTIAL` or `BLOCKED` rather than improvising a new contract.
+
+### Special S0 sequence — one Work assignment
+
+- The user pastes **one self-contained S0 launch prompt** from `bondview_v3_s0_work_assignment_20261015_v02.md` into a new Work session. This supplies S0-A instructions without requiring repository access.
+- **S0-A:** Branson spawns real Devon and Clara subagents in a disposable non-repository workspace, verifies actual implementation, review, follow-up, revision and re-review.
+- **S0-B:** Only after a verified S0-A PASS, Branson accesses GitHub, reads `AGENTS.md` and approved `workflow/` contracts, and initializes `reports/` and `artifacts/work_runs/<run_id>/` through the existing Git branch/PR workflow.
+- No user-facing approval or separate Work task between S0-A and S0-B. Platform-mandated consent is an exception; missing access or failed smoke test produces a truthful PARTIAL/BLOCKED report.
+- One final Branson report is returned to the user for the manual Alisa review. S0 does not authorize financial implementation.
 
 ## 5. Bounded iteration and usage discipline
 
@@ -80,8 +90,8 @@ Do not repeat unchanged arguments or re-read entire repositories unnecessarily. 
 
 ## 6. File ownership and Git boundaries
 
-- **`docs/`: user/A-curated design archive. B reads it but MUST NOT place B-generated reports, analysis documents, review transcripts or outputs there. B does not edit existing `docs/` by default; any explicitly authorized change to user/A-owned design documents must be a separate identified task.**
-- **`workflow/`: A/user-curated reusable operating instructions**, not a place for B's new task reports. B may publish user/A-supplied versions during S0 only when expressly authorized.
+- **`docs/`: user/Alisa-curated design archive. Branson must not browse it by default or place B-generated reports, analysis documents, review transcripts or outputs there. Access to an expressly identified financial design file is permitted only under a later approved assignment; none is required for S0.**
+- **`workflow/`: Alisa/user-curated reusable operating instructions**, not a place for Branson-generated task reports. Do not republish or silently modify existing contracts during S0.
 - **`reports/`: B's permanent consolidated task reports**, following the root `AGENTS.md` naming rule (`YYMMDD_<scope>_<topic>_<report_type>.md`); include a run identifier in `<topic>` if needed for uniqueness.
 - **`artifacts/work_runs/<run_id>/`: B's run-specific manifest, concise evidence and examples**. Put large/raw files outside Git or in an explicitly ignored local cache, and link to them only when they will remain accessible.
 - **`src/`, `tests/`: real application code and reproducible tests**, as appropriate to the task. Do not create placeholder structures unrelated to a current need.
@@ -95,4 +105,4 @@ Report `PASS`, `PASS_WITH_LIMITATIONS`, `PARTIAL`, or `BLOCKED` against **explic
 
 ## 8. Maintenance
 
-A/user owns acceptance and revisions of this standing contract. Subsequent stages should reference it by repository path and commit/revision, rather than copying its entire contents into every prompt. Changes to the contract should be versioned and approved, not silently introduced by B.
+Alisa/user owns acceptance and revisions of this standing contract. Subsequent stages should reference it by repository path and commit/revision, rather than copying its entire contents into every prompt. Changes to the contract should be versioned and approved, not silently introduced by B.

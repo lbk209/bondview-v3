@@ -1,17 +1,17 @@
 # Bondview-v3 — Standard Work Handoff, Evidence and Deliverables Contract
 
-**Status:** Proposed reusable input/output contract for A/user approval.  
+**Status:** Revised proposed reusable input/output contract for Alisa/user approval.  
 **Prepared:** 2026-10-15  
 **Intended repository location:** `workflow/` (user/Design Chat-managed).  
-**Companion:** `bondview_v3_work_supervisor_operating_contract_20261015_v01.md`.
+**Companion:** `bondview_v3_work_supervisor_operating_contract_20261015_v02.md`.
 
 ## 1. Objective
 
-Eliminate repeated common instructions in each stage. Each assignment contains a **small stage-specific task brief** and references these standing contracts. B's output must first allow A to verify whether the implementation matches the approved requirements and then allow the user to evaluate practical ETF decision usefulness.
+Eliminate repeated common instructions in each **user-facing Work assignment**. Each assignment contains a short task brief and references the standing contracts. **Alisa (A, Designer)** and the user approve the assignment; **Branson (B, Orchestrator)** manages internal work through **Clara (C, Fixed-Income Reviewer)** and **Devon (D, Developer)**. Branson's output must first allow Alisa to verify implementation against approved requirements and then allow the user to assess ETF decision usefulness. Internal subtask or financial-aspect boundaries are **not** automatic user-facing stages.
 
 ## 2. Common inputs B must inspect
 
-These inputs do not need to be recopied into every stage prompt when versioned files are accessible in the repository:
+These inputs do not need to be recopied into every assignment prompt when versioned files are accessible in the repository:
 
 | Standing input | Source | Minimum action |
 |---|---|---|
@@ -21,11 +21,11 @@ These inputs do not need to be recopied into every stage prompt when versioned f
 | Development gates | Stage Gates & S0 Setup document | Know stage dependencies and completion boundaries |
 | Accepted financial design | Task-specific A-approved document revisions | Use accepted sections only; do not elevate provisional drafts automatically |
 
-**Every stage-specific handoff still must supply:**
+**Every user-facing assignment handoff still must supply:**
 
 | Field | Required content |
 |---|---|
-| Stage and task ID | `S<n>`, unique run ID, human-readable purpose |
+| Assignment and run ID | user-facing milestone or task label, unique run ID, human-readable purpose |
 | Explicit scope | What to build/review, and clear exclusions |
 | Design authority | Exact accepted paths and relevant revision/commit; unresolved documents labeled provisional |
 | Economic model | Required formulas, risk factors, data conventions, permissible proxies and assumptions where relevant |
@@ -38,14 +38,14 @@ These inputs do not need to be recopied into every stage prompt when versioned f
 
 **No implicit authorization:** An assignment with unresolved essential data or repository access must not be made to appear executable by inventing those conditions.
 
-## 3. Minimal stage-specific handoff template
+## 3. Minimal task-specific handoff template
 
 Copy only this template when issuing a new stage assignment (and provide source references):
 
 ```text
-Stage / task: [S<n> / short name]
+Assignment / task: [user-facing deliverable / short name]
 Base repository and revision: [repo, branch, commit if pinned]
-Execution mode: [Phase 1 understanding review | Phase 2 authorized | S0 probe]
+Execution mode: [manual understanding review | authorized autonomous execution | one-shot S0]
 Accepted specification(s): [exact path / revision / selected sections]
 Task objective and practical ETF decision capability: [...]
 In scope / out of scope: [...]
@@ -59,7 +59,7 @@ Use AGENTS.md plus the standing contracts in workflow/. Do not write
 B-generated documents under docs/. Provide the standard consolidated output.
 ```
 
-## 4. Standard B output: first A, then user
+## 4. Standard Branson output: first Alisa, then user
 
 ### 4.1 One authoritative consolidated report
 
@@ -78,7 +78,7 @@ Recommended report headings:
 9. **User demonstration:** how to run/inspect real ETF analyses or the S0 operational probe, representative outputs, supported/not-supported tasks and usability warnings.
 10. **Artifacts index:** manifest and actual file/PR links, with verification that artifacts exist in the stated environment.
 
-### 4.2 A's review matrix
+### 4.2 Alisa's review matrix
 
 Make the evidence inspectable without rerunning the whole Work session:
 
@@ -92,7 +92,7 @@ A should be able to distinguish: implementation compliance, economic validity, t
 
 For a financial-capability stage, provide a small practical walkthrough: selected real ETF(s) when data are available, observation dates, assumptions, computed exposures/compensation/scenarios, meaningful selection or review judgment, and clear limitations. **Do not stop at a numerical unit test if the stage goal is an ETF decision.**
 
-For S0, replace ETF demonstrations with: proof of two distinct real agents and follow-ups, actual changed files/tests in the disposable area, B's final integration, and a directory/repository-access check.
+For S0, replace ETF demonstrations with proof of two distinct real agents, the follow-up and revision, actual verified files/tests, and repository setup results **within the same completed Work assignment**. Report S0-A and S0-B separately inside one consolidated report.
 
 ## 5. Run-specific evidence and naming
 
@@ -100,10 +100,10 @@ Recommended structure:
 
 ```text
 reports/
-  YYMMDD_sN_<topic>_<runid>_report.md        # durable B report
+  YYMMDD_<scope>_<topic>_<runid>_report.md   # durable Branson report
 artifacts/
   work_runs/
-    S<N>_YYYYMMDD_HHMM_<short_topic>/
+    <assignment>_YYYYMMDD_HHMM_<short_topic>/
       manifest.json                           # small metadata index
       evidence/                               # concise test and review evidence
       examples/                               # small reproducible sample outputs
@@ -111,9 +111,13 @@ artifacts/
 
 Use new filenames/run IDs. Never overwrite past final reports; do not fill `docs/` with B-generated documents. Evidence should be small and relevant; large/raw market data, logs or caches belong outside the committed repository unless expressly required.
 
-**Suggested `manifest.json` fields:** `run_id`, `stage_id`, `task`, `design_revision`, `source_commit`, `result_commit`, `final_report_path`, `status`, `test_commands`, `evidence_paths`, `generated_at`, `usage`, `limitations`. Use `null`/`not_exposed` for unknown facts; never invent a commit hash, count or URI.
+**Suggested `manifest.json` fields:** `run_id`, `assignment_id`, `task`, `design_revision`, `source_commit`, `result_commit`, `final_report_path`, `status`, `test_commands`, `evidence_paths`, `generated_at`, `usage`, `limitations`. Use `null`/`not_exposed` for unknown facts; never invent a commit hash, count or URI.
 
-`workflow/` contains A/user-authored standing contracts, **not B-generated reviews**. `docs/` remains A/user's design-document archive. Publication of these A-authored files during S0 is permitted only by explicit authorization; provenance must remain clear.
+`workflow/` contains Alisa/user-authored standing contracts, **not Branson-generated reviews**. `docs/` remains Alisa/user's design archive and is not an S0 input. Branson may reference the contracts but should not duplicate or alter them as a side effect of setup.
+
+### S0 exception to the normal preflight
+
+The user's **single S0 Work prompt** fully specifies the isolated S0-A test; Branson must not open GitHub or read `AGENTS.md`/`workflow/` until S0-A passes. S0-B then performs normal repository preflight and setup without requesting another routine user authorization. Do not require a second Work session or intermediate Alisa review to move between internal S0 steps.
 
 ## 6. Required completion checklist
 
