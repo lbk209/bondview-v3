@@ -24,10 +24,10 @@ The current research direction is to apply established fixed-income methods to o
 
 ## Named roles and Work task boundary
 
-- **Archie (A) — Designer / Design Chat:** Works with the user to approve financial design, stage specifications, and final acceptance. Chat-to-Work handoffs are **manual and user-mediated**; no agent should claim to message Archie automatically.
-- **Bernie (B) — Work Orchestrator / Supervisor:** Leads an explicitly authorized Work task, directs subagents, independently checks implementation evidence, resolves in-scope objections, and delivers a detailed technical report with a concise human-readable summary.
-- **Carrie (C) — Fixed-Income Reviewer:** A separate actual reviewer subagent, tasked by Bernie to challenge economic correctness and ETF decision usefulness. Carrie reports only to Bernie.
-- **Dennis (D) — Developer / Coding Agent:** A separate actual coding subagent, tasked by Bernie to implement and test. Dennis reports only to Bernie.
+- **Archie — Designer / Design Chat:** Works with the user to approve financial design, stage specifications, and final acceptance. Chat-to-Work handoffs are **manual and user-mediated**; no agent should claim to message Archie automatically.
+- **Bernie — Work Orchestrator / Supervisor:** Leads an explicitly authorized Work task, directs subagents, independently checks implementation evidence, resolves in-scope objections, and delivers a detailed technical report with a concise human-readable summary.
+- **Carrie — Fixed-Income Reviewer:** A separate actual reviewer subagent, tasked by Bernie to challenge economic correctness and ETF decision usefulness. Carrie reports only to Bernie.
+- **Dennis — Developer / Coding Agent:** A separate actual coding subagent, tasked by Bernie to implement and test. Dennis reports only to Bernie.
 
 The names are **role aliases**, not accounts, model identities, preconfigured agents, or proof that subagent spawning is available. An authorized assignment determines permitted actions and iteration limits. Do not simulate the existence of child agents; report unavailable tooling honestly. For substantial financial implementation assignments, use the Archie–user understanding-review and authorization gate **only when specified** in the approved handoff. Once authorized, Bernie manages internal workstreams and their reviews without routine user intervention. Bernie–Carrie–Dennis iterations are bounded by `workflow/work_supervisor_contract.md`; internal coding or financial-aspect tasks are not automatically new user-facing assignments. Significant departures from accepted financial design remain reserved for the user and Archie.
 
@@ -36,12 +36,12 @@ The names are **role aliases**, not accounts, model identities, preconfigured ag
 ## Source and output directory ownership
 
 - `docs/`: user/Archie-owned financial-design archive. Bernie and subagents must not generate reports, reviews, or task artifacts there. Read or modify only specifically authorized design documents in a later assignment.
-- `workflow/`: user/Archie-owned operational instructions, comprising `README.md` (overview), `quickstart.md` (user actions), `work_prerequisites.md` (one-time self-contained setup and validation), `work_supervisor_contract.md` (Bernie's supervision), and `work_handoff_output_contract.md` (inputs/outputs and evidence). Bernie reads the applicable contracts but must not silently edit them or save generated work here.
+- `workflow/`: user/Archie-owned operational instructions, comprising `README.md` (overview and user operating steps), `work_prerequisites.md` (one-time self-contained setup and validation), `work_supervisor_contract.md` (Bernie's supervision), and `work_handoff_output_contract.md` (inputs/outputs and evidence). Bernie reads the applicable contracts but must not silently edit them or save generated work here.
 - `reports/`: Bernie's unique, durable **detailed technical reports** for GitHub-backed assignments, using `YYMMDD_<scope>_<topic>_<runid>_report.md` (or a consistent unique variant).
 - `artifacts/work_runs/<run_id>/`: concise manifests and verifiable evidence/examples, with unique run IDs. Avoid committing unnecessary large logs, market-data caches, or disposable probe code.
 - `src/` and `tests/`: actual code and reproducible tests when needed; the prerequisite probe must not create empty application scaffolding.
 
-Use `workflow/work_supervisor_contract.md`, `workflow/work_handoff_output_contract.md`, and the approved assignment for detailed delegation, evidence, file naming, stopping conditions and handoff rules; they augment but do not replace `AGENTS.md`. The overview and quickstart are explanatory, not independent authority. For conditional prerequisite repository setup, verify the currently available contracts; do not republish duplicates. Bernie-generated reports/evidence belong in `reports/` and `artifacts/work_runs/`, **not** `docs/` or `workflow/`. Repository outputs follow authorized task/session branches and verifiable PRs; do not claim PRs/files or usage counts unless observed. Never overwrite earlier run deliverables.
+Use `workflow/work_supervisor_contract.md`, `workflow/work_handoff_output_contract.md`, and the approved assignment for detailed delegation, evidence, file naming, stopping conditions and handoff rules; they augment but do not replace `AGENTS.md`. The overview is explanatory, not independent authority. For conditional prerequisite repository setup, verify the currently available contracts; do not republish duplicates. Bernie-generated reports/evidence belong in `reports/` and `artifacts/work_runs/`, **not** `docs/` or `workflow/`. Repository outputs follow authorized task/session branches and verifiable PRs; do not claim PRs/files or usage counts unless observed. Never overwrite earlier run deliverables.
 
 ## Agent role and implementation practice
 

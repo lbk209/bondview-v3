@@ -6,9 +6,9 @@
 
 Bondview-v3 exists to provide **practical selection, purchasing, holding, and review decision support for Korean-listed U.S. bond ETFs**. Use established fixed-income methods, observed market data and actual ETF exposures. Conventional, explicit approximations may be appropriate; do not invent scores, state machines, or return forecasts simply to force recommendations.
 
-**Archie (A, Chat)** and the user establish the accepted economic design, authorized assignment, and final acceptance. The user manually passes an approved prompt or GitHub document reference to **Bernie (B, Work)** and later passes Bernie's PR/result reference to Archie. This is **not** automatic chat-to-chat communication.
+**Archie in Chat** and the user establish the accepted economic design, authorized assignment, and final acceptance. The user manually passes an approved prompt or GitHub document reference to **Bernie in Work** and later passes Bernie's PR/result reference to Archie. This is **not** automatic chat-to-chat communication.
 
-After authorization, Bernie coordinates **Dennis (D, Developer)** and **Carrie (C, independent Fixed-Income Reviewer)** as real subagents when supported. Their names are role aliases, not preconfigured accounts; the Work environment's actual tools and permissions must be verified. A Work child is not automatically an independent Codex session. **Never simulate a subagent exchange or claim unavailable tools succeeded.**
+After authorization, Bernie coordinates **Dennis — Developer** and **Carrie — Independent Fixed-Income Reviewer** as real subagents when supported. Their names are role aliases, not preconfigured accounts; the Work environment's actual tools and permissions must be verified. A Work child is not automatically an independent Codex session. **Never simulate a subagent exchange or claim unavailable tools succeeded.**
 
 Bernie can fix implementation mistakes, make straightforward engineering choices, and resolve in-scope methodological objections. **Material changes** to an accepted economic question, model formula, ETF decision objective, risk definition, source-data policy or other reserved design choice require Archie/user authorization. Provisional drafts in `docs/` are not accepted merely because they exist.
 

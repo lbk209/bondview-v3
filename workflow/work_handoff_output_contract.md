@@ -4,7 +4,7 @@
 
 ## 1. Objective and document relationships
 
-Each user-facing assignment should contain **a focused task brief** rather than repeat standing operating instructions. The user and **Archie (A)** accept its economic scope and execution authorization. **Bernie (B)** coordinates **Dennis (D)** and **Carrie (C)**, verifies real results, and publishes inspectable outputs. Internal reviews, corrections, and financial workstreams are not themselves new user-facing stages.
+Each user-facing assignment should contain **a focused task brief** rather than repeat standing operating instructions. The user and **Archie** accept its economic scope and execution authorization. **Bernie** coordinates **Dennis** and **Carrie**, verifies real results, and publishes inspectable outputs. Internal reviews, corrections, and financial workstreams are not themselves new user-facing stages.
 
 | Standing source | Responsibility |
 |---|---|
@@ -12,7 +12,7 @@ Each user-facing assignment should contain **a focused task brief** rather than 
 | `workflow/work_supervisor_contract.md` | Subagent delegation, economic challenge, authority and bounded iterations |
 | **This contract** | Handoff completeness, report/evidence/PR structure, final checks |
 | Explicitly accepted task/design revisions | Financial requirements and allowed design choices; provisional files in `docs/` are not automatically accepted |
-| `workflow/README.md` / `workflow/quickstart.md` | Orientation and user steps, not independent implementation authority |
+| `workflow/README.md` | Overview and user operating steps; not independent implementation authority |
 
 ## 2. Mandatory handoff fields
 

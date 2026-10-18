@@ -2,13 +2,13 @@
 
 **Purpose:** Verify that Bernie's Work environment can genuinely delegate to Dennis and Carrie, and—only after that validation succeeds—initialize the permitted repository output locations. This is **one user-facing assignment**, not a financial implementation milestone or a multi-session setup procedure.
 
-## 1. What you do
+## 1. Instructions for the user
 
-1. Open **ChatGPT Work → New session**. Choose a capable available reasoning model; Medium effort is a reasonable starting point for this operational probe, but exact model options depend on your account and interface. No extra plugins or local-folder access are prerequisites. Access to the GitHub repository is needed **only in the second internal part**.
-2. Copy the **entire text block in Section 3**, starting with “You are Bernie,” into that Work session as **one prompt**. Do not shorten it to a GitHub file link: the validation portion is intentionally forbidden from reading the repository.
-3. Let Bernie handle both internal activities, subject to required platform permission prompts. Do not create Carrie or Dennis yourself and do not authorize a second internal stage separately.
-4. Read Bernie's final Work summary. If GitHub setup occurred, follow the real PR and detailed `reports/` / `artifacts/` links. Bring the PR URL or, on failure, Bernie's Work response back to Archie for independent review.
-5. Do **not** treat readiness validation as authorization to implement bond ETF calculations. Financial assignments require their own accepted designs and scope.
+1. The user opens **ChatGPT Work → New session** and selects a capable available reasoning model. Medium effort is a reasonable starting point, subject to the model options available to the user. No extra plugins or local-folder access are prerequisites. Access to the GitHub repository is needed **only in the second internal part**.
+2. The user copies the **entire text block in Section 3**, beginning with “You are Bernie,” into that Work session as **one prompt**, rather than submitting only a GitHub link. The initial validation cannot read the repository.
+3. Bernie handles both internal activities, subject to required platform permission prompts. The user does **not** manually create Carrie or Dennis or separately authorize the second internal activity.
+4. The user reads Bernie's final Work summary and, when GitHub setup succeeded, follows the actual PR and `reports/` / `artifacts/` links. The user gives Archie the PR URL or, if validation failed, Bernie's Work response for independent review.
+5. Readiness validation is **not** authorization to implement bond ETF calculations. A subsequent financial assignment needs its own accepted design and scope.
 
 ## 2. What success means
 
@@ -22,7 +22,7 @@ A successful initial activity without successful repository setup is not a compl
 ## 3. Complete ready-to-paste Work prompt
 
 ```text
-You are Bernie (B), the Bondview-v3 Work Orchestrator. This ONE authorized
+You are Bernie, the Bondview-v3 Work Orchestrator. This ONE authorized
 Work Prerequisites assignment contains TWO INTERNAL, conditional activities:
 (1) isolated subagent validation, then (2) repository setup only if the
 validation actually passes. Do not ask the user to launch a second session or
@@ -30,9 +30,9 @@ approve a routine transition. Platform consent may still be required.
 Completion of prerequisites does NOT authorize financial-model development.
 
 ROLES AND HONESTY
-- Archie (A) is the independent Designer in Chat; the user transfers results.
+- Archie is the independent Designer in Chat; the user transfers results.
 - Create REAL, DISTINCT child agents through actual delegation tools:
-  Dennis (D), Developer / Coding Agent; and Carrie (C), Fixed-Income Reviewer.
+  Dennis — Developer / Coding Agent; and Carrie — Fixed-Income Reviewer.
 - Keep working with the SAME Dennis and SAME Carrie threads as instructed.
 - Do not role-play or fabricate a child, tool action, file, test, PR, or review.
 - If real delegation/tools are unavailable, report precisely what is blocked.
