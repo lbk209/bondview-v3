@@ -24,20 +24,20 @@ The current research direction is to apply established fixed-income methods to o
 
 ## Named roles and Work task boundary
 
-- **Alisa (A) — Designer / Design Chat:** Works with the user to approve financial design, stage specifications, and final acceptance. Chat-to-Work handoffs are **manual and user-mediated**; no agent should claim to message Alisa automatically.
-- **Branson (B) — Work Orchestrator / Supervisor:** Leads an explicitly authorized Work task, directs subagents, independently checks implementation evidence, handles objections, and authors one consolidated final report.
-- **Clara (C) — Fixed-Income Reviewer:** A separate actual reviewer subagent, tasked by Branson to challenge economic correctness and ETF decision usefulness. Clara reports only to Branson.
-- **Devon (D) — Developer / Coding Agent:** A separate actual coding subagent, tasked by Branson to implement and test. Devon reports only to Branson.
+- **Archie (A) — Designer / Design Chat:** Works with the user to approve financial design, stage specifications, and final acceptance. Chat-to-Work handoffs are **manual and user-mediated**; no agent should claim to message Archie automatically.
+- **Bernie (B) — Work Orchestrator / Supervisor:** Leads an explicitly authorized Work task, directs subagents, independently checks implementation evidence, handles objections, and authors one consolidated final report.
+- **Carrie (C) — Fixed-Income Reviewer:** A separate actual reviewer subagent, tasked by Bernie to challenge economic correctness and ETF decision usefulness. Carrie reports only to Bernie.
+- **Dennis (D) — Developer / Coding Agent:** A separate actual coding subagent, tasked by Bernie to implement and test. Dennis reports only to Bernie.
 
-The names are **role aliases**, not accounts, model identities, preconfigured agents, or proof that subagent spawning is available. A stage assignment determines permitted actions and iteration limits. Do not simulate the existence of child agents; report unavailable tooling honestly. For substantial financial implementation assignments, use the approved Alisa–user understanding-review and authorization gate when specified in the handoff. Once authorized, Branson manages internal workstreams and their reviews without routine user intervention. Subsequent Branson–Clara–Devon iterations are bounded by the approved workflow contract; internal coding or financial-aspect tasks are not automatically new user-facing stages. Significant departures from accepted financial design remain reserved for the user and Alisa.
+The names are **role aliases**, not accounts, model identities, preconfigured agents, or proof that subagent spawning is available. A stage assignment determines permitted actions and iteration limits. Do not simulate the existence of child agents; report unavailable tooling honestly. For substantial financial implementation assignments, use the approved Archie–user understanding-review and authorization gate when specified in the handoff. Once authorized, Bernie manages internal workstreams and their reviews without routine user intervention. Subsequent Bernie–Carrie–Dennis iterations are bounded by the approved workflow contract; internal coding or financial-aspect tasks are not automatically new user-facing stages. Significant departures from accepted financial design remain reserved for the user and Archie.
 
-**Special case S0 (single user-facing Work assignment):** The user authorizes one S0 task covering two **Branson-managed internal steps**. First, **S0-A** runs a disposable subagent smoke test without opening or depending on the Bondview repository, including this file, `docs/`, or `workflow/`; the complete smoke-test instructions are included in the user-pasted S0 launch prompt. Only when S0-A genuinely passes may **S0-B** inspect the repository, read these instructions and the reusable `workflow/` contracts, and create the authorized report/evidence folders through the established Git workflow. No additional user handoff is required between these steps; platform-required permissions still apply. If S0-A fails, do not attempt S0-B. The single final S0 report must distinguish both results.
+**Special case S0 (single user-facing Work assignment):** The user authorizes one S0 task covering two **Bernie-managed internal steps**. First, **S0-A** runs a disposable subagent smoke test without opening or depending on the Bondview repository, including this file, `docs/`, or `workflow/`; the complete smoke-test instructions are included in the user-pasted S0 launch prompt. Only when S0-A genuinely passes may **S0-B** inspect the repository, read these instructions and the reusable `workflow/` contracts, and create the authorized report/evidence folders through the established Git workflow. No additional user handoff is required between these steps; platform-required permissions still apply. If S0-A fails, do not attempt S0-B. The single final S0 report must distinguish both results.
 
 ## Source and output directory ownership
 
-- `docs/`: user/Alisa-owned design archive. Branson and subagents must not create reports, reviews or generated documents there. Reading or modifying a specific design file in a later stage requires an explicit stage instruction; S0 does not require it.
-- `workflow/`: user/Alisa-owned reusable Work contracts and stage instructions. Read the specified existing contracts once per task; do not put Branson-generated results here or silently modify these contracts.
-- `reports/`: Branson's unique, durable final task reports, using the report naming pattern below.
+- `docs/`: user/Archie-owned design archive. Bernie and subagents must not create reports, reviews or generated documents there. Reading or modifying a specific design file in a later stage requires an explicit stage instruction; S0 does not require it.
+- `workflow/`: user/Archie-owned reusable Work contracts and stage instructions. Read the specified existing contracts once per task; do not put Bernie-generated results here or silently modify these contracts.
+- `reports/`: Bernie's unique, durable final task reports, using the report naming pattern below.
 - `artifacts/work_runs/<run_id>/`: concise manifests and verifiable evidence, with unique run IDs. Avoid committing unnecessary large logs, market-data caches or disposable probe files.
 - `src/` and `tests/`: actual code and reproducible tests when needed; S0 should not create empty application scaffolding.
 
@@ -66,7 +66,7 @@ Use the named, approved `workflow/` contracts and task brief for evidence, file 
 
 ## Git and GitHub workflow
 
-Retain the established session-branch review workflow for v3 unless the user directs otherwise. Subtasks inside one authorized Branson assignment need not become separately user-approved stages; apply the Git task/PR rules to repository changes, not to every reasoning or review round.
+Retain the established session-branch review workflow for v3 unless the user directs otherwise. Subtasks inside one authorized Bernie assignment need not become separately user-approved stages; apply the Git task/PR rules to repository changes, not to every reasoning or review round.
 
 1. Before editing, inspect the current branch, working tree (when a checkout is available), recent commits and live remote branches. Fetch/prune remote references when using Git locally; if operating only through GitHub APIs, verify the equivalent accessible remote state and disclose unavailable checks. Protect uncommitted or unpushed work.
 2. Use `main` as the source branch unless directed otherwise. Never commit or push directly to `main` without explicit authorization.

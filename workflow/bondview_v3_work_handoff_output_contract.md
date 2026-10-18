@@ -1,13 +1,13 @@
 # Bondview-v3 — Standard Work Handoff, Evidence and Deliverables Contract
 
-**Status:** Revised proposed reusable input/output contract for Alisa/user approval.  
+**Status:** Revised proposed reusable input/output contract for Archie/user approval.  
 **Prepared:** 2026-10-15  
 **Intended repository location:** `workflow/` (user/Design Chat-managed).  
-**Companion:** `bondview_v3_work_supervisor_operating_contract_20261015_v02.md`.
+**Companion:** `bondview_v3_work_supervisor_operating_contract_20261015_v03.md`.
 
 ## 1. Objective
 
-Eliminate repeated common instructions in each **user-facing Work assignment**. Each assignment contains a short task brief and references the standing contracts. **Alisa (A, Designer)** and the user approve the assignment; **Branson (B, Orchestrator)** manages internal work through **Clara (C, Fixed-Income Reviewer)** and **Devon (D, Developer)**. Branson's output must first allow Alisa to verify implementation against approved requirements and then allow the user to assess ETF decision usefulness. Internal subtask or financial-aspect boundaries are **not** automatic user-facing stages.
+Eliminate repeated common instructions in each **user-facing Work assignment**. Each assignment contains a short task brief and references the standing contracts. **Archie (A, Designer)** and the user approve the assignment; **Bernie (B, Orchestrator)** manages internal work through **Carrie (C, Fixed-Income Reviewer)** and **Dennis (D, Developer)**. Bernie's output must first allow Archie to verify implementation against approved requirements and then allow the user to assess ETF decision usefulness. Internal subtask or financial-aspect boundaries are **not** automatic user-facing stages.
 
 ## 2. Common inputs B must inspect
 
@@ -59,7 +59,7 @@ Use AGENTS.md plus the standing contracts in workflow/. Do not write
 B-generated documents under docs/. Provide the standard consolidated output.
 ```
 
-## 4. Standard Branson output: first Alisa, then user
+## 4. Standard Bernie output: first Archie, then user
 
 ### 4.1 One authoritative consolidated report
 
@@ -78,7 +78,7 @@ Recommended report headings:
 9. **User demonstration:** how to run/inspect real ETF analyses or the S0 operational probe, representative outputs, supported/not-supported tasks and usability warnings.
 10. **Artifacts index:** manifest and actual file/PR links, with verification that artifacts exist in the stated environment.
 
-### 4.2 Alisa's review matrix
+### 4.2 Archie's review matrix
 
 Make the evidence inspectable without rerunning the whole Work session:
 
@@ -100,7 +100,7 @@ Recommended structure:
 
 ```text
 reports/
-  YYMMDD_<scope>_<topic>_<runid>_report.md   # durable Branson report
+  YYMMDD_<scope>_<topic>_<runid>_report.md   # durable Bernie report
 artifacts/
   work_runs/
     <assignment>_YYYYMMDD_HHMM_<short_topic>/
@@ -113,11 +113,11 @@ Use new filenames/run IDs. Never overwrite past final reports; do not fill `docs
 
 **Suggested `manifest.json` fields:** `run_id`, `assignment_id`, `task`, `design_revision`, `source_commit`, `result_commit`, `final_report_path`, `status`, `test_commands`, `evidence_paths`, `generated_at`, `usage`, `limitations`. Use `null`/`not_exposed` for unknown facts; never invent a commit hash, count or URI.
 
-`workflow/` contains Alisa/user-authored standing contracts, **not Branson-generated reviews**. `docs/` remains Alisa/user's design archive and is not an S0 input. Branson may reference the contracts but should not duplicate or alter them as a side effect of setup.
+`workflow/` contains Archie/user-authored standing contracts, **not Bernie-generated reviews**. `docs/` remains Archie/user's design archive and is not an S0 input. Bernie may reference the contracts but should not duplicate or alter them as a side effect of setup.
 
 ### S0 exception to the normal preflight
 
-The user's **single S0 Work prompt** fully specifies the isolated S0-A test; Branson must not open GitHub or read `AGENTS.md`/`workflow/` until S0-A passes. S0-B then performs normal repository preflight and setup without requesting another routine user authorization. Do not require a second Work session or intermediate Alisa review to move between internal S0 steps.
+The user's **single S0 Work prompt** fully specifies the isolated S0-A test; Bernie must not open GitHub or read `AGENTS.md`/`workflow/` until S0-A passes. S0-B then performs normal repository preflight and setup without requesting another routine user authorization. Do not require a second Work session or intermediate Archie review to move between internal S0 steps.
 
 ## 6. Required completion checklist
 
