@@ -56,23 +56,21 @@ The one-time prerequisites assignment is deliberately *not* launched with this a
 
 ## 4. One authoritative completion package — two reading levels
 
-For normal GitHub-backed work, Bernie produces **one coherent completion package**, with an entry-point PR summary and a detailed technical report. Do **not** create a second `summary.md` merely to duplicate PR prose; do not scatter the actual technical conclusions across unrelated subagent narratives.
+For normal GitHub-backed work, Bernie produces **one coherent completion package**, with an automatically opened session-to-`main` PR as the primary user-facing entry point, plus a detailed technical report. Do **not** create a second `summary.md` merely to duplicate PR prose; do not scatter the actual technical conclusions across unrelated subagent narratives.
 
-### 4.1 Human-readable PR description and comments — for the user
+### 4.1 Outcome-focused PR descriptions and comments — for the user
 
-**Every PR description and PR comment** must be short, understandable without reading raw logs, and appropriate to its scope. The primary assignment completion summary belongs in the **relevant PR description** whenever such a PR exists. Updates or decisions may appear as brief PR comments, with links to detailed evidence in files.
+**General principle:** PR descriptions should communicate **what was actually achieved and why it matters**, not merely list agent activity, tests performed, or the obligation to seek review. Prioritize verified substantive outcomes over process narration. Keep each PR readable without opening raw logs; link to `reports/` and `artifacts/work_runs/` for the detail needed by Archie. The appropriate content varies by assignment: do not force numeric comparisons or investment conclusions into purely technical work.
 
-Recommended summary fields, in a few lines or bullets:
+**Task PR (task branch → session branch):** Describe the particular behavior, calculation or capability added; show representative verified numerical/test results **when they materially explain that task**; identify the most important limitation and link to implementation/evidence. Task PRs can be more detailed than the final session PR. Bernie verifies and merges eligible task PRs into the session branch under `AGENTS.md`; the user is not required to approve each internal PR.
 
-- **What changed or was decided?** One or two sentences.
-- **Outcome:** `PASS`, `PASS_WITH_LIMITATIONS`, `PARTIAL` or `BLOCKED`, stating whose assessment it is.
-- **Important limitations or unresolved decisions:** Only material ones.
-- **Next action:** What the user or Archie should review/approve, if anything.
-- **Details:** Actual links to the detailed report, evidence and relevant code/commits.
+**Final session PR (session branch → `main`):** On completion of the authorized GitHub-backed Bernie assignment, Bernie **opens this PR automatically, without a separate user prompt**, and **leaves it unmerged**. It is the primary human-facing outcome summary. Synthesize the integrated capability or actual deliverable against the original objective; choose **only the few most informative verified results** (quantitative where genuinely helpful), practical implications, material limitations, and exact references to the detailed report/evidence. **Do not concatenate task PR descriptions, repeat every task's numerical results, or include an exhaustive inventory of intermediate steps.** Mention task PRs by link only when they help navigation. A concise comparison or small table is appropriate only if it materially improves understanding.
 
-The summary can include concise test status and PR scope, satisfying `AGENTS.md` PR reporting requirements without inserting full test transcripts, extended financial analysis, or long review conversations. Do not assert merged-to-`main` status unless verified. If work comprises multiple task PRs under an unfinished session, clearly identify which PR is the completion entry point. A session-to-main PR occurs **when requested**, not automatically after each assignment.
+For financial work, distinguish observed market facts, ETF-specific inputs, calculated sensitivities, assumptions, synthetic fixtures, scenario outcomes and decisions under an explicitly stated investor objective. A historical move or sensitivity is not a prediction; a passed risk-policy test alone need not mean “buy.” For infrastructure or data-quality work, describe its actual observable capability and limitations instead of inventing ETF decisions. Report **only executed and verified** results; if a representative number is unavailable, say so rather than fabricate one.
 
-**Final Work response:** Repeat or link the same short user-facing summary and the verified PR/report references. If no PR can be created, provide the summary in Work and state the exact missing authorization/tool; do not invent links. **If initial prerequisite subagent validation fails, no GitHub access or PR is permitted:** the direct Work response is the only completion medium.
+**Every PR description and PR comment** must be concise, human-readable and relevant to its scope. A comment should state the substantive update, correction or decision and link to detailed support, not paste full logs, dense reviewer conversations or lengthy technical calculations. A few meaningful sentences/bullets are preferable to a rigid template. When useful, include completion status (`PASS`, `PASS_WITH_LIMITATIONS`, `PARTIAL`, `BLOCKED`) **as Bernie's execution assessment**, not Archie/user acceptance.
+
+**Completion and exceptions:** The final session PR is normally the completion entry point and should contain links to the authoritative detailed report, run evidence and important code changes. For `PARTIAL` results with reviewable repository changes, use a clearly labeled draft PR if supported; do not present it as ready to merge. If no repository changes exist, GitHub access/PR creation fails, or authorization is missing, explain the limitation in the final Work response—do not invent a PR. During failed initial prerequisite validation, GitHub access is forbidden and the Work response is the only completion medium. The final Work response briefly repeats the outcome and any real final PR/report links; it does not require a duplicate summary file.
 
 ### 4.2 Detailed durable technical report — for Archie
 
@@ -132,8 +130,8 @@ For prerequisite validation, the demonstration instead establishes actual distin
 - [ ] Bernie inspected the actual deliverables and independently ran or validated material tests.
 - [ ] Carrie provided substantive economic review where relevant; dispositions are recorded; Dennis fixed accepted in-scope objections.
 - [ ] Every material acceptance criterion has specific evidence, status and limitations.
-- [ ] Real PR description and comments are short human-readable summaries with links, **not** substitutes for detailed evidence.
-- [ ] The final Work response supplies a concise, truthful result and exact accessible PR/report links where available.
+- [ ] Task PR descriptions convey the task-specific verified outcome; the final session PR selectively conveys the integrated deliverable, without repeating all task results. PR comments remain human-readable and link to detailed evidence.
+- [ ] A final session-to-`main` PR has been opened automatically for completed authorized GitHub-backed work and left unmerged, or its absence/partial draft status is accurately explained; the Work response supplies actual links where available.
 - [ ] No Bernie outputs were written to `docs/` or `workflow/`; no unauthorized direct write to `main`.
 - [ ] Usage statistics, child-agent interactions, tests, commits and access are never invented.
 - [ ] If GitHub or PR creation is impossible, the obstacle and unavailable durable results are identified honestly.

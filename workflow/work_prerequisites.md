@@ -107,10 +107,13 @@ Base: main, unless a later explicit user instruction changes it.
    launch prompt controls the isolation and single-session boundary.
    Do not read, browse, or modify docs/ during this prerequisite assignment.
 2. Follow AGENTS.md's session/task branch -> PR rules; do not push or commit
-   directly to main. Use a real task PR into the appropriate session branch;
-   the session-to-main PR is only opened when explicitly required by the
-   established rules or user instruction. Respect GitHub/tool permission
-   checks; if an operation is unavailable, report the exact limitation.
+   directly to main. Use a real task PR into the prerequisite assignment's
+   session branch; after verified repository setup, OPEN the session-to-main
+   PR AUTOMATICALLY as the final user-facing review entry point, without an
+   extra user request. Do NOT merge the session PR. If setup is PARTIAL but
+   reviewable files exist, open a clearly labeled draft PR where possible.
+   Respect GitHub/tool permissions; if any operation is unavailable, report
+   the exact limitation instead of inventing a PR.
 3. Create REAL, small, durable files using unique run-specific filenames:
       reports/<YYMMDD>_prerequisites_<run_id>_report.md
       artifacts/work_runs/<run_id>/manifest.json
@@ -122,13 +125,13 @@ Base: main, unless a later explicit user instruction changes it.
    add temporary probe code to application src/ or tests/ merely to create
    scaffolding. A real report and manifest create these directories; no
    empty placeholders. Do not write generated content into workflow/ or docs/.
-4. Write a SHORT, HUMAN-READABLE summary in the relevant PR description:
-   outcome, accomplished work, material limitations, user action (if any),
-   and links to the detailed report/evidence. ALL PR descriptions and
-   comments must be readable summaries, never raw logs or long
-   technical analyses. Put technical depth in files for Archie. If the PR
-   covers only a task within an unfinished session, identify that scope;
-   do not mislabel the PR as merged into main or finally accepted.
+4. Write HUMAN-READABLE summaries in PR descriptions and comments. A task
+   PR may include specific verification details; the final session PR must
+   SELECT the main demonstrated orchestration outcome, repository-setup
+   result, most material limitation, and links to detailed report/evidence.
+   Do not copy every numerical fixture, agent exchange or task PR detail
+   into the session PR. Do not include raw logs or long technical analysis
+   in PR prose. Never present an open PR as merged into main or accepted.
 5. Independently verify that the named files, changes, and PR truly exist
    on the claimed branch; include exact links and commit SHA when known.
    Do not confuse a cloud workspace path with a file in the user's local
@@ -141,8 +144,10 @@ failed); the real child delegation/review/revision evidence; the executed
 unittest command and result; verified PR/report/evidence links when present;
 material limitations; next action; and usage only if genuinely exposed.
 If validation failed, deliver this directly in Work without GitHub access.
-If repository setup occurred, use a short human-readable PR description
-and direct the user/Archie to the detailed committed report and evidence.
+If repository setup produced reviewable committed files, provide the
+verified session-to-main PR link (or draft PR for partial results), and
+direct the user and Archie to the detailed report and evidence. The PR
+must remain unmerged. If it could not be opened, explain the exact reason.
 Do not claim completion of unperformed steps, require a new user assignment,
 or implement any ETF financial model.
 ```
