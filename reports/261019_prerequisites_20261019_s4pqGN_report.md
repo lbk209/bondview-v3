@@ -1,6 +1,6 @@
 # Bondview-v3 Work Prerequisites — 20261019_s4pqGN
 
-Isolated subagent validation **PASS**, reused without repetition. Repository publication is being completed after the user updated the connector installation. The original HTTP 403 blocker is resolved: session and task branches were actually created. No financial model was developed or accepted. The publication checkpoint below records only observed operations; final PR status is verified separately.
+Overall **PASS_WITH_LIMITATIONS**. Part 1 validation **PASS**, reused without repetition. Part 2 repository setup **PASS_WITH_LIMITATIONS**: write access, report/evidence publication, task PR integration and final session-to-main PR creation all succeeded. Final [session PR #3](https://github.com/lbk209/bondview-v3/pull/3) is open and unmerged. Publication used GitHub APIs; the user's local checkout/unpushed work was not inspected. No financial model was developed or accepted.
 
 ## Scope, environment, and provenance
 
@@ -21,9 +21,9 @@ Remote base: `main`, observed commit [`f6c9191adb78b537009b7ad893e8999fe87fce0a`
 | Routed revision | Same Dennis adds continuous; retains annual | 15 tests pass; annual AST unchanged | PASS | zero_coupon.py; test_zero_coupon.py; independent_checks.txt | Extreme range caveat |
 | Focused re-review | Same Carrie inspects real revision | 15 pass; no blocking issue or disagreement | PASS | review_exchanges.md | No production/ETF claim |
 | Repository preflight | Real main state, AGENTS and current contracts | Actual main SHA and contract blob SHAs recorded | PASS | repository_access.json | No successful local clone |
-| Session/task workflow | Task PR into session, session PR into main | New session/task branches created after connector update | IN_PROGRESS | publication.json | PR operations pending at this checkpoint |
-| Durable repository outputs | Committed report/manifest/evidence | Saved evidence hash-verified; GitHub publication in progress | IN_PROGRESS | This report and manifest.json | Final publication verification pending |
-| Final PR verification | Open unmerged session PR | To open after verified task integration | IN_PROGRESS | publication.json | No claimed PR before creation |
+| Session/task workflow | Task PR into session, session PR into main | Task PR #2 merged into session; final PR #3 opened into main | PASS | publication.json | Final PR remains unmerged |
+| Durable repository outputs | Committed report/manifest/evidence | All 13 files fetched from task branch and matched prepared bytes; task integrated | PASS | This report and manifest.json | GitHub API, no local checkout claim |
+| Final PR verification | Open unmerged session PR | PR #3 actual response: open, merged=false, session head, main base | PASS | publication.json | Archie/user acceptance outstanding |
 | Reserved scope | No ETF model; no generated docs/workflow/src/tests | Package contains only report and run evidence | PASS | Package file list and manifest | No investment conclusion |
 
 Evidence locations in this table are under `artifacts/work_runs/20261019_s4pqGN/evidence/` unless otherwise stated. Only the single report and run-specific evidence/manifest are deliverables; no duplicate PR-summary file exists.
@@ -61,13 +61,24 @@ The user then explicitly reported that the connector installation now includes b
 
 All 11 hashes in the original manifest matched the saved evidence and original report before publication edits. Part 1 was not rerun: no agents were spawned or resumed, no probe code was changed and no unittest command was re-executed. The original test commands/results remain the actual prior validation evidence. `publication.json` records the current continuation; historical files are explicitly separate checkpoints.
 
-At this initial publication checkpoint, branches exist and report/evidence are prepared. No PR or result commit is claimed until observed. Remaining PR/commit facts will be recorded after actual publication. No direct main write is authorized or performed; the final session-to-main PR must remain open and unmerged.
+Observed publication facts:
+
+| Item | Verified fact |
+|---|---|
+| Evidence commit | [`19ab13e7df9ca72ec86d6529a49759cb18d4c7de`](https://github.com/lbk209/bondview-v3/commit/19ab13e7df9ca72ec86d6529a49759cb18d4c7de) |
+| Task PR | [#2](https://github.com/lbk209/bondview-v3/pull/2), task branch → session branch; head SHA verified and all 13 contents matched |
+| Task integration | GitHub returned merged=true, commit [`c9986ad8892525512bfef5be3fed4d9d1245ce1f`](https://github.com/lbk209/bondview-v3/commit/c9986ad8892525512bfef5be3fed4d9d1245ce1f); session ref independently matched |
+| Final review entry | [Session PR #3](https://github.com/lbk209/bondview-v3/pull/3), `codex/session/261019_1246` → main; open and unmerged |
+| Published scope | 13 files under reports/ and this run's artifacts/work_runs/ tree only; PR changed-path list verified |
+| Provenance update | `codex/task/261019_1246_publication_record` created from verified integration SHA to record these observed facts through an additional task PR into this same session |
+
+The manifest's result_commit names the verified initial evidence-integration revision above, not the eventual head containing this provenance correction. The current final head and later provenance-task merge are independently available from PR #3; this report does not claim to contain its own eventual commit SHA. Session PR #3 must remain unmerged for Archie/user review. No direct main write occurred.
 
 ## Reproduce and review
 
 Unzip the completion package. In `artifacts/work_runs/20261019_s4pqGN/evidence/`, run `python -m unittest -v test_zero_coupon.py`; expect 15 tests and OK. Read initial_unittest.txt and initial snapshots to verify the annual-only stage, then review review_exchanges.md and agent_ledger.json for thread reuse and review routing. File hashes in manifest.json establish the delivered bytes, not cryptographic proof of agent identity or immutable platform logs.
 
-Next action at this checkpoint: publish and verify the task PR, merge it into the session, and automatically open the session-to-main PR. Archie/user retains independent acceptance; completion of prerequisites does not authorize financial-model development.
+Next action: the user passes session PR #3 to Archie for independent review and decides whether to merge. No new financial-model assignment is authorized by this prerequisite result.
 
 ## Agent-round and usage ledger
 
