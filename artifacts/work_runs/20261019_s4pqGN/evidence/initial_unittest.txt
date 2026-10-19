@@ -1,0 +1,13 @@
+Command: python -m unittest -v test_zero_coupon.py
+Exit: 0
+test_fractional_years (test_zero_coupon.PriceAnnualTests.test_fractional_years) ... ok
+test_invalid_domains (test_zero_coupon.PriceAnnualTests.test_invalid_domains) ... ok
+test_negative_valid_yield (test_zero_coupon.PriceAnnualTests.test_negative_valid_yield) ... ok
+test_nonfinite_inputs (test_zero_coupon.PriceAnnualTests.test_nonfinite_inputs) ... ok
+test_reference_price (test_zero_coupon.PriceAnnualTests.test_reference_price) ... ok
+test_zero_cases (test_zero_coupon.PriceAnnualTests.test_zero_cases) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.000s
+
+OK

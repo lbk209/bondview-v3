@@ -1,0 +1,80 @@
+{
+  "run_id": "20261019_s4pqGN",
+  "assignment_id": "work_prerequisites",
+  "task": "isolated_subagent_validation_and_conditional_repository_setup",
+  "generated_at": "2026-10-19T03:48:48.485147+00:00",
+  "status": "IN_PROGRESS",
+  "validation": "PASS",
+  "repository_setup": "IN_PROGRESS",
+  "source_commit": "f6c9191adb78b537009b7ad893e8999fe87fce0a",
+  "result_commit": null,
+  "attempted_session_branch": "codex/session/261019_1223",
+  "session_branch_created": true,
+  "task_pr": null,
+  "session_pr": null,
+  "final_report_path": "reports/261019_prerequisites_20261019_s4pqGN_report.md",
+  "usage": "not exposed",
+  "agent_threads": {
+    "Dennis": "/root/dennis",
+    "Carrie": "/root/carrie"
+  },
+  "agent_rounds": {
+    "dennis_implementation": 2,
+    "carrie_review": 2,
+    "carrie_followup": 1
+  },
+  "test_commands": [
+    {
+      "command": "python -m unittest -v test_zero_coupon.py",
+      "stage": "initial",
+      "tests": 6,
+      "exit": 0
+    },
+    {
+      "command": "python -m unittest -v test_zero_coupon.py",
+      "stage": "revision",
+      "tests": 15,
+      "exit": 0
+    },
+    {
+      "command": "python -m py_compile zero_coupon.py test_zero_coupon.py",
+      "exit": 0
+    }
+  ],
+  "limitations": [
+    "Shell GitHub DNS unavailable in prior attempt; API publication, no user checkout/unpushed-work inspection.",
+    "Elementary floating-point range limitation; no ETF model or investment acceptance.",
+    "Agent interactions recorded by Bernie; usage not exposed."
+  ],
+  "evidence_paths": [
+    "artifacts/work_runs/20261019_s4pqGN/evidence/agent_ledger.json",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/independent_checks.txt",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/initial_test_zero_coupon.py",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/initial_unittest.txt",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/initial_zero_coupon.py",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/publication.json",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/repository_access.json",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/review_exchanges.md",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/revised_unittest.txt",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/test_zero_coupon.py",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/zero_coupon.py"
+  ],
+  "sha256": {
+    "artifacts/work_runs/20261019_s4pqGN/evidence/agent_ledger.json": "2080866912a9b30f008a74ab394f32eae5ab8b029bf4e9d2f711236ac0b3d657",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/independent_checks.txt": "6bfa52b833dabe5cd0b812a20f125d04e3991119568d9d2190d9a82e51b57fab",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/initial_test_zero_coupon.py": "95a9927274bf297ec67faa06bded9dcb4d384a92f0220650fca029e6c60fbd55",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/initial_unittest.txt": "02afd723057cb78abd4016ae82b09285b1aa73bf062da8acbf77f1ec2b3d5dd4",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/initial_zero_coupon.py": "b28c67c94656619ae28bafa1b7483759a7cb109db57931d138bb02852ae907f7",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/publication.json": "485e893a68a793d45aa4cdd1c2911f3eef554a529402b1e873f3f82970fac882",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/repository_access.json": "f0467a2d451b1acad4adee6ee8bb8903b35cfff07f90ad21d9a3e0c0f86c59b7",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/review_exchanges.md": "28b4e6b4c7e61e85e197461ceba686eebb7ab2d9189bc902ce12693bf3c30849",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/revised_unittest.txt": "c54e666aab02d5393ebdfea067b6569758fb1737a6dfc4844bd89fb4e7576e9a",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/test_zero_coupon.py": "7931bd9de444fa3501bbf40935b27ee456704b87758395fe3abda141ea67e9ad",
+    "artifacts/work_runs/20261019_s4pqGN/evidence/zero_coupon.py": "f6caa22470b307faab3a19e7c117bc2abbf31d74461e3ff6ecc7d01a6728019e",
+    "reports/261019_prerequisites_20261019_s4pqGN_report.md": "84c93374ad3145d0caf6fc8aa55ceb25de92b508bf2f19694893e84484623150"
+  },
+  "session_branch": "codex/session/261019_1246",
+  "task_branch": "codex/task/261019_1246_prerequisites",
+  "part1_repeated": false,
+  "write_access_verified": true
+}
