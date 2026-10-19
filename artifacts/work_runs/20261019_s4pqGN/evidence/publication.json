@@ -1,0 +1,44 @@
+{
+  "run_id": "20261019_s4pqGN",
+  "continuation": "Part 2 only; Part 1 evidence reused, not repeated",
+  "status": "PASS_WITH_LIMITATIONS",
+  "source_commit": "f6c9191adb78b537009b7ad893e8999fe87fce0a",
+  "session_branch": "codex/session/261019_1246",
+  "task_branch": "codex/task/261019_1246_prerequisites",
+  "write_access_verified": true,
+  "branch_creation_results": "Both create_branch calls succeeded",
+  "prior_hash_check": "11 of 11 matched",
+  "part1_rerun": false,
+  "task_pr": {
+    "number": 2,
+    "url": "https://github.com/lbk209/bondview-v3/pull/2",
+    "merged": true,
+    "merge_commit": "c9986ad8892525512bfef5be3fed4d9d1245ce1f",
+    "head_commit": "19ab13e7df9ca72ec86d6529a49759cb18d4c7de"
+  },
+  "session_pr": {
+    "number": 3,
+    "url": "https://github.com/lbk209/bondview-v3/pull/3",
+    "state": "open",
+    "merged": false,
+    "base": "main",
+    "head": "codex/session/261019_1246"
+  },
+  "result_commit": "c9986ad8892525512bfef5be3fed4d9d1245ce1f",
+  "usage": "not exposed",
+  "historical_evidence": [
+    "repository_access.json",
+    "agent_ledger.json"
+  ],
+  "verification_mode": "GitHub API; no existing local checkout inspected",
+  "repository_setup": "PASS_WITH_LIMITATIONS",
+  "result_commit_scope": "Verified initial evidence integration, before this provenance-record correction",
+  "remote_content_checks": {
+    "files": 13,
+    "all_exact_matches": true,
+    "ref": "codex/task/261019_1246_prerequisites"
+  },
+  "changed_paths_verified": true,
+  "record_task_branch": "codex/task/261019_1246_publication_record",
+  "observed_at": "2026-10-19T03:50:01.263122+00:00"
+}

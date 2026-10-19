@@ -1,0 +1,49 @@
+{
+  "repository": "lbk209/bondview-v3",
+  "source_branch": "main",
+  "source_commit": "f6c9191adb78b537009b7ad893e8999fe87fce0a",
+  "access_started_after_validation_pass": true,
+  "repository_metadata_permissions": {
+    "admin": true,
+    "maintain": true,
+    "pull": true,
+    "push": true,
+    "triage": true
+  },
+  "remote_branches_observed": [
+    "main"
+  ],
+  "branch_search_pagination": [
+    "first page main, cursor MQ",
+    "cursor MQ: empty, null cursor",
+    "post-write-attempt codex/ search: empty, null cursor"
+  ],
+  "read_contracts": {
+    "AGENTS.md": "d7d955d22d54b843dc3c28db9732033148a22fcc",
+    "workflow/work_supervisor_contract.md": "085214d390837d3fbef28bee56a42f9391ae3db3",
+    "workflow/work_handoff_output_contract.md": "636a3a1268ca1010cada4ce99e48df75026f70c1",
+    "workflow/README.md": "ec625a222d6dc1641f415f3f1e8a10bdfb841a98"
+  },
+  "clone_command": "git clone --filter=blob:none --no-checkout https://github.com/lbk209/bondview-v3.git /tmp/bondview_prereq_20261019_s4pqGN",
+  "clone_exit": 128,
+  "clone_error": "fatal: unable to access 'https://github.com/lbk209/bondview-v3.git/': Could not resolve host: github.com",
+  "branch_action": "github_create_branch",
+  "branch_arguments": {
+    "repository_full_name": "lbk209/bondview-v3",
+    "branch_name": "codex/session/261019_1223",
+    "sha": "f6c9191adb78b537009b7ad893e8999fe87fce0a"
+  },
+  "branch_result": {
+    "status": 403,
+    "message": "Resource not accessible by integration",
+    "documentation_url": "https://docs.github.com/rest/git/refs#create-a-reference"
+  },
+  "remote_outputs": [],
+  "pr_links": [],
+  "result_commit": null,
+  "limitations": [
+    "Local clone unavailable; API remote verification only. Existing user checkout and unpushed changes not inspected or modified.",
+    "Repository metadata permissions did not establish integration write permission.",
+    "Some initial tool calls failed argument validation while learning available API shapes; no successful remote mutation occurred."
+  ]
+}

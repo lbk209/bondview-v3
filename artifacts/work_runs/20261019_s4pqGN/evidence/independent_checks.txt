@@ -1,0 +1,5 @@
+Bernie independent inspections: cat zero_coupon.py test_zero_coupon.py (initial and revision), both exit 0.
+Initial function AST equals revised price_annual AST: PASS.
+Command: python -m py_compile zero_coupon.py test_zero_coupon.py
+Exit: 0; no output.
+Python: 3.12.1, GCC 11.4.0.

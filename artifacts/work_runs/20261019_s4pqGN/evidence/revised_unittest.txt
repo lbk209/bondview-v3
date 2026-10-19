@@ -1,0 +1,22 @@
+Command: python -m unittest -v test_zero_coupon.py
+Exit: 0
+test_fractional_years (test_zero_coupon.PriceAnnualTests.test_fractional_years) ... ok
+test_invalid_domains (test_zero_coupon.PriceAnnualTests.test_invalid_domains) ... ok
+test_negative_valid_yield (test_zero_coupon.PriceAnnualTests.test_negative_valid_yield) ... ok
+test_nonfinite_inputs (test_zero_coupon.PriceAnnualTests.test_nonfinite_inputs) ... ok
+test_reference_price (test_zero_coupon.PriceAnnualTests.test_reference_price) ... ok
+test_zero_cases (test_zero_coupon.PriceAnnualTests.test_zero_cases) ... ok
+test_equal_numerical_quotes_differ (test_zero_coupon.PriceContinuousTests.test_equal_numerical_quotes_differ) ... ok
+test_equivalent_yields (test_zero_coupon.PriceContinuousTests.test_equivalent_yields) ... ok
+test_invalid_domains (test_zero_coupon.PriceContinuousTests.test_invalid_domains) ... ok
+test_negative_yield (test_zero_coupon.PriceContinuousTests.test_negative_yield) ... ok
+test_nonfinite_inputs (test_zero_coupon.PriceContinuousTests.test_nonfinite_inputs) ... ok
+test_rates_at_or_below_minus_one (test_zero_coupon.PriceContinuousTests.test_rates_at_or_below_minus_one) ... ok
+test_reference_price (test_zero_coupon.PriceContinuousTests.test_reference_price) ... ok
+test_validation_precedes_zero_shortcuts (test_zero_coupon.PriceContinuousTests.test_validation_precedes_zero_shortcuts) ... ok
+test_zero_cases (test_zero_coupon.PriceContinuousTests.test_zero_cases) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.001s
+
+OK
