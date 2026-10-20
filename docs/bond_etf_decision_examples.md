@@ -1,381 +1,257 @@
-# Bondview-v3 — Korean-Listed U.S. Bond ETF Decision Examples and Validation
+# Bondview-v3 — Aspect-Based Bond ETF Decision Examples
 
-**Status:** **PROVISIONAL companion examples — 2026-10-20.** Prepared against the revised `bond_etf_decision_architecture.md` dated 2026-10-20; not a live market study, backtest, accepted investment policy, development roadmap, or authorization for implementation.
+**Status: PROVISIONAL replacement companion, 2026-10-20.** This document illustrates the revised [`bond_etf_decision_architecture.md`](bond_etf_decision_architecture.md), especially §§5–9 and 13. It replaces the *design examples* from the earlier, break-even-centered companion, which remains reference-only. This is an economic interpretation and calculation specification for review, not an investment recommendation or authorization for implementation.
 
-**Companion architecture:** [`bond_etf_decision_architecture.md`](bond_etf_decision_architecture.md). If a proposed example is inconsistent with an accepted architecture contract, resolve the conflict before using that example as an implementation acceptance test. Earlier Bondview repositories are not design authorities.
+> **Source convention for the whole document.** Every market observation, ETF profile, issuer date, and numerical result below is **constructed**, not retrieved from FRED or a real ETF issuer. Named ETF examples `S`, `I`, `L`, `C1`, `C2`, and `H` are fictional. The attached CSV files reproduce these examples. In actual Bondview, use dated FRED factors and official issuer disclosures. Do not interpret the patterns below as genuine historical episodes.
 
-> **All yields, exposure values, credit spreads, FX paths, break-even figures, investor policies and results in this document are constructed examples.** ETF tickers mentioned in the legacy validation section identify historically researched product categories only; they are **not** verified current issuer exposures or recommendations. No actual market data, current ETF sheets, or price histories were used to produce the figures.
+## 1. Objective and example contract
 
-## 1. Purpose and interpretation
+**Goal:** show that economically recognized fixed-income measures can be calculated consistently, compared across **eligible ETFs** at one date, and examined **through time** where dated inputs are available. A measurement can be economically informative without producing a buy/sell verdict. No aspect-specific attractiveness score, mandatory cross-aspect formula, or composite score is required.
 
-The examples serve three purposes:
+For each example, state the **question, measurement, unit, input source/type, cross-ETF comparison, time comparison, and qualification**. Distinguish **market context** from **ETF-specific results**. One aspect may contain several standard measures; its historical and cross-product presentations reuse the same calculation, not different evaluation engines.
 
-1. **Economic usefulness:** Demonstrate whether conventional fixed-income calculations reveal meaningful changes in investment opportunities between Treasury maturity segments and credit markets.
-2. **ETF application:** Show how the same models use published ETF exposure characteristics and produce supported numerical outcomes, qualifications, or clearly unresolved preferences.
-3. **Verification:** Preserve reference arithmetic, model-applicability rules, missing-data behavior, and separate product/FX/return diagnostics from the predecessor examples document.
+The five provisional aspects are (1) yield/compensation, (2) rate sensitivity, (3) historical rate variability, (4) credit compensation/risk, and (5) currency exposure/hedging (conditional and lower priority). Product structure and input provenance determine eligibility, not attractiveness.
 
-The same **financial definitions and functions** should support an individual ETF, a full historical interval, and a chosen ETF universe. Those are different views and valid relative calculations, not three attractiveness engines. A market-reference illustration may be economically useful before any ETF is selected, but ETF-specific numerical sensitivities require compatible issuer disclosures.
+### 1.1 Canonical market inputs and derived fields
 
-### 1.1 Terminology and unit conventions
+The market dataset covers **2025-04-21 to 2026-10-20** at business-day endpoints. The inputs are nominal U.S. Treasury reference yields at **2Y, 5Y, 10Y, 30Y** (percent) and one investment-grade market OAS reference (basis points). The 5Y factor is for the illustrative credit comparisons. The underlying series are stored **once** in [`assets/constructed_market_daily.csv`](assets/constructed_market_daily.csv).
 
-- Treasury constant-maturity yields (`2Y`, `5Y`, `10Y`, `30Y`) are **market references**, not coupon-bond or ETF yields to maturity. ETF benchmark tenor **does not determine duration**.
-- All yield changes in price-sensitivity formulas are **decimal** (50 bp = `0.005`). `1 bp = 0.01 percentage point = 0.0001 decimal`.
-- A *market-reference break-even* substitutes documented or explicitly assumed benchmark durations and market yield differences for a compatible compensation calculation. It **does not** equal actual ETF gross carry or net KRW expected return.
-- **Current-exposure counterfactual**: the specified duration and/or spread duration is applied to historical-sized market changes. It is neither realized ETF historical P&L nor a future return prediction.
-- **Scenario**: a declared hypothetical yield/spread change, not a probability or price forecast. A conditional preference can be valid without establishing that buying now beats waiting.
-- **Unavailable**, **not applicable (N/A)**, **unsupported** and **proxy** have different meanings and must never silently be converted to zeros.
-- An issuer's distribution yield is **not** automatically economic carry. No historical issuer yield is manufactured from today's ETF facts.
-- Figures are economic visual examples, **not a requirement to implement a particular chart type**. Plot only an analytically meaningful time series; do not multiply graphs that repeat the same source information.
+For real observations, retrieve relevant underlying FRED Treasury factors such as `DGS2`, `DGS5`, `DGS10`, and `DGS30`, and calculate relationships in Bondview. Do **not** acquire precomputed `T10Y2Y` as a separate primary input. The market-level calculations reuse the same aligned tenor inputs:
 
-### 1.2 What the example set does and does not establish
+\[
+S_{10-2}(t)=100\,[y_{10}(t)-y_2(t)]\quad\text{bp},\qquad
+S_{30-10}(t)=100\,[y_{30}(t)-y_{10}(t)]\quad\text{bp}
+\]
 
-The primary investment questions are: (i) how has the compensation for extending Treasury maturity changed relative to associated rate risk? (ii) how large is that compensation relative to historically observed yield-change uncertainty? (iii) does corporate-bond repricing reflect Treasury movements or a credit-specific spread change, and what does that imply under a declared credit scenario? The answers can be complementary, adverse, or mixed. They are not votes for an integrated numerical attractiveness score.
+Here the source yields are in **percentage units**; subtracting them and multiplying by 100 converts a percentage-point spread into basis points. In the duration formulas below, yield changes are converted to **decimal units** (`50 bp = 0.005`). Missing observations or misaligned dates do not justify inventing a value.
 
-Correct arithmetic does **not** validate a general purchase ranking. The source data and compatibility requirements matter as much as the formula. The purpose of the first research implementation is to challenge these assumptions on actual available market and issuer data—not to tune outcomes until a chart appears persuasive.
+### 1.2 Issuer-style ETF inputs and disclosure dates
 
----
+The illustrative universe deliberately contains both comparable and inapplicable products. The exposure characteristics are *dated issuer-style entries*, **not durations inferred from tenor labels**. The file [`assets/constructed_issuer_snapshots.csv`](assets/constructed_issuer_snapshots.csv) contains all three available dates: **2026-04-20**, **2026-07-20**, and **2026-10-20**. For the fixture only, assume the data became available at the corresponding assessment cutoffs. Never backfill earlier snapshots with the latest profile.
 
-## 2. Treasury maturity opportunity: duration-adjusted compensation assessed over six months
+| Fictional ETF | Structure / market factor | Yield definition | Currency / hedge policy |
+|---|---|---|---|
+| **S** | Cash Treasury, short; 2Y reference | Gross **portfolio YTM** | USD exposure, no hedge |
+| **I** | Cash Treasury, intermediate; 10Y reference | Same gross portfolio YTM convention | USD exposure, no hedge |
+| **L** | Cash Treasury, long; 30Y reference | Same gross portfolio YTM convention | USD exposure, no hedge |
+| **C1** | Investment-grade cash credit, 5Y Treasury + matched IG OAS reference | Same gross portfolio YTM convention | USD exposure, no hedge |
+| **C2** | Investment-grade cash credit, same two reference factors but lower durations | Same gross portfolio YTM convention | USD exposure, no hedge |
+| **H** | Cash Treasury, partially USD/KRW hedged; 10Y reference | **Unavailable** | Dated published hedge coverage |
 
-**Economic question:** Has gross compensation for taking 10Y instead of 2Y Treasury exposure improved relative to the additional duration? The 30Y comparisons remain visible to show that the answer can differ by maturity pair.
+The common gross portfolio YTM convention makes comparisons *of that measure* possible in this fixture. It does **not** make a gross USD YTM an ETF's realized holding-period carry or net KRW compensation. For credit `C1/C2`, the common IG OAS factor is a deliberately matched broad-market **proxy**, not an issuer-published ETF OAS.
 
-### 2.1 Dated yield observations and reference assumptions
+## 2. Aspect 1 — Yield and compensation
 
-The **synthetic** daily Treasury series spans April 2023–October 2026. Section 2 examines assessment dates from **April 20 to October 20, 2026**; these dates locate the calculations and do **not** specify a holding period. The underlying daily series preserves the following seven reference observations:
+**Economic question:** What yield compensation is visible in the Treasury market, and how do comparable reported yields differ across products and assessment dates?
 
-| Assessment date (2026) | Treasury 2Y | Treasury 10Y | Treasury 30Y |
+### 2.1 Treasury term compensation: market reference
+
+![Time series of 10Y-minus-2Y and 30Y-minus-10Y spreads calculated from the same 2Y/10Y/30Y Treasury yield inputs.](assets/treasury_term_spreads.png)
+
+*Source: the constructed daily Treasury factors, all available observations. Both lines are derived—not separately downloaded—from underlying tenor yields.*
+
+At the illustrative assessment dates:
+
+| Market observation | 2026-04-20 | 2026-10-20 | Change |
 |---|---:|---:|---:|
-| Apr 20 | 4.60% | 4.50% | 5.00% |
-| May 20 | 4.55% | 4.70% | 5.15% |
-| Jun 22 | 4.45% | 4.50% | 4.95% |
-| Jul 20 | 4.35% | 4.80% | 5.20% |
-| Aug 20 | 4.30% | 4.60% | 5.00% |
-| Sep 21 | 4.20% | 4.95% | 5.35% |
-| Oct 20 | 4.10% | 5.10% | 5.40% |
+| 2Y reference yield | 4.65% | 4.12% | −53 bp |
+| 10Y reference yield | 4.50% | 5.06% | +56 bp |
+| 30Y reference yield | 5.02% | 5.32% | +30 bp |
+| **10Y − 2Y** | **−15 bp** | **+94 bp** | **+109 bp** |
+| **30Y − 10Y** | **+52 bp** | **+26 bp** | **−26 bp** |
 
-Use fixed representative durations **`D_2=1.9`, `D_10=7.5`, `D_30=16.0`**. For each date, approximate **one subsequent year of gross compensation** using that date's observed *annualized* Treasury reference yield. This deliberately simplified compensation proxy does not establish an ETF's actual one-year carry or expected return.
+**Interpretation:** The 10Y segment's yield advantage over 2Y increases markedly, while 30Y's additional yield over 10Y decreases. That is a statement about **market term spreads**—not bond price performance and not an ETF holding-period return. The changing 10Y−2Y spread reflects movements in *both* Treasury tenors; one must not assign it to a single cause without further evidence.
 
-For longer and shorter exposures `L` and `S`, suppose their relevant yields **subsequently increase by the same amount**, `delta_y_common` in decimal units. The first-order conditional difference is:
+### 2.2 Cross-ETF yield measurement and its evolution
 
-`relative_result_proxy ≈ (c_L - c_S) - (D_L - D_S) * delta_y_common`.
+The same compatible published-yield definition is compared at each issuer snapshot; no bond-market reference yield is silently substituted for an ETF issuer value.
 
-The **additional common yield increase** at which this proxy difference becomes zero is:
+![Three dated gross portfolio YTM observations for five fictional cash-bond ETFs.](assets/etf_yield_comparisons.png)
 
-`break_even_common_rise_bp = 10,000 * (c_L - c_S) / (D_L - D_S)`, for `D_L > D_S`.
+| ETF | Apr 20 YTM | Jul 20 YTM | Oct 20 YTM | April → October |
+|---|---:|---:|---:|---:|
+| S | 4.55% | 4.35% | **4.10%** | −45 bp |
+| I | 4.60% | 4.85% | **5.00%** | +40 bp |
+| L | 5.00% | 5.18% | **5.26%** | +26 bp |
+| C1 | 5.55% | 5.70% | **5.95%** | +40 bp |
+| C2 | 5.25% | 5.40% | **5.63%** | +38 bp |
 
-### 2.2 Visualization: daily evolution of duration-adjusted compensation
+At October 20, **I offers 90 bp more stated gross portfolio YTM than S** (`5.00%−4.10%`). The comparable *market reference* 10Y−2Y spread is **94 bp**; these are different quantities and need not agree. The higher credit ETF YTMs do not, by themselves, show that credit risk is adequately rewarded. ETF `H` remains `unavailable` for the yield comparison.
 
-![Daily evaluations of a one-year gross-compensation-proxy break-even from April to October 2026 for 10Y/2Y, 30Y/2Y and 30Y/10Y; highlighted October 10Y/2Y break-even 17.86 bp](assets/maturity_break_even_history.png)
+**Cross-ETF:** compare the **same yield definition** on the same date among suitable products. **Historical:** calculate that same measurement separately on each valid disclosure date. **Not calculated:** carry, roll-down, net hedged-KRW yield, or total holding-period return; issuer YTM alone does not establish those quantities.
 
-The daily curve is calculated **from yields at each date**, not from trailing yield changes or a rolling average. Every point applies the **same one-year compensation convention**. The period across the horizontal axis is the period during which the market opportunity is *observed*, not a return earned over that period.
+## 3. Aspect 2 — Interest-rate sensitivity
 
-| Pair | Apr 20 break-even | Oct 20 break-even | Interpretation under the same proxy |
-|---|---:|---:|---|
-| **10Y vs 2Y** | **−1.79 bp** | **+17.86 bp** | Additional compensation improves substantially relative to extra duration |
-| 30Y vs 2Y | +2.84 bp | +9.22 bp | Improves under this measure |
-| 30Y vs 10Y | +5.88 bp | +3.53 bp | Extra compensation beyond 10Y deteriorates |
+**Economic question:** How sensitive is each eligible ETF exposure to an equal, explicitly declared rate move? Has its *reported exposure* changed over time?
 
-**Economic conclusion:** The 10Y reference exposure became **more favorable than 2Y on this particular gross compensation measure** across the assessment dates. The 30Y/10Y comparison illustrates why that conclusion need not extend to every maturity pair.
+For modified/effective duration `D` and matched yield change `Δy` in **decimal** units:
 
-In October, `5.10%−4.10%=1.00 pp` of *annualized yield difference* is used as a **one-year gross-compensation proxy**; with additional duration `5.6`, its break-even common increase is `17.86 bp`. Neither the one-year compensation assumption nor this threshold predicts yield movements. A simple six-month **proration** would imply `0.50 pp` additional gross compensation and **`8.93 bp`** common-increase break-even, but that is not a full six-month ETF return model.
+\[
+\text{First-order price effect}\ \approx -D\,\Delta y.
+\]
 
-**Interpretation limits:** This duration-normalized proxy is a transformation of the observed Treasury spread and the assumed durations, not independent evidence. It excludes genuine ETF carry/roll, reinvestment, nonparallel curve movements, convexity, funding, hedging and portfolio changes. ETF-level holding-period break-even requires compatible issuer-reported characteristics and defensible period compensation rather than market-yield substitution.
+The calculation is conventional; it is not a projection of yields or a full ETF total return. For cross-product comparability, use a **common +50 bp scenario** in the appropriate matched interest-rate factor for each ETF (the scenario is not assumed to have occurred). Each duration is an explicitly dated issuer-style input. A duration may change only when the disclosed exposure changes; a fixed shock with a fixed duration produces a fixed result.
 
-**Reproducible source:** [`assets/synthetic_daily_treasury_and_compensation.csv`](assets/synthetic_daily_treasury_and_compensation.csv).
+### 3.1 Selected-date comparison
 
----
-
-## 3. Context for the break-even cushion: historically observed rate-risk variation
-
-**Economic question:** The 10Y/2Y compensation proxy improved, but how large have the **relative rate-price consequences** of paired 2Y and 10Y yield changes been? This question uses actual changes *between dates* in a production dataset, rather than only the yields available at each date.
-
-### 3.1 Daily-ending six-month yield changes
-
-Use a **six-month change horizon**, a **three-year historical reference period** ending October 20, 2026, and **daily observation endpoints**. This example uses constructed yields, so its dates and statistics illustrate a method, not actual Treasury history. For each available end date `t`, select the latest available observation on or before the calendar date six months earlier, and calculate:
-
-`delta_y_10,6m(t) = y_10(t) - y_10(t−6 months)`  
-`delta_y_2,6m(t) = y_2(t) - y_2(t−6 months)`
-
-Using the fixed reference durations from Section 2:
-
-`X_6m(t) = 7.5 * delta_y_10,6m(t) - 1.9 * delta_y_2,6m(t)`.
-
-The yield changes above are decimals; multiply `X_6m` by `100` for **percentage points (pp)**. Positive `X_6m` indicates that the 10Y exposure had a *less favorable rate-price effect* than 2Y across that window; negative means the opposite. This is a difference between modeled **price effects**, not a complete relative return.
-
-The **six-month horizon** is the duration of each rate change; the **three-year reference period** determines how many market environments are included; **daily sampling** determines how frequently one such six-month change is recomputed. These choices are independent and adjustable. Daily sampling is computationally cheap and permits inspection of change over time, but consecutive six-month windows overlap heavily; they are not independent episodes.
-
-For comparison with a six-month rate-risk horizon, prorate October's Section 2 **annualized** 10Y/2Y yield premium `1.00 pp` to a **`0.50 pp` indicative six-month gross-compensation proxy**. That corresponds to an **`8.93 bp` common-increase break-even** if both yields move equally. Section 2's familiar **17.86 bp** result instead assumes *one year* of compensation and **must not** be directly compared with six-month `X` values.
-
-The simplified conditional comparison is therefore:
-
-`relative_result_6m_proxy ≈ 0.50 pp - X_6m`.
-
-It is favorable to 10Y on this proxy **when `X_6m < 0.50 pp`** and unfavorable when the additional 10Y rate-related loss exceeds the assumed compensation. This comparison applies **October's reference compensation** to past-sized relative rate movements; it is not the historical return or carry actually available at the starting dates of those windows.
-
-### 3.2 Visualization: evolution and distribution from the same daily observations
-
-**Evolution through time:** Each point is the rate-related relative loss over the **preceding six months**, ending on the displayed date. The dashed line marks October's fixed **+0.50 pp** six-month compensation reference, not a historical compensation value at every past date.
-
-![Daily-ending six-month additional 10Y relative rate-price losses with October six-month compensation reference at 0.50 percentage points](assets/relative_rate_risk_evolution.png)
-
-**Distribution:** The same sequence of daily `X_6m(t)` values is grouped into ranges by magnitude. Thus a point on the time series becomes **one observation** in the histogram: the time series answers *when* a given relative effect occurred, while the histogram answers *how large such effects have been across the reference period*.
-
-![Histogram of the daily-ending six-month relative rate-price effects, showing the October six-month compensation reference at 0.50 percentage points](assets/relative_rate_risk_context.png)
-
-**Reading the distribution:** The relevant question is **how much** the additional 10Y rate-price effect improves or erodes the indicative six-month `0.50 pp` compensation, not how many densely overlapping windows fall on either side of that threshold. The distribution is summarized below in the same units as its horizontal axis. The relative-result column applies `0.50 pp − X_6m` to each reported value; it is not an observed ETF return.
-
-| Descriptive measure of six-month `X_6m` | Additional 10Y rate loss (`X_6m`) | Indicative 10Y-minus-2Y relative result (`0.50 − X_6m`) | Interpretation |
-|---|---:|---:|---|
-| Median | +0.277 pp | **+0.223 pp** | The middle observation retains a modest compensation advantage for 10Y under the model |
-| Mean | +0.823 pp | **−0.323 pp** | Larger adverse effects pull the sample-average modeled result below zero; this is not an expected return |
-| 90th percentile | +3.835 pp | **−3.335 pp** | An upper-tail relative rate loss substantially overwhelms the compensation proxy |
-
-The **median and mean tell different stories**: the typical middle observation remains slightly favorable to 10Y, but larger adverse relative rate effects dominate the sample mean. The mean is a description of the constructed, overlapping-window history—not a probability-weighted estimate of what happens next. The full observed synthetic range of `X_6m` is approximately **−3.31 to +5.96 pp**, emphasizing that **magnitude and asymmetry matter more than a threshold count**.
-
-**Reading the evolution chart:** It shows *when* the modeled disadvantage developed and whether it persisted. In the constructed path, `X_6m` remains elevated over extended intervals around **November 2024–March 2025** and **May–October 2026**, with materially lower or negative intervals between them. On **October 20, 2026**, `X_6m = +5.45 pp`, which corresponds to a **−4.95 pp** relative-result proxy after the fixed `0.50 pp` compensation. These time patterns describe the invented yield history, not historical Treasury episodes. Nearby daily points share most of the same six-month window, so prolonged runs are not independent events.
-
-**Interpretation alongside Section 2:** A more favorable current *gross compensation* relationship can coexist with sizable adverse **nonparallel** changes in 2Y and 10Y yields. Section 2 quantifies a conditional offset assuming equal yield changes; Section 3 describes the relative rate-price consequences of paired yield changes, which need not be equal. Neither measure disproves the other or yields a complete investment recommendation.
-
-**Scope and history choices:** The three-year lookback and six-month horizon are **illustrative selections**, not fixed Bondview rules. Shorter reference histories can emphasize recent rate regimes but omit stresses; much longer histories may mix structurally different conditions. The lookback/horizon and overlap convention should be clearly disclosed and user-adjustable. With real market inputs the rate changes are genuinely observed, but applying fixed reference durations remains a **modeled counterfactual**, not realized ETF performance.
-
-**Reproducible source:** [`assets/synthetic_daily_rolling_6m_relative_rate_risk.csv`](assets/synthetic_daily_rolling_6m_relative_rate_risk.csv), derived from the same daily Treasury history used in Section 2.
-
----
-
-## 4. Corporate-bond market: Treasury-rate changes versus credit repricing
-
-**Economic question:** Are changes in corporate-bond conditions mainly attributable to changing Treasury rates or to **additional credit spread**? If Treasury yields stabilize or fall while credit spreads widen, what can we conclude about corporate bonds?
-
-### 4.1 Constructed market and reference exposure
-
-Reuse Section 2's imaginary April–October interval and add a hypothetical 5Y Treasury series and investment-grade (IG) index OAS series:
-
-| Synthetic month | Treasury 5Y | IG OAS |
+| ETF | Oct 20 duration | Common +50 bp: approximate price effect |
 |---|---:|---:|
-| Apr | 4.55% | 85 bp |
-| May | 4.60% | 100 bp |
-| Jun | 4.50% | 105 bp |
-| Jul | 4.65% | 95 bp |
-| Aug | 4.60% | 130 bp |
-| Sep | 4.75% | 125 bp |
-| Oct | 4.70% | 120 bp |
+| S | 1.85 | **−0.93%** |
+| I | 7.50 | **−3.75%** |
+| L | 15.20 | **−7.60%** |
+| C1 (rates only) | 5.50 | −2.75% |
+| C2 (rates only) | 3.90 | −1.95% |
+| H (rates only) | 7.30 | −3.65% |
 
-For a **defined hypothetical** cash corporate exposure, let `D_rates=5.5` and `D_spread=5.0` (not an actual ETF disclosure).
+The difference between **I** and **S** under the matched +50 bp scenarios is approximately **−2.83 percentage points** of *rate-related price effect* (`−3.75 − (−0.925)`). This measures conditional rate sensitivity, **not expected ETF underperformance**. Credit ETFs also have credit-spread risk, treated separately in §5. The rate durations and factor matches are explicit; market tenor labels were not substituted for duration.
 
-`credit_price_effect ≈ -D_rates * delta_y_5Y - D_spread * delta_OAS`.
+### 3.2 Exposure comparison through time
 
-This describes rate and credit sensitivity, not corporate ETF historical return. It excludes coupons, default losses, migration, liquidity, convexity and active portfolio changes.
+![The duration disclosures of fictional cash Treasury ETFs S, I and L at three genuine-to-the-fixture assessment cutoffs.](assets/etf_duration_evolution.png)
 
-### 4.2 Visualization: distinct sources of the market shock
-
-![Cumulative synthetic current-exposure effects from changing Treasury 5Y yields and IG OAS, separately and combined](assets/treasury_vs_credit_contributions.png)
-
-| Contribution, April–October | Calculation | Price sensitivity |
-|---|---|---:|
-| Treasury rates | `−5.5 × 0.0015` | −0.825% |
-| Credit spread | `−5.0 × 0.0035` | −1.750% |
-| Combined | Sum, first order | **−2.575%** |
-
-**Useful conclusion:** The constructed deterioration is more strongly linked to **credit-spread repricing** than to Treasury-rate repricing. If Treasury yields had been stable or falling while OAS widened, the same method would isolate credit-specific adverse repricing even more clearly.
-
-**Important boundary:** OAS widening may reflect changing expected defaults, liquidity, risk appetite, or required risk premium; it does **not** by itself prove fundamental corporate distress. Conversely, a *negative Treasury-rate contribution* merely reflects a Treasury yield rise, not a unique credit-market problem. The stronger credit warning comes from adverse **spread changes relative to Treasuries**.
-
-### 4.3 Additional gross credit compensation: separate question
-
-With OAS rising from 85 to 120 bp and **assuming** one-year incremental gross compensation equal to OAS, the illustrative spread-widening break-even is:
-
-`gross_spread_cushion_bp = OAS_bp / D_spread`.
-
-It changes from `85 / 5 = 17 bp` to `120 / 5 = 24 bp`. This means increased **gross spread compensation under this assumption**, not proof of sufficient **net** compensation. No expected default loss was subtracted; the example does not recommend purchasing the corporate ETF. The spread cushion is another interpretation of the **same OAS series**, not independent evidence that the credit market is safer.
-
-**ETF application:** Verify the product's investment-grade/high-yield segment, maturity mix, spread duration if available, and the market OAS proxy's coverage. A broad HY OAS must not be silently used as an exact effective spread for a different credit profile.
-
----
-
-## 5. Applying common analysis to an illustrative ETF universe
-
-**Economic question:** When these bond-market relationships are relevant to actual products, what can a comparable ETF table establish—and where must it stop?
-
-The table below consists of **invented products and hypothetical exposure values**, not live products. It provides a structural illustration only; published ETF data would have to replace every portfolio characteristic. Assume all four cash-bond exposures are being discussed on an **underlying USD-bond basis**, not comparable after-hedge KRW returns.
-
-| Product | Economic reference | Rate duration | Spread duration | Assumed issuer-style YTM | Relevant corporate OAS |
-|---|---|---:|---:|---:|---:|
-| ETF A | 2Y Treasury | 1.9 | N/A | 4.20% | N/A |
-| ETF B | 10Y Treasury | 7.5 | N/A | 5.00% | N/A |
-| ETF C | 30Y Treasury | 16.0 | N/A | 5.30% | N/A |
-| ETF D | 5Y-matched IG credit | 5.5 | 5.0 | 5.80% | 120 bp (market reference) |
-
-At a **common hypothetical +50 bp Treasury rate shock** and a separate **+100 bp credit-spread shock**, applying Section 6's formulas yields:
-
-| ETF | Rate-only +50 bp shock | Additional +100 bp credit OAS shock | Combined price-only shock |
+| ETF | Apr 20 duration | Jul 20 duration | Oct 20 duration |
 |---|---:|---:|---:|
-| A | −0.95% | N/A | −0.95% |
-| B | −3.75% | N/A | −3.75% |
-| C | −8.00% | N/A | −8.00% |
-| D | −2.75% | −5.00% | −7.75% |
+| S | 1.80 | 1.90 | **1.85** |
+| I | 7.00 | 7.30 | **7.50** |
+| L | 15.80 | 15.50 | **15.20** |
 
-The additional spread shock is assumed **only for the corporate product**, not silently for Treasury ETFs. Combined shocks are **price sensitivities**, not the complete one-year total returns of the respective funds.
+**Interpretation:** I's disclosed duration increases while L's decreases. Applying the **same +50 bp shock** to each dated duration would produce a correspondingly changing *conditional sensitivity*. There is no need to fabricate a daily ETF-duration history between disclosures, or plot an unchanging sensitivity when both duration and shock are fixed. Convexity and published key-rate durations may refine these estimates when genuinely available; they are not prerequisites for a useful first-order comparison.
 
-**What is established:** A has the smallest modeled rate sensitivity, C the largest, and D introduces a distinct credit risk. All comparisons use the same scenario convention where applicable. **What is not established:** A universal attractiveness ranking, comparable net KRW compensation, or an assertion that A will outperform C. The hypothetical issuer-style YTMs are **not** automatically one-year carry and must not simply be added to the price shocks.
+## 4. Aspect 3 — Historical interest-rate variability
 
-**Important market-versus-ETF distinction:** Section 2's `+17.86 bp` uses **market** 10Y/2Y yield proxies and benchmark-style durations, while the product table lists *different* hypothetical issuer-style YTM values. A true product-level break-even requires **compatible holding-period compensation**, including currency and structural assumptions where relevant. Do not transplant the market-reference break-even into an ETF decision as if the two yield definitions were identical.
+**Economic question:** What was the observed scale and evolution of *market rate changes* over a specified horizon, and what rate sensitivity would the selected **current ETF exposures** have had to changes of those sizes?
 
-**Applicability logic:** A verified pure Treasury ETF has credit OAS `not_applicable`; a corporate ETF without disclosed applicable spread duration may have credit-spread sensitivity `unavailable` or an expressly labeled proxy; a futures ETF with cash-bond carry formula is `unsupported`. All eligible ETFs may appear in the universe, but some analyses must remain partial or conditional.
+For every business-day endpoint `t` with a valid date six calendar months earlier, calculate **separately for each relevant tenor**:
 
----
+\[
+\Delta y_{n,6m}(t)=y_n(t)-y_n(t-6m).
+\]
 
-## 6. Existing policy-conditioned purchase cases — retained as synthetic controls
+The start is the latest available input observation **on or before** the six-calendar-month-earlier date; neither future observations nor interpolated prices are introduced. Here the change horizon is **six months**, the daily endpoint sequence is the **sampling frequency**, and the available preceding market series is the **reference history**. These are different choices. Nearby windows overlap heavily; the plotted daily values are not independent market episodes.
 
-The earlier examples A, B and C verify an **illustrative investor-policy response**, not the existence of an accepted universal purchase rule. This section preserves their arithmetic and interpretation without making the 12-month risk budget the center of Bondview's design.
+For the October 20 snapshot, the paired market changes since April 20 are:
 
-### 6.1 Legacy Example A — long-duration ETF, modest compensation
+| Market factor | Six-month change |
+|---|---:|
+| 2Y yield | **−53 bp** |
+| 10Y yield | **+56 bp** |
 
-**Historically referenced product category:** an issuer-identified hedged long Treasury ETF (formerly illustrated by ticker `453850`; current details must be rechecked). **All following values hypothetical.** Assume current 30Y market yield `4.80%`, 6M/1M yield changes `+70/+20 bp`, portfolio-duration proxy `17.0`, comparable **assumed** 12-month KRW-hedged net carry `4.00%`, assumed 12-month KRW cash return `3.80%`, adverse shock `+100 bp`, investor stress-loss budget `10.00%`.
+Using **October 20 disclosed durations** of S=1.85 and I=7.50, the first-order rate-only price effects of these historical-sized moves would be **+0.9805% (S)** and **−4.20% (I)**. This is a **current-exposure counterfactual**, not either ETF's realized April–October performance.
 
-`rate_price_effect = -17.0%`; `illustrative_net_carry_plus_rate_stress = 4.00% - 17.00% = -13.00%`. If the policy rejects modeled stress losses exceeding 10%, the result is **defer under this specific policy**, not an unconditional sale recommendation or a prediction that rates will continue rising. Convexity is omitted and should be flagged. The assumed 4% net carry is **not inferred from the issuer distribution yield**.
+![Time history of signed duration-based price effects of past six-month yield changes, applied to fictional ETFs S and I using fixed October durations.](assets/etf_rate_variability_counterfactual.png)
 
-### 6.2 Legacy Example B — same category, changed compensation
+**How to read the chart:** A point above zero means the corresponding *rate move* would produce a positive first-order price effect for that current ETF exposure; below zero means negative. The lines display `−D_S(Oct) × Δy_2,6m(t)` and `−D_I(Oct) × Δy_10,6m(t)` in percent. They do **not** display ETF total returns, a relative-return-plus-compensation formula, or a generic attractiveness index. The paired rates can move differently, and no parallel-shock assumption is required.
 
-Separate hypothetical snapshot: 30Y Treasury yield `6.00%`, 6M/1M changes `+80/0 bp`, reported/illustrative duration `14.5`, comparable **assumed** KRW-hedged 12-month net carry `5.00%`, assumed KRW cash `3.00%`, same +100 bp stress and 10% loss budget.
+**Across ETFs:** compare signed rate-price effects for the same endpoints/horizon, using each ETF's matched factor and declared exposure. **Through time:** inspect when those modeled effects increased or decreased. A spread/range or historical quantile may summarize the same series if useful; no threshold-frequency count or histogram is mandatory. A genuinely historical ETF exposure-based series would require suitable **point-in-time issuer disclosures** covering the dates; otherwise keep the current-exposure label. We do not infer future movement probabilities from the distribution.
 
-`rate_price_effect = -14.50%`; `illustrative_net_carry_plus_rate_stress = 5.00% - 14.50% = -9.50%`. The stress screen **passes** for the hypothetical policy, while the cash-relative assumed compensation is `+2.00 pp`. A valid output is *more suitable under the illustrated risk condition, subject to other assumptions*. **Passing the stress budget alone does not justify “buy.”** Different duration values in two dates/snapshots must never be presented as historical issuer values without actual dated disclosures. Without supportable net carry, the decisive numeric policy conclusion should be downgraded.
+**Reproducible source:** [`assets/constructed_6m_rate_variability.csv`](assets/constructed_6m_rate_variability.csv) contains the actual date pairs for this exercise and their yield changes and signed price effects; it is derived from `constructed_market_daily.csv`.
 
-### 6.3 Legacy Example C — intermediate versus long Treasury exposure
+## 5. Aspect 4 — Credit compensation and spread risk
 
-Two contemporaneous hypothetical hedged exposures (historically illustrated by tickers `0085N0` and `453850`):
+**Economic question:** How did the market's credit spread change independently of Treasury yields, and how does a matched spread move affect eligible credit ETFs with different disclosed spread durations?
 
-| | Intermediate | Long |
-|---|---:|---:|
-| 6M relevant yield change | +50 bp | +65 bp |
-| 1M relevant yield change | −15 bp | +10 bp |
-| Effective duration | 7.5 | 16.0 |
-| **Assumed** 12M net KRW carry | 3.50% | 4.20% |
-| +100 bp price sensitivity | −7.50% | −16.00% |
-| Illustrative carry-plus-stress result | **−4.00%** | **−11.80%** |
+The market OAS history is a *reference* rather than an ETF credit yield:
 
-Under the same *illustrative* 10% stress-loss budget, intermediate passes and long fails. This can support an intermediate-duration conditional preference for a stated risk-controlled new allocation; it cannot prove that intermediate exposure offers the best unconditional return or that a different investment objective is invalid.
+![Illustrative investment-grade market OAS reference in basis points through the complete dated market series.](assets/ig_oas_history.png)
 
----
+From April 20 to October 20, the constructed 5Y Treasury reference yield changes from **4.55% to 4.63%** (**+8 bp**), while matched investment-grade OAS changes from **95 to 135 bp** (**+40 bp**). Under the conventional spread-plus-reference-rate approximation, the change in a matched corporate yield would have a **+8 bp Treasury component** and a **+40 bp OAS component**. This is credit-market repricing, not evidence of realized defaults or a full credit ETF yield change.
 
-## 7. Model boundaries, product routing, and separate diagnostics
+For supported ETF exposures and a declared **+50 bp OAS widening**, holding the matched Treasury rate unchanged:
 
-These reproduce valuable safeguards from the earlier examples. They are **not** all core buy/sell or attractiveness calculations.
+\[
+\text{Spread-only price effect}\ \approx-D_{\mathrm{spread}}\Delta\mathrm{OAS}.
+\]
 
-### 7.1 Legacy Example D — FX identity and separate hedging assumption
+| ETF | Apr 20 spread duration | Jul 20 | Oct 20 | October spread-only effect at +50 bp |
+|---|---:|---:|---:|---:|
+| C1 | 5.20 | 5.10 | **5.00** | **−2.50%** |
+| C2 | 3.40 | 3.50 | **3.50** | **−1.75%** |
+| S / I / L | N/A | N/A | N/A | **N/A** (pure Treasury) |
 
-An **unhedged**, compatible USD bond return of `−2.00%` combined with a USD/KRW rise of `+8.00%` gives `(0.98 × 1.08 − 1) × 100 = +5.84%` in KRW. If a corresponding hedged product's hypothetical realized return were `−2.70%`, its `−0.70 pp` difference from the underlying `−2.00%` **would not uniquely prove hedging cost**; it could include forward points, slippage, fees, benchmark and implementation effects.
+**Across ETFs:** at October 20, C1 has 0.75 percentage points more sensitivity to this common credit-spread shock than C2. **Through time:** the same spread-duration measure can be compared at the three valid issuer cutoffs; historical market OAS and rate components are monitored separately. The reference IG OAS is a *common market proxy* for C1/C2, not a reconstruction of either portfolio's credit holdings. Ineligible Treasury exposures remain `N/A`; unsupported issuer spread duration would be `unavailable`, not zero. C1/C2's greater gross YTM in §2 must not be automatically equated with adequate credit compensation.
 
-For Bondview's initial bond-market research, **defer detailed FX/hedging analysis**. Keep issuer hedge policy, numeraire and comparability explicit; do not prefer an unhedged ETF simply because its historical KRW return was greater. Actual historical ETF price/NAV data may later be used only in an **independent performance/diagnostic view**, never as selection signals or replacements for published duration.
+## 6. Aspect 5 — Currency exposure and hedging (conditional)
 
-### 7.2 Legacy Example E — Treasury futures are not ordinary cash Treasury bonds
+**Economic question:** What published currency exposure or hedge policy distinguishes applicable ETFs, and how would an unhedged USD asset translate into KRW under a specified exchange-rate move?
 
-A historical reference instrument (formerly `308620`) is a Treasury-futures ETF, not a static coupon-bond portfolio. Suppose 10Y Treasury yields rose 40 bp. Without disclosed compatible futures DV01/duration, collateral treatment, roll economics or index details, the system may report **market context** but cannot manufacture cash-bond yield/carry or precise fund return. Default exclude from ordinary cash-bond assessment; user opt-in permits only supported aspects and appropriate warnings.
+For a fully unhedged USD return and consistently defined USD/KRW (KRW per USD) return, the standard identity is:
 
-### 7.3 Legacy Example F — high-yield credit shock
+\[
+1+R_{\mathrm{KRW}}=(1+R_{\mathrm{USD}})(1+R_{\mathrm{USDKRW}}).
+\]
 
-With a hypothetical HY corporate exposure of `D_rates=4`, `D_spread=4`, a matched Treasury yield fall of `−40 bp` and HY OAS increase of `+150 bp`:
+For example, a **−2% USD bond result** and **+8% USD/KRW** produce `(0.98 × 1.08 − 1) × 100 = +5.84%` in KRW. This is a *conditional translation example* applicable to an unhedged return; it is not a forecast or a net-return estimate for a hedged product.
 
-`rate contribution = -4 * (-0.0040) = +1.60%`; `spread contribution = -4 * 0.0150 = -6.00%`; combined **price-only** result `= -4.40%`.
+At the issuer cutoffs, S/I/L/C1/C2 have **0% reported hedge coverage** in this fixture. H's disclosed nominal hedge coverage changes from **93% → 94% → 95%** at Apr/Jul/Oct; this numeric exposure attribute can be compared by date and across eligible products. It does **not** justify multiplying H's USD return by an inferred residual FX percentage to manufacture an actual hedged net KRW return. Hedge instruments, accounting, costs and policy effectiveness are not supplied; H's net-hedged compensation/sensitivity is therefore **unavailable**.
 
-The adverse effect is dominated by spread deterioration **despite favorable rates**. Do not turn this into a proof of realized defaults or infer a buy/sell decision from the fund's distribution yield. A policy explicitly excluding speculative-grade credit can reject it for product compatibility; a policy accepting HY needs additional credit-risk/compensation review.
+A currency aspect is viable when credible quantitative inputs exist; otherwise show a clear policy qualification and defer its numerical result. Do not add synthetic net hedge carry merely to fill the output matrix.
 
-### 7.4 Legacy Example G — short USD credit is not automatically pure Treasury
+## 7. Cross-aspect comparison: one date, same ETF universe
 
-A historically illustrated short USD active-bond product (formerly ticker `440650`) can contain credit instruments even if its name or benchmark appears Treasury-like. Verify the documented bond-quality category and structure; when substantial credit exposure exists, using only short-end Treasury rates is incomplete. Small duration does not imply low **KRW** drawdown if unhedged currency or credit risk is material.
+This is a **measurement matrix**, not an additive score or a ranked ETF list. Values below use the **2026-10-20** issuer snapshots and the same declared scenarios. More yield, less sensitivity and less spread risk are distinct, not directly additive properties.
 
-### 7.5 Legacy Example H — market-only bull steepening calculation
+| ETF | Gross portfolio YTM | Duration | Rate-only +50 bp price effect | Credit OAS +50 bp effect | Hedge coverage |
+|---|---:|---:|---:|---:|---:|
+| **S** | 4.10% | 1.85 | −0.93% | N/A | 0% |
+| **I** | 5.00% | 7.50 | −3.75% | N/A | 0% |
+| **L** | 5.26% | 15.20 | −7.60% | N/A | 0% |
+| **C1** | 5.95% | 5.50 rate duration | −2.75% | −2.50% | 0% |
+| **C2** | 5.63% | 3.90 rate duration | −1.95% | −1.75% | 0% |
+| **H** | unavailable | 7.30 | −3.65% | N/A | 95% |
 
-| Treasury tenor | Earlier | Later | Change |
-|---|---:|---:|---:|
-| 2Y | 5.20% | 4.40% | −80 bp |
-| 10Y | 5.55% | 5.20% | −35 bp |
-| 30Y | 5.80% | 5.70% | −10 bp |
+**Interpretation example:** I has higher published gross YTM than S **and** greater rate sensitivity. C1 has higher published gross YTM than C2 **and** greater OAS sensitivity. These facts are meaningful separately; the table does not invent a weighted attractiveness ranking. H's yield is unavailable and its hedge coverage is a structural/exposure fact, not a costless guarantee of KRW stability.
 
-`10Y−2Y` slope: `+35 bp → +80 bp` (**+45 bp**). `30Y−10Y` slope: `+25 bp → +50 bp` (**+25 bp**). All three yields fell while both curve segments steepened: **bull steepening of those defined segments**.
+**Temporal application:** §§2–6 show market series and the three available issuer assessments using the same measure definitions. Do not manufacture daily historical ETF profiles between disclosures; market-only daily observations and issuer-style snapshots have different evidentiary status.
 
-With clearly **hypothetical fixed current exposure durations** `1.9/7.5/15.0`, applying each historical-sized yield change gives counterfactual first-order price sensitivities of `+1.52%`, `+2.625%`, and `+1.50%`. These are **not historical ETF total returns** and cannot by themselves justify a forward-looking preference for 10Y.
+## 8. Optional conditional calculation: break-even is not an aspect
 
-### 7.6 Legacy Example I — ETF-price performance is an excluded selection input
+A conventional compensation-versus-rate-move break-even can still answer a **specific what-if question**, provided holding-period compensation and rate exposure are defensible and of matching horizon/currency:
 
-If market 10Y yields are nearly unchanged while a Korean-listed unhedged 10Y ETF has a large negative **distribution-adjusted** KRW total return and USD/KRW declined sharply, FX is a plausible reconciliation factor. This is a **diagnostic/performance question**; it must never override market observations or update ETF-selection inputs by inferring hidden rate-duration from price returns. Distinguish ex-distribution raw prices from genuine total returns. Any unexplained residual should be flagged, not force-fit.
+\[
+\Delta y_{\mathrm{BE}}\approx\frac{c_{I,H}-c_{S,H}}{D_I-D_S}
+\]
 
-### 7.7 Legacy Example J — poor or missing issuer data
+For a separate **assumed** holding-period scenario—not derived from the ETF YTMs above—suppose I has **2.40%** comparable six-month compensation and S has **1.90%**. With their October durations of 7.50 and 1.85, a **common, parallel yield increase of approximately 8.85 bp** would offset the additional 0.50 pp compensation in the first-order relative comparison. A historical break-even plot is not required by this isolated scenario, and the assumed 2.40%/1.90% inputs are *not* validated portfolio carry. This conditional arithmetic is optional; it does not determine the importance of the yield or duration aspects.
 
-An active long Treasury ETF has a published headline yield but no trustworthy portfolio duration, defensible comparable hedged carry, or required supporting data. It may still appear in the universe and display relevant bond-market context; precise duration stress, carry break-even or unequivocal relative preference is **unavailable**. A clearly labeled benchmark-duration proxy may support limited illustration if compatible; a prohibited leveraged structure can be rejected on an explicitly stated policy without inventing missing numerical values.
+## 9. Hand-checkable calculations and verification rules
 
----
+The examples should be independently reproducible from the companion CSV files. Recommended checks:
 
-## 8. Validation contract and arithmetic fixtures
+| Check | Expected output |
+|---|---|
+| October 10Y−2Y market spread | `(5.06−4.12)×100 = +94 bp` |
+| April 10Y−2Y market spread | `(4.50−4.65)×100 = −15 bp` |
+| October ETF I minus S published YTM | `5.00%−4.10% = +90 bp` — **not** the 94 bp market spread |
+| ETF I +50 bp first-order price effect | `−7.50×0.005 = −3.75%` |
+| ETF L +50 bp first-order price effect | `−15.20×0.005 = −7.60%` |
+| October 2Y six-month yield change | `4.12%−4.65% = −53 bp` |
+| October 10Y six-month yield change | `5.06%−4.50% = +56 bp` |
+| ETF S current-exposure six-month rate effect | `−1.85×(−0.0053) = +0.9805%` |
+| ETF I current-exposure six-month rate effect | `−7.50×0.0056 = −4.20%` |
+| ETF C1 +50 bp OAS-only price effect | `−5.00×0.005 = −2.50%` |
+| ETF C2 +50 bp OAS-only price effect | `−3.50×0.005 = −1.75%` |
+| USD/KRW translation fixture | `(1−0.02)(1+0.08)−1 = +5.84%` |
+| Optional I-versus-S parallel-shift break-even | `(0.024−0.019)/(7.50−1.85)×10,000 ≈ 8.85 bp` |
 
-### 8.1 Hand-checkable reference calculations
+**Behavioral checks** (do not substitute invented values for failed cases): underlying FRED tenor inputs are canonical; term spreads are derived once with declared units and aligned dates; issuer yield definitions must match before comparison; ETF duration is not its benchmark tenor; constant duration under fixed shock gives constant sensitivity; a current-exposure application of historical market changes is clearly counterfactual; pure Treasury credit OAS is `N/A`; missing yield or issuer spread duration is `unavailable`; ordinary cash-bond carry is `unsupported` for futures by default; hedged KRW net return is unavailable without sufficient hedge economics; issuer values do not leak into earlier cutoffs; ETF price/NAV history is excluded from selection measures. Synthetic arithmetic tests establish formula correctness, **not trading performance**.
 
-| ID | Fixture | Expected result | Status/meaning |
-|---|---|---:|---|
-| V1 | Duration 8; +50 bp Treasury shock | −4.00% | First-order price sensitivity |
-| V2 | Same, compatible convexity 80 | −3.90% | Second-order price sensitivity |
-| V3 | Spread duration 6; +100 bp OAS, no Treasury move | −6.00% | Spread-only price sensitivity |
-| V4 | Unhedged USD result −2%; USD/KRW +8% | +5.84% | FX accounting identity, not a forecast |
-| V5 | 2Y 4.0%, 10Y 4.5% | +50 bp | Treasury 2s10s slope |
-| V6 | 2s10s −10 bp → +100 bp | +110 bp | Historical slope change |
-| V7 | Apr 10Y vs 2Y market-reference break-even | −1.785714 bp | Gross duration-normalized proxy |
-| V8 | Oct 10Y vs 2Y one-year market-reference break-even | +17.857143 bp | Gross duration-normalized proxy |
-| V8a | Same October data, six-month linearly prorated compensation | +0.500000 pp; +8.928571 bp break-even | Aligned with Section 3 six-month risk windows; not true ETF carry |
-| V9 | Oct 30Y vs 10Y market-reference break-even | +3.529412 bp | Gross duration-normalized proxy |
-| V10 | IG rates +15 bp, `D_rates=5.5` | −0.825% | Treasury-rate contribution |
-| V11 | IG OAS +35 bp, `D_spread=5` | −1.750% | Credit-spread contribution |
-| V12 | IG total first-order sensitivity | −2.575% | V10 + V11, **not** realized return |
-| V13 | Example A illustrative carry-plus-stress | −13.00% | Policy fixture only |
-| V14 | Example B illustrative carry-plus-stress | −9.50% | Policy fixture only |
-| V15 | Example C intermediate/long stresses | −4.00% / −11.80% | Policy fixture only |
-| V16 | Example F HY rates/spread effect | −4.40% | Price-only credit fixture |
-| V17 | Example H slope changes | +45 bp / +25 bp | Defined curve endpoints |
-| V18 | Example H three current-exposure effects | +1.52% / +2.625% / +1.50% | Counterfactual price-only effects |
+## 10. What this replaces, and what remains open
 
-For simple floating-point computations, define and report a numeric tolerance, e.g. `1e−10` in **decimal return units** for elementary synthetic formula fixtures. This is a **test tolerance**, not a credible tolerance for real ETF approximations, source dates or economic estimation errors.
+The earlier examples document is **not** inherited as a required chart suite or as a committed calculation sequence. In particular, the previous mandatory **duration-normalized break-even history**, paired-shock-threshold frequency and attempt to merge yield compensation and historical rate moves into a single result are not carried forward. Individual valid equations can remain optional when they answer a clear conditional question.
 
-### 8.2 Behavioral checks
+This replacement illustrates the agreed architecture using **canonical input reuse and measure-by-measure comparisons**. The next economic review should assess whether a proposed measure answers its stated question with compatible issuer inputs—not whether it can be turned into an attraction index. In actual research, select representative **real, officially documented ETFs** and real FRED histories; verify as-of dates, yield conventions, rate-factor matching, spread-duration availability, futures exclusions and whether limited currency/hedging information supports numerical comparison. A demonstration that some current products lack an eligible measure is a valid result.
 
-1. The **same** market inputs, issuer characteristics, formula assumptions and cutoff yield the same calculation in individual, historical and universe views; visualization does not determine the numeric output.
-2. All market yield and spread units convert correctly to decimal inputs and bp outputs; all reference periods and information cutoffs are consistent.
-3. Duration comes from published ETF exposure for a product analysis, or from an **explicitly defined benchmark exposure** for market-reference studies; `10Y` is never treated as duration `10`.
-4. Yield-curve slope and duration-normalized break-even have interpretable relationships but **do not count as two independent confirmations** of attractiveness.
-5. **Full-period** compensation histories use yields at each dated assessment, not rolling yield differences. A fixed duration and a fixed +50 bp scenario produce **no changing sensitivity line**.
-6. Yield-change variability uses **joint, horizon-matched and dated** observations; historical six-month relative losses are compared only to six-month compensation assumptions. Daily rolling windows overlap substantially, and their observed frequency is not a future probability.
-7. Pure Treasury OAS is `not_applicable`; missing applicable issuer yield is `unavailable`; structurally invalid futures cash carry is `unsupported`; a benchmark approximation is marked `proxy`.
-8. A widening corporate OAS is distinguished from movements in Treasury yields and is described as **credit-specific repricing, not proved fundamental distress**.
-9. Spread compensation without modeled default/migration loss is **gross**, not an expected net credit return or an unconditional buy signal.
-10. Historical ETF total returns and NAV prices can appear in separate diagnostics **but must not determine ETF attractiveness**, weight coefficients, or substitute unpublished duration.
-11. A common scenario may apply to several ETFs, but comparisons of issuer yields, KRW compensation, futures carry and credit risk are suppressed or qualified when definitions differ.
-12. Synthetic `P-RISK12`-style risk-policy results are **conditional fixtures only**; no automatic adoption of the arbitrary 10% threshold or an unconditional buy/sell label.
-13. A model improvement (convexity or KRD) can affect a justified calculation if its inputs are compatible, with baseline results still reproducible and the additional value explained.
-14. Completing these tests does **not** establish that the system can outperform markets or that an optimal investment timing rule exists.
+### Companion artifacts
 
-### 8.3 Reproducible visualization data and expected interpretations
+| File | Contents |
+|---|---|
+| [`assets/constructed_market_daily.csv`](assets/constructed_market_daily.csv) | Canonical 2Y/5Y/10Y/30Y yields, IG OAS and internally derived term spreads, every business-day endpoint |
+| [`assets/constructed_issuer_snapshots.csv`](assets/constructed_issuer_snapshots.csv) | Issuer-style product types and three dated characteristics for fictional ETFs S/I/L/C1/C2/H |
+| [`assets/constructed_6m_rate_variability.csv`](assets/constructed_6m_rate_variability.csv) | Matched six-month historical market-yield changes, and current-exposure counterfactual effects for S/I |
+| [`assets/treasury_term_spreads.png`](assets/treasury_term_spreads.png) | Derived tenor-spread history; market context |
+| [`assets/etf_yield_comparisons.png`](assets/etf_yield_comparisons.png) | ETF yield measure across products and valid issuer dates |
+| [`assets/etf_duration_evolution.png`](assets/etf_duration_evolution.png) | Dated reported-style ETF durations |
+| [`assets/etf_rate_variability_counterfactual.png`](assets/etf_rate_variability_counterfactual.png) | Fixed-current-duration price effects under past six-month matched market changes |
+| [`assets/ig_oas_history.png`](assets/ig_oas_history.png) | Market IG OAS history, separated from ETF credit exposure |
 
-| Figure or dataset | Required economic interpretation | Forbidden implication |
-|---|---|---|
-| `maturity_break_even_history.png` | Extra long-duration yield compensation **relative to extra duration** changed throughout the period | A universal 30Y buy/sell recommendation |
-| `relative_rate_risk_evolution.png` and `relative_rate_risk_context.png` | The same daily six-month relative-rate observations display their evolution and distribution | A forecast of probabilities or realized ETF relative performance |
-| `treasury_vs_credit_contributions.png` | Rates and credit spreads contributed differently to the price-only scenario | An explanation of actual ETF returns or proof of corporate default deterioration |
-| The daily Treasury and rolling-risk CSV files, plus the monthly credit-reference CSV in `assets/` | Reproducible constructed market inputs, rate-risk comparisons and credit illustration | Verified live market data or issuer facts |
-
-A plot that only reproduces an existing yield table, a fixed +50 bp sensitivity line under constant duration, or multiple parallel scenario lines differing only in intercept should not be counted as independent economic evidence. The companion figures demonstrate **distinct questions** rather than specify mandatory chart layouts for production.
-
----
-
-## 9. Remaining research questions and handoff boundaries
-
-- Can dated published yield conventions and published ETF durations support **actual ETF-level** compensation-versus-risk comparisons, or must the first result remain a **market-reference** comparison with qualified ETF translation?
-- How reliable is historical yield-change variability for providing context about relative break-even cushions when sample windows overlap and the curve changes nonparallelly?
-- For IG/HY categories, does an available OAS series match the issuer's credit exposures sufficiently to support interpretation, and which fundamental credit-risk evidence would be required to conclude that widening spreads are adequately compensated?
-- Which additional conventional analyses—carry/roll, term premium, convexity, key-rate durations—add independent or decisively more useful information than simpler baselines?
-- Which user policy and investment horizon, if any, are needed to go beyond an aspect-level observation to an ETF-level purchase preference? The hypothetical `10%` loss threshold is **not** an accepted universal rule.
-- How should cross-currency issuer yields be compared, if at all, before proper hedge-cost inputs exist? FX remains a lower-priority research topic.
-
-**Next action is design review, not automatic execution.** A separate approved Bernie assignment may later test real accessible issuer and market data, reproduce the numerical cases, and report which comparisons are supported or unsupported. After independent quantitative review and user assessment, update the architecture and any later development roadmap. Nothing in this document authorizes such execution on its own.
-
-## 10. Source context and prior example preservation
-
-The older examples were constructed examples, not a validated backtest. Original cases **A–J** are preserved by purpose as follows: A/B/C → Section 6, D/E/F/G/H/I/J → Section 7. New time-series maturity and credit cases are Sections 2–5, with chart-level regression rules in Section 8. Earlier historical ETF tickers are illustrative identification references, not required current-universe members. Product identity and disclosures must be verified before any genuine assessment.
-
-Suggested fixed-income references: [CFA Institute — Fixed-Income Portfolio Management](https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/overview-fixed-income-portfolio-management); [Yield Curve Strategies](https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/yield-curve-strategies); [Convexity and Portfolio Properties](https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/yield-based-bond-convexity-and-portfolio-properties). Market-series identifiers used in real research can be sourced from [FRED](https://fred.stlouisfed.org/); this document did not retrieve or verify actual observations.
+**External source conventions for eventual nonconstructed inputs:** [FRED DGS2](https://fred.stlouisfed.org/series/DGS2), [DGS5](https://fred.stlouisfed.org/series/DGS5), [DGS10](https://fred.stlouisfed.org/series/DGS10), [DGS30](https://fred.stlouisfed.org/series/DGS30); matched ICE BofA/FRED investment-grade OAS; dated official issuer ETF fact sheets and published yield definitions. These links describe future source contracts, not sources of the constructed numbers in this document.
