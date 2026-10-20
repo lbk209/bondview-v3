@@ -82,6 +82,8 @@ Status flags must distinguish **`value`**, **`N/A`** (mechanism genuinely inappl
 
 Each analysis is specified by **financial question, valid inputs and established methods, quantitative outputs, comparisons across eligible exposures and dates, and limits**. An analysis can reuse calculations from another without a separate formula-layer architecture. No analysis is required to produce an unconditional investment recommendation, a score, or a mandatory chart.
 
+**Complementary, not independent evidence.** Different analyses may share observations, exposure measures, formulas, and even individual numerical results. The same modeled outcome can be reused to explain risk or attribute return components, but must not be counted or described as independent confirmation of an investment preference. Overlap is acceptable when the financial questions or additional outputs are useful; no requirement for mutually exclusive analyses is imposed.
+
 ### 3A. Conditional Holding-Period Outcome Analysis — initial primary
 
 **Question.** *Under a specified holding horizon and market movement, what are the supported outcomes for each Treasury maturity exposure or eligible ETF? Which outcome is more favorable, and under what conditions does their ordering change?*
@@ -118,7 +120,7 @@ For a historical scenario set, report the **distribution of modeled conditional 
 
 **Outputs and interpretation.** Comparable exposure sensitivities, adverse effects in %, selected downside summaries, and differences across eligible tenors/ETFs. Show which risks drive an adverse result rather than inventing a risk score. Historical evolution may reflect dated issuer exposure changes, dated market conditions or a rolling, explicitly available historical scenario set; distinguish these sources. Do not invent past ETF durations or regard an overlapping rolling-window count as independent experiences.
 
-**Relationship to 3A.** Both may use the same duration/convexity pricing formulas. **3A** examines results and conditional relative preference for a specified market movement; **3B** examines sensitivity and unfavorable outcomes across a defined set of movements. Different financial questions do not require invented separate equations or two independent implementations.
+**Relationship to 3A.** Both may use the same duration/convexity pricing formulas. **3A** examines results and conditional relative preference for a specified market movement; **3B** examines sensitivity and unfavorable outcomes across a defined set of movements. Different financial questions do not require invented separate equations or two independent implementations. A negative outcome already reported for one scenario in **3A** is not a second, independent risk finding in **3B**. When repeating that result for context, identify it as reused and provide additional risk information where supported—such as adverse-outcome distributions, observed stress extremes, exposure sensitivities, or downside comparisons across a common scenario set. If only one specified stress is available, label it as that stress; do not manufacture distribution statistics or an independent conclusion.
 
 ### 3C. Yield-Curve and Carry Analysis
 
@@ -184,14 +186,20 @@ Distinguish three independently selected quantities:
 
 For a historical assessment at `t`, a scenario must use observations available **by `t`**; do not leak future changes into earlier decisions. Define alignment for the nearest valid source date at the intended horizon boundary. State whether the user is viewing an **unchanged scenario set** over successive assessment dates or an **as-of-date updated set**. The latter changes the comparison's inputs in two ways (market/profile conditions and sample composition); do not attribute their effects to ETF attractiveness without separation.
 
-### 4.3 Current exposure versus actual past exposure
+### 4.3 Optional grouping of historical yield-curve scenarios
+
+Observed historical rate-change vectors may be grouped descriptively into conventional **bull steepening**, **bull flattening**, **bear steepening**, and **bear flattening** categories. State the chosen definitions—for example, falling/rising 10Y yield for *bull/bear* and increasing/decreasing `y_10−y_2` for *steepening/flattening*—along with the rate-change horizon, reference tenors and any explicit neutral/noise thresholds. The categories are established market terminology, but a particular mechanical classification rule is **not** universally standardized. Retain **neutral, mixed/twist, curvature-dominated, and unclassified** movements where appropriate rather than forcing every observation into four labels.
+
+**Preserve the actual jointly observed 2Y/10Y/30Y changes, their dates and magnitudes** in all financial calculations; a category is not a substitute for the numerical scenario, and the 30Y response must not be inferred from the 2Y–10Y label. Where informative, compare supported conditional outcomes (**3A**) and downside summaries (**3B**) by historical episode or within the declared groups. Group frequencies and counts describe only the selected historical sample (including any overlapping windows), **not** probabilities of future market movements. Do not map the categorical labels directly to investment preferences through custom rules.
+
+### 4.4 Current exposure versus actual past exposure
 
 - Applying **today's published duration** to previously observed yield-change scenarios is a **current-exposure counterfactual**. It is neither a reconstruction of ETF historical returns nor a claim that the ETF held that duration when the scenario originally occurred.
 - A historical time series of ETF exposure-dependent outputs must use dated issuer characteristics only once available. If a past profile is unavailable, leave the result unavailable or use a clearly declared constant-exposure counterfactual, never silently rewrite history.
 - With a fixed duration and fixed shock, the rate-price effect is constant: a chart implying it evolves is misleading. Its variation can instead come from changed exposures, different observed/scenario movements, or supportably changed carry/roll inputs.
 - A time-series crossing or a smaller/larger gap between scenario results may indicate **changed conditional outcomes**, but is not by itself a favorable purchase-timing signal. Such a claim would require additional assumptions about future conditions and investor objectives.
 
-### 4.4 Scope of the historical record
+### 4.5 Scope of the historical record
 
 A scenario distribution may summarize adverse magnitudes, relative-result differences, quantiles and dates of notable episodes. Do not equate dense overlapping scenario counts with independent events or forward probabilities. Retain the **market factors jointly** and the dates/units needed to reproduce each result. Market history is shared across all relevant analyses, not recollected separately for each chart.
 
