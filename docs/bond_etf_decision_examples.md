@@ -37,99 +37,108 @@ Correct arithmetic does **not** validate a general purchase ranking. The source 
 
 ## 2. Treasury maturity opportunity: duration-adjusted compensation assessed over six months
 
-**Economic question:** Has the additional gross market-yield compensation for choosing a 10Y rather than a 2Y Treasury exposure improved relative to the additional duration? The same chart also displays 30Y comparisons to illustrate how conclusions can differ across maturity pairs.
+**Economic question:** Has gross compensation for taking 10Y instead of 2Y Treasury exposure improved relative to the additional duration? The 30Y comparisons remain visible to show that the answer can differ by maturity pair.
 
-### 2.1 Hypothetical yields and reference assumptions
+### 2.1 Dated yield observations and reference assumptions
 
-**All monthly yields below are hypothetical.** April–October provides successive dates at which the same financial measure is recalculated; it is not a six-month investment-return period.
+The **synthetic** daily Treasury series spans April 2023–October 2026. Section 2 examines assessment dates from **April 20 to October 20, 2026**; these dates locate the calculations and do **not** specify a holding period. The underlying daily series preserves the following seven reference observations:
 
-| Synthetic assessment date | Treasury 2Y | Treasury 10Y | Treasury 30Y |
+| Assessment date (2026) | Treasury 2Y | Treasury 10Y | Treasury 30Y |
 |---|---:|---:|---:|
-| Apr | 4.60% | 4.50% | 5.00% |
-| May | 4.55% | 4.70% | 5.15% |
-| Jun | 4.45% | 4.50% | 4.95% |
-| Jul | 4.35% | 4.80% | 5.20% |
-| Aug | 4.30% | 4.60% | 5.00% |
-| Sep | 4.20% | 4.95% | 5.35% |
-| Oct | 4.10% | 5.10% | 5.40% |
+| Apr 20 | 4.60% | 4.50% | 5.00% |
+| May 20 | 4.55% | 4.70% | 5.15% |
+| Jun 22 | 4.45% | 4.50% | 4.95% |
+| Jul 20 | 4.35% | 4.80% | 5.20% |
+| Aug 20 | 4.30% | 4.60% | 5.00% |
+| Sep 21 | 4.20% | 4.95% | 5.35% |
+| Oct 20 | 4.10% | 5.10% | 5.40% |
 
-Use **fixed, illustrative reference durations** `D_2=1.9`, `D_10=7.5`, and `D_30=16.0`. These are constructed representative exposures, neither durations inferred mechanically from Treasury tenor labels nor observations of ETF portfolios.
+Use fixed representative durations **`D_2=1.9`, `D_10=7.5`, `D_30=16.0`**. For each date, approximate **one subsequent year of gross compensation** using that date's observed *annualized* Treasury reference yield. This deliberately simplified compensation proxy does not establish an ETF's actual one-year carry or expected return.
 
-At **each monthly date**, treat the then-observed annualized Treasury yield as an approximate **gross compensation proxy for a hypothetical subsequent one-year holding period**. One year is a convenient convention because yields are quoted annually; no future holding-period outcome is observed or predicted.
+For longer and shorter exposures `L` and `S`, suppose their relevant yields **subsequently increase by the same amount**, `delta_y_common` in decimal units. The first-order conditional difference is:
 
-For the break-even calculation, assume both compared yields subsequently **increase by the same amount**, `delta_y_common` (decimal units), during the illustrative holding period. This is a conditional change, not a forecast or the April–October historical change. With compensation proxies `c_L` and `c_S`:
+`relative_result_proxy ≈ (c_L - c_S) - (D_L - D_S) * delta_y_common`.
 
-`relative_result_proxy ≈ (c_L - c_S) - (D_L - D_S) * delta_y_common`
-
-The value of the **common yield increase that just offsets** the assumed longer-exposure compensation advantage is:
+The **additional common yield increase** at which this proxy difference becomes zero is:
 
 `break_even_common_rise_bp = 10,000 * (c_L - c_S) / (D_L - D_S)`, for `D_L > D_S`.
 
-The yield-as-one-year-compensation approximation is deliberately simplified. It excludes the portfolio's actual carry, roll-down, coupons/reinvestment details, convexity, hedging, funding, rebalancing and potentially unequal changes along the curve. The calculation is **an indicative market-reference comparison, not an ETF holding-period return estimate**.
+### 2.2 Visualization: daily evolution of duration-adjusted compensation
 
-### 2.2 Visualization: historical evolution of duration-adjusted compensation
+![Daily evaluations of a one-year gross-compensation-proxy break-even from April to October 2026 for 10Y/2Y, 30Y/2Y and 30Y/10Y; highlighted October 10Y/2Y break-even 17.86 bp](assets/maturity_break_even_history.png)
 
-![Seven monthly assessments of an indicative one-year common-rise break-even for 10Y versus 2Y, 30Y versus 2Y and 30Y versus 10Y; the October 10Y-versus-2Y 17.86 bp point is annotated with its 1.00 pp assumed one-year compensation difference](assets/maturity_break_even_history.png)
+The daily curve is calculated **from yields at each date**, not from trailing yield changes or a rolling average. Every point applies the **same one-year compensation convention**. The period across the horizontal axis is the period during which the market opportunity is *observed*, not a return earned over that period.
 
-The graph tracks the same **one-year-assumption compensation measure**, recalculated with yields observed on each date—not investment returns earned between dates.
-
-| Pair | April break-even | October break-even | Interpretation under the illustrative assumptions |
+| Pair | Apr 20 break-even | Oct 20 break-even | Interpretation under the same proxy |
 |---|---:|---:|---|
-| **10Y vs 2Y** | **−1.79 bp** | **+17.86 bp** | Substantial improvement in additional annualized market-yield compensation relative to additional duration |
-| 30Y vs 2Y | +2.84 bp | +9.22 bp | Also improves |
-| 30Y vs 10Y | +5.88 bp | +3.53 bp | Deterioration in the compensation cushion for extending beyond 10Y |
+| **10Y vs 2Y** | **−1.79 bp** | **+17.86 bp** | Additional compensation improves substantially relative to extra duration |
+| 30Y vs 2Y | +2.84 bp | +9.22 bp | Improves under this measure |
+| 30Y vs 10Y | +5.88 bp | +3.53 bp | Extra compensation beyond 10Y deteriorates |
 
-**Primary economic conclusion:** Relative to 2Y, the 10Y reference exposure became **more favorable on this specific compensation measure** across April–October. That is not a claim that 10Y will outperform 2Y or that buying now is unconditionally attractive. The 30Y-versus-10Y line provides a different, secondary observation: the incremental cushion for extending from 10Y to 30Y deteriorated.
+**Economic conclusion:** The 10Y reference exposure became **more favorable than 2Y on this particular gross compensation measure** across the assessment dates. The 30Y/10Y comparison illustrates why that conclusion need not extend to every maturity pair.
 
-**October's result:** The observed annualized yield difference is `5.10%−4.10%=1.00 pp`. Treating this as a one-year gross compensation proxy and dividing by additional duration `7.5−1.9=5.6` gives a **17.86 bp** common-yield-increase break-even. If the gross compensation proxy were simply prorated over a six-month holding period, each plotted break-even value would be halved but the pattern would be unchanged. Actual ETF holding-period returns need not scale this way.
+In October, `5.10%−4.10%=1.00 pp` of *annualized yield difference* is used as a **one-year gross-compensation proxy**; with additional duration `5.6`, its break-even common increase is `17.86 bp`. Neither the one-year compensation assumption nor this threshold predicts yield movements. A simple six-month **proration** would imply `0.50 pp` additional gross compensation and **`8.93 bp`** common-increase break-even, but that is not a full six-month ETF return model.
 
-**Avoid double-counting:** The duration-normalized break-even is derived from the same market yield differences shown above. Its benefit is an interpretable risk-offset unit (bp of a *common* yield increase), not an independent confirmation of the source yield spread.
+**Interpretation limits:** This duration-normalized proxy is a transformation of the observed Treasury spread and the assumed durations, not independent evidence. It excludes genuine ETF carry/roll, reinvestment, nonparallel curve movements, convexity, funding, hedging and portfolio changes. ETF-level holding-period break-even requires compatible issuer-reported characteristics and defensible period compensation rather than market-yield substitution.
 
-**Arithmetic:** In October, `(5.10−4.10) * 100 / (7.5−1.9) = 17.857... bp`; `(5.40−4.10)*100/(16−1.9) = 9.219... bp`; `(5.40−5.10)*100/(16−7.5) = 3.529... bp`. These shortcuts express yields in percentage-point units; the general formula above uses decimal yields and the factor `10,000`.
-
-**Real ETF application:** Actual ETF rate sensitivity requires compatible dated issuer-published duration, and ETF holding-period compensation requires economically compatible issuer yield/carry assumptions. Do not silently promote the *gross Treasury market-reference* comparison to an ETF's net or realized return.
-
-**Reproducible source:** [`assets/hypothetical_monthly_market_inputs.csv`](assets/hypothetical_monthly_market_inputs.csv).
+**Reproducible source:** [`assets/synthetic_daily_treasury_and_compensation.csv`](assets/synthetic_daily_treasury_and_compensation.csv).
 
 ---
 
 ## 3. Context for the break-even cushion: historically observed rate-risk variation
 
-**Economic question:** Section 2 finds that the *assumed gross compensation* for 10Y relative to 2Y has improved. How large have the **additional rate-related price effects** of 10Y versus 2Y been when the two Treasury yields move by different amounts? An analysis using real history would provide risk context rather than predict the next year's result.
+**Economic question:** The 10Y/2Y compensation proxy improved, but how large have the **relative rate-price consequences** of paired 2Y and 10Y yield changes been? This question uses actual changes *between dates* in a production dataset, rather than only the yields available at each date.
 
-This is complementary to the Section 2 calculation, not a model contest. **Section 2 holds both future yield changes equal in order to express a break-even common increase. Section 3 allows the two changes to differ and examines a collection of paired yield movements.**
+### 3.1 Daily-ending six-month yield changes
 
-### 3.1 What each observation measures
+Use a **six-month change horizon**, a **three-year historical reference period** ending October 20, 2026, and **daily observation endpoints**. This example uses constructed yields, so its dates and statistics illustrate a method, not actual Treasury history. For each available end date `t`, select the latest available observation on or before the calendar date six months earlier, and calculate:
 
-For one historical *holding-horizon-length* interval, observe **both** the 2Y and 10Y yield changes across that same interval. With the reference durations from Section 2, the additional 10Y rate-related price loss relative to 2Y is:
+`delta_y_10,6m(t) = y_10(t) - y_10(t−6 months)`  
+`delta_y_2,6m(t) = y_2(t) - y_2(t−6 months)`
 
-`X = D_10 * delta_y_10 - D_2 * delta_y_2`
+Using the fixed reference durations from Section 2:
 
-All yield changes are decimal; multiply `X` by `100` to show **percentage points**. A positive `X` means 10Y suffers a larger approximate rate-price loss (or a smaller rate-price gain) than 2Y; a negative `X` means a relative rate-price advantage for 10Y.
+`X_6m(t) = 7.5 * delta_y_10,6m(t) - 1.9 * delta_y_2,6m(t)`.
 
-For October's hypothetical **one-year gross compensation** assumption, 10Y starts with `c_10−c_2 = 5.10%−4.10% = +1.00 pp` of additional compensation. In the simplified comparison:
+The yield changes above are decimals; multiply `X_6m` by `100` for **percentage points (pp)**. Positive `X_6m` indicates that the 10Y exposure had a *less favorable rate-price effect* than 2Y across that window; negative means the opposite. This is a difference between modeled **price effects**, not a complete relative return.
 
-`modeled_10Y_minus_2Y ≈ (c_10 - c_2) - X`
+The **six-month horizon** is the duration of each rate change; the **three-year reference period** determines how many market environments are included; **daily sampling** determines how frequently one such six-month change is recomputed. These choices are independent and adjustable. Daily sampling is computationally cheap and permits inspection of change over time, but consecutive six-month windows overlap heavily; they are not independent episodes.
 
-Thus **the extra one-year compensation covers the extra modeled rate loss when `X < 1.00 pp`**; at `X = 1.00 pp`, the two offset exactly. The `1.00 pp` threshold is equivalent to Section 2's `17.86 bp` **only under the equal/common-yield-increase assumption**. It is the *same compensation boundary expressed in rate-price-effect units*, not a second independently discovered threshold.
+For comparison with a six-month rate-risk horizon, prorate October's Section 2 **annualized** 10Y/2Y yield premium `1.00 pp` to a **`0.50 pp` indicative six-month gross-compensation proxy**. That corresponds to an **`8.93 bp` common-increase break-even** if both yields move equally. Section 2's familiar **17.86 bp** result instead assumes *one year* of compensation and **must not** be directly compared with six-month `X` values.
 
-To construct a **distribution**, calculate **one `X` for each of many different historical windows**. The example uses **20 invented pairs of one-year yield changes**, hence 20 `X` values—**not 20 business days**, and not yield changes extracted from Section 2's seven monthly observations. The number 20, the one-year horizon and the hypothetical pairing were chosen only to illustrate the method. No rolling or non-overlapping historical sampling method is assumed for these invented cases.
+The simplified conditional comparison is therefore:
 
-### 3.2 Visualization: additional 10Y rate loss compared with October's compensation
+`relative_result_6m_proxy ≈ 0.50 pp - X_6m`.
 
-![Distribution of 20 illustrative one-year paired 2Y and 10Y yield movements converted to additional 10Y rate loss X in percentage points; vertical line at X=1.00 pp is labeled as equivalent to the October 17.86 bp break-even only for equal yield rises](assets/relative_rate_risk_context.png)
+It is favorable to 10Y on this proxy **when `X_6m < 0.50 pp`** and unfavorable when the additional 10Y rate-related loss exceeds the assumed compensation. This comparison applies **October's reference compensation** to past-sized relative rate movements; it is not the historical return or carry actually available at the starting dates of those windows.
 
-Each plotted value comes from **one pair of yield changes** (one 2Y change and the concurrent 10Y change). The histogram groups the 20 calculated `X` values by magnitude. Its **horizontal axis is extra rate-related price loss in percentage points, not yield changes in bp**. The reference line is at `X=1.00 pp`, representing **October's assumed additional one-year gross compensation**.
+### 3.2 Visualization: evolution and distribution from the same daily observations
 
-In this constructed dataset, **10 of the 20** `X` values lie above `1.00 pp`, so in those illustrative cases the additional 10Y rate loss outweighs October's assumed gross compensation. The other ten lie below it. These counts are **not** empirical market frequencies or probabilities of future underperformance.
+**Evolution through time:** Each point is the rate-related relative loss over the **preceding six months**, ending on the displayed date. The dashed line marks October's fixed **+0.50 pp** six-month compensation reference, not a historical compensation value at every past date.
 
-**Interpretation alongside Section 2:** The 10Y-versus-2Y yield-compensation cushion has improved materially, **yet an unfavorable difference between the two maturities' yield changes could still more than offset that compensation**. The `17.86 bp` common-increase break-even does **not** impose a limit on the 10Y yield change by itself when the 2Y yield moves differently. Section 3 supplies a distinct *rate-risk perspective*; it does not negate the improvement demonstrated in Section 2 or prove that 2Y is preferable.
+![Daily-ending six-month additional 10Y relative rate-price losses with October six-month compensation reference at 0.50 percentage points](assets/relative_rate_risk_evolution.png)
 
-**Interpretation boundary:** The distribution compares a **fixed October compensation assumption** with the scale of multiple hypothetical historical-horizon rate changes. It is not the realized historical relative return, because each synthetic rate-movement case does *not* carry a separately observed yield/carry starting point. Even with real yield histories, the plotted values would remain modeled **rate-price effects using assumed fixed durations**, not historical ETF total returns.
+**Distribution:** The same sequence of daily `X_6m(t)` values is grouped into ranges by magnitude. Thus a point on the time series becomes **one observation** in the histogram: the time series answers *when* a given relative effect occurred, while the histogram answers *how large such effects have been across the reference period*.
 
-**For real Bondview work:** Specify a holding/compensation horizon, a historical reference period and a sampling convention; observe jointly dated 2Y/10Y yield changes over *that same horizon*. One-year windows match this example's approximate one-year compensation; other horizons are permitted with a compatible compensation convention. The sample may use rolling or non-overlapping windows, with observation overlap and limits reported. No fixed 12-month or rolling-window rule is required. Historical distributions are descriptive context, **not forecasts or unconditional future probabilities**.
+![Histogram of the daily-ending six-month relative rate-price effects, showing the October six-month compensation reference at 0.50 percentage points](assets/relative_rate_risk_context.png)
 
-**Reproducible source:** [`assets/hypothetical_12m_joint_yield_change_cases.csv`](assets/hypothetical_12m_joint_yield_change_cases.csv). These are illustrative paired yield changes, not observed sudden market events.
+**Reading the distribution:** The relevant question is **how much** the additional 10Y rate-price effect improves or erodes the indicative six-month `0.50 pp` compensation, not how many densely overlapping windows fall on either side of that threshold. The distribution is summarized below in the same units as its horizontal axis. The relative-result column applies `0.50 pp − X_6m` to each reported value; it is not an observed ETF return.
+
+| Descriptive measure of six-month `X_6m` | Additional 10Y rate loss (`X_6m`) | Indicative 10Y-minus-2Y relative result (`0.50 − X_6m`) | Interpretation |
+|---|---:|---:|---|
+| Median | +0.277 pp | **+0.223 pp** | The middle observation retains a modest compensation advantage for 10Y under the model |
+| Mean | +0.823 pp | **−0.323 pp** | Larger adverse effects pull the sample-average modeled result below zero; this is not an expected return |
+| 90th percentile | +3.835 pp | **−3.335 pp** | An upper-tail relative rate loss substantially overwhelms the compensation proxy |
+
+The **median and mean tell different stories**: the typical middle observation remains slightly favorable to 10Y, but larger adverse relative rate effects dominate the sample mean. The mean is a description of the constructed, overlapping-window history—not a probability-weighted estimate of what happens next. The full observed synthetic range of `X_6m` is approximately **−3.31 to +5.96 pp**, emphasizing that **magnitude and asymmetry matter more than a threshold count**.
+
+**Reading the evolution chart:** It shows *when* the modeled disadvantage developed and whether it persisted. In the constructed path, `X_6m` remains elevated over extended intervals around **November 2024–March 2025** and **May–October 2026**, with materially lower or negative intervals between them. On **October 20, 2026**, `X_6m = +5.45 pp`, which corresponds to a **−4.95 pp** relative-result proxy after the fixed `0.50 pp` compensation. These time patterns describe the invented yield history, not historical Treasury episodes. Nearby daily points share most of the same six-month window, so prolonged runs are not independent events.
+
+**Interpretation alongside Section 2:** A more favorable current *gross compensation* relationship can coexist with sizable adverse **nonparallel** changes in 2Y and 10Y yields. Section 2 quantifies a conditional offset assuming equal yield changes; Section 3 describes the relative rate-price consequences of paired yield changes, which need not be equal. Neither measure disproves the other or yields a complete investment recommendation.
+
+**Scope and history choices:** The three-year lookback and six-month horizon are **illustrative selections**, not fixed Bondview rules. Shorter reference histories can emphasize recent rate regimes but omit stresses; much longer histories may mix structurally different conditions. The lookback/horizon and overlap convention should be clearly disclosed and user-adjustable. With real market inputs the rate changes are genuinely observed, but applying fixed reference durations remains a **modeled counterfactual**, not realized ETF performance.
+
+**Reproducible source:** [`assets/synthetic_daily_rolling_6m_relative_rate_risk.csv`](assets/synthetic_daily_rolling_6m_relative_rate_risk.csv), derived from the same daily Treasury history used in Section 2.
 
 ---
 
@@ -309,7 +318,8 @@ An active long Treasury ETF has a published headline yield but no trustworthy po
 | V5 | 2Y 4.0%, 10Y 4.5% | +50 bp | Treasury 2s10s slope |
 | V6 | 2s10s −10 bp → +100 bp | +110 bp | Historical slope change |
 | V7 | Apr 10Y vs 2Y market-reference break-even | −1.785714 bp | Gross duration-normalized proxy |
-| V8 | Oct 10Y vs 2Y market-reference break-even | +17.857143 bp | Gross duration-normalized proxy |
+| V8 | Oct 10Y vs 2Y one-year market-reference break-even | +17.857143 bp | Gross duration-normalized proxy |
+| V8a | Same October data, six-month linearly prorated compensation | +0.500000 pp; +8.928571 bp break-even | Aligned with Section 3 six-month risk windows; not true ETF carry |
 | V9 | Oct 30Y vs 10Y market-reference break-even | +3.529412 bp | Gross duration-normalized proxy |
 | V10 | IG rates +15 bp, `D_rates=5.5` | −0.825% | Treasury-rate contribution |
 | V11 | IG OAS +35 bp, `D_spread=5` | −1.750% | Credit-spread contribution |
@@ -329,8 +339,8 @@ For simple floating-point computations, define and report a numeric tolerance, e
 2. All market yield and spread units convert correctly to decimal inputs and bp outputs; all reference periods and information cutoffs are consistent.
 3. Duration comes from published ETF exposure for a product analysis, or from an **explicitly defined benchmark exposure** for market-reference studies; `10Y` is never treated as duration `10`.
 4. Yield-curve slope and duration-normalized break-even have interpretable relationships but **do not count as two independent confirmations** of attractiveness.
-5. **Full-period** compensation histories are calculated from actual dated market inputs. Holding duration and the hypothetical +50 bp shock fixed produces **no changing sensitivity line**.
-6. Yield-change variability is calculated from joint, **horizon-matched** actual market observations in real use, not from arbitrary fabricated shock frequencies; historical relative-loss frequencies are not declared future probabilities.
+5. **Full-period** compensation histories use yields at each dated assessment, not rolling yield differences. A fixed duration and a fixed +50 bp scenario produce **no changing sensitivity line**.
+6. Yield-change variability uses **joint, horizon-matched and dated** observations; historical six-month relative losses are compared only to six-month compensation assumptions. Daily rolling windows overlap substantially, and their observed frequency is not a future probability.
 7. Pure Treasury OAS is `not_applicable`; missing applicable issuer yield is `unavailable`; structurally invalid futures cash carry is `unsupported`; a benchmark approximation is marked `proxy`.
 8. A widening corporate OAS is distinguished from movements in Treasury yields and is described as **credit-specific repricing, not proved fundamental distress**.
 9. Spread compensation without modeled default/migration loss is **gross**, not an expected net credit return or an unconditional buy signal.
@@ -345,9 +355,9 @@ For simple floating-point computations, define and report a numeric tolerance, e
 | Figure or dataset | Required economic interpretation | Forbidden implication |
 |---|---|---|
 | `maturity_break_even_history.png` | Extra long-duration yield compensation **relative to extra duration** changed throughout the period | A universal 30Y buy/sell recommendation |
-| `relative_rate_risk_context.png` | Joint historical-rate-move variability is additional information beyond a yield-spread transformation | A forecast of probability of crossing the break-even line |
+| `relative_rate_risk_evolution.png` and `relative_rate_risk_context.png` | The same daily six-month relative-rate observations display their evolution and distribution | A forecast of probabilities or realized ETF relative performance |
 | `treasury_vs_credit_contributions.png` | Rates and credit spreads contributed differently to the price-only scenario | An explanation of actual ETF returns or proof of corporate default deterioration |
-| The two `.csv` source files in `assets/` | Transparent reproduction of constructed chart arithmetic | Verified live market data or issuer facts |
+| The daily Treasury and rolling-risk CSV files, plus the monthly credit-reference CSV in `assets/` | Reproducible constructed market inputs, rate-risk comparisons and credit illustration | Verified live market data or issuer facts |
 
 A plot that only reproduces an existing yield table, a fixed +50 bp sensitivity line under constant duration, or multiple parallel scenario lines differing only in intercept should not be counted as independent economic evidence. The companion figures demonstrate **distinct questions** rather than specify mandatory chart layouts for production.
 
@@ -366,6 +376,6 @@ A plot that only reproduces an existing yield table, a fixed +50 bp sensitivity 
 
 ## 10. Source context and prior example preservation
 
-The older examples were synthetic, not a validated backtest. Original cases **A–J** are preserved by purpose as follows: A/B/C → Section 6, D/E/F/G/H/I/J → Section 7. New time-series maturity and credit cases are Sections 2–5, with chart-level regression rules in Section 8. Earlier historical ETF tickers are illustrative identification references, not required current-universe members. Product identity and disclosures must be verified before any genuine assessment.
+The older examples were constructed examples, not a validated backtest. Original cases **A–J** are preserved by purpose as follows: A/B/C → Section 6, D/E/F/G/H/I/J → Section 7. New time-series maturity and credit cases are Sections 2–5, with chart-level regression rules in Section 8. Earlier historical ETF tickers are illustrative identification references, not required current-universe members. Product identity and disclosures must be verified before any genuine assessment.
 
 Suggested fixed-income references: [CFA Institute — Fixed-Income Portfolio Management](https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/overview-fixed-income-portfolio-management); [Yield Curve Strategies](https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/yield-curve-strategies); [Convexity and Portfolio Properties](https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/yield-based-bond-convexity-and-portfolio-properties). Market-series identifiers used in real research can be sourced from [FRED](https://fred.stlouisfed.org/); this document did not retrieve or verify actual observations.
