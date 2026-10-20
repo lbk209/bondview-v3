@@ -1,242 +1,428 @@
-# Korean-Listed U.S. Bond ETF Decision Support — System Architecture
+# Bondview-v3 — Korean-Listed U.S. Bond ETF Decision Architecture
 
-**Status:** Research architecture, v1; refined through an architecture → examples → review → architecture feedback loop on 2026-10-13. **Not a Bondview-v2 design amendment.**
+**Status:** **PROVISIONAL research architecture — revised 2026-10-20.** Specifies the intended system, conventional financial calculations, disclosure conventions, bounded research and accepted design decisions. The practical quality of actual ETF comparisons still depends on input availability and economic assumptions. This document is neither an implementation roadmap nor authorization to begin Work.
 
-**Companion:** [`bond_etf_decision_examples_v1.md`](bond_etf_decision_examples_v1.md). The examples are a design contract, not observations or a backtest.
+**Companion:** [`bond_etf_decision_examples.md`](bond_etf_decision_examples.md) is the separately revised, still-provisional set of synthetic examples, visualizations and behavioral checks. Its figures illustrate calculations; they do not prove actual ETF returns or authorize implementation. Earlier Bondview repositories are reference-only, not design authorities.
 
-## 1. Purpose and decision contract
+## 1. Purpose and requirements
 
-Build a usable **investment decision-support system for Korean-listed U.S. bond ETFs**. At an observation date, it should answer: (a) is a *new purchase of this ETF* reasonable for a specified investment objective and risk capacity under present conditions? (b) how does its economic exposure compare with relevant alternatives? (c) if already owned, what changed enough to justify reviewing or resizing the holding? (d) what are the important underlying bond-market conditions?
+### 1.1 Principal objective
 
-The system's contribution is **more informed, risk-aware selection than an unstructured ETF choice**. It need not forecast the direction or level of future yields, ETF prices, or realized returns, maximize an arbitrary attractiveness function, produce universal rankings, or guarantee superior realized results. Describing a yield trend, a rate sensitivity, and scenario implications is not a yield forecast. Likewise, a conditional preference under explicit risk/compensation assumptions is not a return forecast.
+Bondview-v3 is a **convenient decision-support tool for choosing Korean-listed ETFs with U.S. fixed-income exposure**. It analyzes the economic opportunities and risks of relevant bond exposures using conventional fixed-income relationships, observed U.S. bond-market data, and issuer-published ETF characteristics. It does not forecast ETF prices or select individual bonds for investment.
 
-**The default assessment is relative to the same ETF in its own present and historical market environments, not necessarily relative to another ETF.** Cross-ETF comparisons are an additional capability, not a prerequisite for assessing purchase suitability. Do not conflate new-purchase suitability, holding suitability, sale timing, or realized performance.
+The **common financial calculations** support three ways of examining results, not three independent evaluation engines:
 
-This architecture is intentionally detailed enough to guide implementation. It may later be split into architecture, model specification, data contracts, and investment-policy documents.
+1. **At a selected date:** Examine the economically relevant compensation, rate/credit exposures, scenario risks, and changed conditions for an ETF.
+2. **Through time:** For a selected ETF and date range, evaluate how the relevant financial measures evolve. Identify improving, deteriorating, and mixed evidence *by measure*, not by a fabricated aggregate score.
+3. **Across ETFs:** Compare all eligible ETFs in a chosen universe across the same applicable financial measures and defensible relative-value relationships, including cross-maturity and suitable credit comparisons. Focused 1:1 comparison is a subset of this view.
 
-### 1.1 Non-goals
+The underlying models can also be investigated **at the bond-market reference level**, e.g. Treasury 2Y/10Y/30Y segments and matched corporate-credit spreads, without initially selecting particular ETFs. Such analysis tests the economic meaning of a measure and helps identify market developments worth examining in ETFs. It is **not a compulsory market-assessment stage or a separate investment-recommendation engine**; issuer exposure enters each ETF calculation directly when needed.
 
-- An exchange execution engine, intraday order optimizer, fully personalized financial planner, or guaranteed timing model.
-- A compulsory four-Constituent model, categorical State Classification, Rule Table, generic weighted sum, or integrated numerical attractiveness score.
-- Rebuilding individual Treasury security histories from every coupon and issuance date merely to evaluate a maturity segment.
-- Treating ETF prices as a substitute for underlying U.S. bond-market observations.
-- Inferring that historically high yields **must** decline or that a rate trend will persist.
+A product's reference yield and maturity name do not by themselves identify its duration or carry. Translate bond-market results to an ETF using **issuer-disclosed characteristics as accepted operational inputs**, with transparent factor matching and assumptions. Bondview is not responsible for independently auditing the issuer's underlying holdings or confirming the factual accuracy of every disclosed exposure.
 
-## 2. Model-first design commitments
+### 1.2 Out of scope
 
-1. **Start with the ETF decision question**, then use an established quantitative relationship that materially helps answer it. No mandatory Component/State/Evaluation architecture. If a calculated measure does not change the decision or its economically useful explanation, it need not be included.
-2. **Separate measured quantities, standardized scenario results, and investment policy.** Use exact formulas where defensible; use approximate exposures and declared scenario conventions when exact data are unavailable. Label them; do not turn policy assumptions into claimed financial laws.
-3. **Prefer continuous quantities.** Preserve yields, bp changes, effective durations, spread durations, carry estimates, scenario P&L, FX contribution, and total-return series. Classify only if a label actually improves use. No thresholds solely to produce a neat score.
-4. **No automatic double vote for one mechanism.** A falling ETF price and rising Treasury yields may be manifestations of the same rate shock. ETF price history helps reconcile and monitor the instrument; it does not automatically contribute a second negative judgment on rate direction.
-5. **An exposure-relative decision is conditional on its job.** A high-duration hedge and a 12-month capital-preservation allocation can reach different recommendations from the same data. This is appropriate, not an inconsistency.
-6. **A missing input must not be silently filled by an unrelated proxy.** Proxy use is allowed with a visible confidence downgrade; unsupported modules should say `not assessed` rather than invent zero impact or a neutral score.
-7. **A negative conclusion need not mean sell.** Purchase, ongoing holding, and execution involve different objectives, taxes, costs, and position constraints.
-8. **Reuse empirical conventions for research comparability, not as axioms.** In the first MVP, inspect 126 accepted observations (~6 months) and 21 (~1 month), with a 5-observation end-point mean, matching the earlier Bondview Duration study. Those are chosen research defaults, not established optimal horizons. A robustness view without smoothing and with other windows is optional.
+- Portfolio construction, asset allocation, personalized position sizing, holding optimization, trade execution, or an unconditional buy/sell timing engine.
+- Recreating ETF holdings, individual-bond cash-flow portfolios, hedge books, futures collateral/roll economics, or historical ETF NAV as a general prerequisite.
+- Independently auditing an issuer's portfolio or proving that its disclosed duration, credit mix or benchmark exposure exactly reproduces its actual holdings. The reliance on disclosed characteristics is an explicit scope limitation, not an unsolved research requirement.
+- Predicting Treasury yields, credit spreads, currencies, ETF prices, or realized returns simply from their history.
+- Using ETF price/return history to generate, weight, calibrate, or override ETF selection conclusions or infer undisclosed duration.
+- Custom weighted-average attractiveness scores, ordinal state systems, or rules carried over from earlier Bondview repositories without independent economic justification.
+- Detailed expense-ratio, tax, execution-cost or liquidity optimization in the initial bond-centered model; do not double-subtract costs already reflected in a published measure.
 
-## 3. Inputs and boundaries
+## 2. Analytical framework
 
-### 3.1 Market observations (independent of any ETF)
-
-| Inputs | Initial sources | Why needed |
-|---|---|---|
-| U.S. Treasury constant-maturity yields | FRED H.15: `DGS3MO`, `DGS6MO`, `DGS2`, `DGS5`, `DGS10`, `DGS20`, `DGS30` | Nominal rates; level and tenor-specific movements; slope/curvature; standardized yield-shock analysis |
-| USD/KRW (KRW per USD) | FRED `DEXKOUS`, or documented higher-frequency local FX reference | Currency-related explanations and retrospective decomposition |
-| U.S. IG/HY corporate OAS when relevant | Available FRED ICE BofA OAS series, subject to license/history availability | Credit spread level, change and stress; never approximate credit purely from Treasury yields |
-| Short-rate / cash reference | User-provided or sourced **KRW** cash yield, or explicitly a USD cash benchmark if that is the chosen objective | Comparison of compensation in the appropriate numeraire; do not equate U.S. T-bill yield with KRW cash return |
-| Optional term-structure / inflation data | FRED zero-coupon curve / TIPS and forward-rate sources if necessary | Enrich valuation interpretation only when used for a meaningful decision |
-
-Treasury yields are **market observations**, not a position's total-return series or a specific issued bond's yield-to-maturity. The 10Y constant-maturity series identifies an approximately 10Y market segment, not a bond with numerical modified duration of exactly 10.
-
-Historical data processing: retrieve/capture source, units, time zone, source date, and retrieval time; preserve missing rows; align observations using only information known at the assessment cutoff; do not forward-fill through market holidays as if observed; explicitly respect known discontinuities (e.g., the DGS30 period); do not mix a later ETF closing price with information not yet released at its timestamp.
-
-For spread data, record licensing and accessible lookback. ICE BofA OAS observations on FRED have historical-access limitations; a three-year restricted series must not be used to claim decades-long percentile conclusions.
-
-### 3.2 ETF-specific characteristics
-
-Only ETF-specific information comes from its **issuer materials, listing disclosures, and actual price/NAV/distribution history**, rather than inventing a parallel holdings database as a prerequisite. Where possible capture: ticker and current official name, benchmark, type (cash bonds, futures, active, high yield, options, leverage), effective/key-rate duration, spread duration, convexity, yield convention, maturity range, currency exposure and hedging, distributions, expense ratio, NAV/iNAV/market price, listing date, and availability as-of date.
-
-- Product names are *not* adequate numerical exposure estimates. `10Y` may indicate benchmark maturity segment or Treasury futures; it is not automatically modified duration 10.
-- An active fund may use multiple underlying ETFs, bonds and/or derivatives. Its official benchmark is a **reference**, not proof that the holdings deliver identical exposure. Prefer official portfolio-level sensitivity if available.
-- A futures ETF must not receive ordinary cash-bond yield/carry treatment: futures basis, collateral income, rolls and KRW index conventions differ.
-- Currency `(H)` denotes a hedge-oriented structure, not a perfect hedge. Obtain the issuer's actual policy where possible.
-- For performance, use distribution-reinvested adjusted NAV/total-return histories, not raw ex-distribution closing prices. Prices plus cash distributions may be reconstructed carefully if adjusted NAV is unavailable; document corporate actions and missing distribution dates.
-- Market price vs NAV and spread/liquidity information, if available, contribute to an execution caution, not to a forecast of bond yields.
-
-If effective duration is missing, use an issuer benchmark/index estimate **only when economic matching is credible**. If still unavailable, use illustrative sensitivity ranges and explicitly mark magnitude-based decisions provisional. A generic par bond duration proxy is *not* silently identified with actual ETF sensitivity.
-
-### 3.3 User-policy inputs (not market model parameters)
-
-Minimal initial profile: assessment type (`new_purchase`, `hold_review`, or `comparison`), holding/decision horizon (e.g. 12 months), base currency KRW, whether USD exposure is intentional, acceptable standardized scenario loss, permissible credit quality and derivatives exposure, and comparison cash alternative. Provide an example default profile for demonstrations, but **never treat it as the user's actual investment objectives**.
-
-Missing user constraints can yield a well-founded *conditional* judgment. Do not force a buy/sell recommendation by silently inserting risk preferences. Prefer a minimal few meaningful assumptions to dozens of adjustable numerical knobs.
-
-## 4. Quantitative engine: conventional relationships, not mandatory Constituents
-
-All reported numeric results have `value`, `unit`, `source`, `as_of`, `method`, `assumptions`, and `coverage/quality` where pertinent. Calculations operate on the actual exposure's available representation; there is no universal requirement to calculate every row for every ETF.
-
-### 4.1 Observed U.S. Treasury conditions and curve
-
-- Endpoint average: `M5_n(t) = mean of last 5 accepted yields` for tenor `n`.
-- Six-month yield movement: `delta_y_6m,n = M5_n(t) - M5_n(t-126)`.
-- One-month movement: `delta_y_1m,n = M5_n(t) - M5_n(t-21)`.
-- Slopes, in bp: `s_2_10 = y_10 - y_2`; `s_10_30 = y_30 - y_10`; curvature can be shown via a transparent 2Y/10Y/30Y second difference, with equal-spacing caveat, or preferably an established term-structure factor fit later.
-- Curve movement labels (`bull steepening`, `bear flattening`, etc.) **must name endpoints and direction of both relevant yields**; do not infer an absolute ETF buying judgment from the label.
-
-This market-only view is a first-class output even if no ETF is selected. It may show divergent short- and long-end conditions.
-
-### 4.2 First- and second-order interest-rate sensitivity
-
-For a cash-bond/benchmark exposure with compatible effective/modified duration `D` and convexity `C`, and a **declared hypothetical change in the relevant yield** `delta_y` expressed in decimal units:
-
-`rate_price_effect ≈ -D * delta_y + 0.5 * C * (delta_y)^2`
-
-Report duration-only if convexity unavailable, with convexity omission conspicuous for large/long-end shocks. When key-rate durations exist, use `-sum(KRD_k * delta_y_k)` for nonparallel curve scenarios; **do not** sum this and the parallel `-D*delta_y` for the same shock. Total duration is often close to the sum of key-rate durations under consistent definitions.
-
-The use of `-D_current * delta_y_historical` is a **current-exposure sensitivity applied to a historical-sized move**; it is not a reconstruction of historical ETF performance, which requires time-varying duration, coupons, distributions, FX and strategy behavior.
-
-For illustrative scenarios, begin with `{+50bp, +100bp, -50bp}` parallel shocks and one nonparallel curve shock. These are **stress magnitudes, not probability estimates or forecasts**. Stress size and tolerable loss belong to the declared investment policy and stress suite.
-
-### 4.3 Compensation and horizon scenarios
-
-For a defined holding period `H`, cash-bond *scenario* total return is approximately:
-
-`local_total_return_scenario ≈ H_carry + roll_down_if_defensible + rate_price_effect + credit_price_effect - direct_costs_if_not_already_net`
-
-Use a consistent yield/carry convention (e.g. portfolio YTW/income proxies), funding basis, and period. **An ETF's distribution yield is not automatically its economic carry or yield-to-maturity.** A cash-bond ETF that keeps its target duration by reinvesting/rebalancing does not earn the roll-down of a fixed held-to-maturity bond without adjustment. If robust carry/roll information is unavailable, report sensitivity-only and separately show current published yields; do not fabricate a total-return projection.
-
-A *rate break-even shock* (under compatible assumptions, first order, against a cash comparator) is a helpful derived output:
-
-`break_even_rise_bp ≈ 10,000 * (net_carry_plus_roll_H - cash_return_H) / D`
-
-It expresses a **scenario compensation cushion** from Rates Valuation plus Duration, not a fifth assessment dimension or a probability of a yield move. Do not apply this formula to futures products or credit funds without modeling their additional economics.
-
-Compensation may be evaluated against cash, its own history, another tenor, or a risk budget. Clearly name the comparator; a high U.S. nominal yield alone does not establish a high hedged KRW return.
-
-### 4.4 Credit and currency
-
-Credit bonds: first-order nonparallel rate and credit-spread shocks should be distinguished:
-
-`credit_bond_price_effect ≈ -D_rates * delta_y_treasury - D_spread * delta_OAS`
-
-Defaults/recoveries and spread convexity are separate unmodeled risks; a spread is not guaranteed compensation for realized losses. Distinguish issuer/quality exposure from Treasury duration, and do not use generic Treasury-only rankings for high-yield products.
-
-Currency: for an **unhedged, approximately USD-denominated** local return `R_USD`, with spot USD/KRW return `R_FX`, an approximate KRW decomposition is:
-
-`1 + R_KRW ≈ (1 + R_USD)*(1 + R_FX)`
-
-For a hedged fund, use a documented hedge-coverage approximation and forward-point/carry/cost estimate when available, else show a bounded/qualitative residual. **Do not subtract spot FX from a hedged ETF as though the hedge were exact.** Spot history can help explain a realized hedged/unhedged return gap but does not recover its forward hedge mechanics uniquely.
-
-### 4.5 Realized ETF behavior: diagnostic and instrument verification
-
-Track adjusted NAV total-return series, market-price total returns if available, distribution reinvestment and inception coverage. Compare to benchmark/market factors as an *approximate reconciliation*:
-
-`observed_KRW_total_return = explained_rates + explained_credit + explained_FX_and_hedge + carry_and_income + fees_and_tracking + residual`
-
-This is an **attribution bookkeeping representation**, not a claim of exact daily additive decomposition without consistent log or interaction accounting. Keep cross terms/residual explicit and do not double-subtract expenses already reflected in NAV returns.
-
-Possible findings: a hedged fund still experiences residual FX or hedging costs; a futures index return differs materially from an on-the-run cash Treasury approximation; distributions create raw-price drops; a fund's realized sensitivity diverges from its stated benchmark. Explain such differences rather than silently changing the market model to fit ETF performance.
-
-## 5. Decision engine: an explicit, small policy—not a universal score
-
-Decision outputs must be *operational*: `consider_purchase`, `conditional`, `defer_new_purchase`, `not_suitable_under_policy`, `insufficient_information`; for a holding use `maintain_or_review`, `review_size`, `review_mandate` rather than interpreting `defer purchase` as an automatic `sell`. Each result cites the dominant quantitative evidence and the decisive **user-policy assumption**. No global rank is required when exposures serve different mandates or there is no clear dominance.
-
-### 5.1 Order of reasoning
-
-1. **Match the mandate and product mechanics.** Is this ETF a plausible way to obtain the intended exposure (Treasury/corporate, maturity, hedge, leverage, futures/active constraints)? An incompatible product cannot be rescued by yield alone.
-2. **Establish the market and economic exposure.** Treasury tenor yields, curve movement, rate sensitivity; spreads and FX where applicable. Preserve quantitative magnitudes and distinguish market observations from ETF-specific realized behavior.
-3. **Calculate comparable risk/compensation scenarios.** Use the same declared stress for competing exposures when meaningful, relevant duration/spread sensitivities, feasible carry estimates, KRW numeraire and cash alternatives. Scenarios are not likelihood-weighted forecasts.
-4. **Apply policy priorities, not arbitrary weighted scores.** For a risk-controlled purchase, test mandate and loss tolerance before preferring extra yield; for deliberate long-duration diversification, the legitimate objective may be maintaining duration exposure despite stress. A current unfavorable rate trend is **context**, not an unconditional rejection rule.
-5. **Check actual ETF behavior and implementation.** Distribution-adjusted total returns and mismatch with modeled exposure, fee and hedge/roll differences, known price-NAV gaps. Never treat historical ETF and Treasury movements as independent votes on the same factor.
-6. **Return a reasoned decision or unresolved trade-off.** Use `conditional` when policy-relevant information is genuinely absent, not to avoid reasonable judgment. Include the rejected alternative (when comparison requested) and the assumption that would change the decision.
-
-**No intrinsic necessity for a mathematical integrated attractiveness scalar.** The unified inputs and scenario relationships can yield an overall ETF decision without assigning scores to Duration, Curve, Credit, or Valuation. Underlying aspect analysis remains accessible as a first-class market report.
-
-### 5.2 Example policy fixture (for documents/tests only)
-
-`P-RISK12`: KRW investor; 12-month assessment horizon; comparison with **assumed, not observed** KRW cash return; hedged Treasury exposure permitted; no leverage/complex options; baseline willingness to withstand at most a **10% modeled 12-month scenario loss** from a declared adverse parallel +100bp shock *inclusive of a defensible net carry proxy when available*. Credit requires an explicit additional spread stress and permission to take speculative-grade credit risk. This is an illustrative investment policy—not an empirical optimum, price forecast, or default suitable for every user.
-
-The **10%** here is an investor loss budget, not a market classification threshold. A model can be run with another budget without retuning market Components. If net carry is unavailable, a duration-only stress can serve as a conservative risk flag, but may not be falsely reported as a complete total-return scenario.
-
-The risk budget is a **necessary screening condition, not a sufficient condition for purchase**. A new purchase also needs a recognizable investment rationale (income, rate exposure, diversification, cash-relative compensation) and product/hedge fit. In particular, past rising rates plus a passing risk test does not establish a positive expected return.
-
-## 6. Result contract and user-facing examples
-
-Produce the following, as supported by inputs:
-
-1. **Market snapshot** — observed levels, 1M/6M movements, slope/curve changes, credit OAS and FX where relevant, measurement dates, and economically plain descriptions.
-2. **ETF exposure and qualification** — verified product type, tenor or risk segment, duration/source/quality, credit exposure, currency policy, active/futures/cash-bond flags.
-3. **Quantitative assessment** — duration and/or spread stresses (parallel and curve), carry/cash comparisons where valid, FX bridge for currency pair, and observed ETF total returns with residual attribution warnings.
-4. **Practical output** — policy-conditioned purchase suitability; optional comparative preference; holding-review opinion if separately requested; primary evidence and assumption that would overturn the conclusion. `No clear preference` and `no purchase` are valid outputs.
-5. **Supplementary aspect view** — Duration, Curve, Credit and compensation conditions when relevant; neither four fixed scores nor full Bondview-style lineage/classification is necessary.
-
-Numerical data must be identified as observed, derived, assumed, or missing; comparisons must use the same relevant cutoff and numerator/denominator definitions. Any example output without real inputs must prominently say **hypothetical fixture**.
-
-## 7. Representative product coverage and routing
-
-The companion examples exercise these verified Korean-listed products; current terms/durations must be rechecked against issuer documents at implementation time:
-
-| Symbol | Product (as of research) | Role and model routing |
-|---|---|---|
-| `0085N0` | ACE 미국10년국채액티브(H) | Hedged 7–10Y-oriented active Treasury bond exposure; bond rate/carry branch, FX-hedge estimate |
-| `0085P0` | ACE 미국10년국채액티브 | Unhedged counterpart; same underlying rate branch, FX decomposition |
-| `453850` | ACE 미국30년국채액티브(H) | Hedged 20Y+-oriented long Treasury; high duration and convexity scrutiny |
-| `476760` | ACE 미국30년국채액티브 | Unhedged long Treasury; FX overlay and long-end rate sensitivity |
-| `308620` | KODEX 미국10년국채선물 | Treasury-futures branch: futures index, collateral and roll, not cash-bond YTM |
-| `455660` | ACE 미국하이일드액티브(H) | Speculative-grade credit branch: rates + OAS + credit-loss limitations |
-| `440650` | ACE 미국달러단기채권액티브 | **USD short-duration credit-mixed** fund; NOT a pure short Treasury proxy despite its index description |
-
-Coverage exclusion for initial MVP: leveraged/inverse and covered-call/option overlays unless explicitly routed by a dedicated derivative model. Other products can be added by type, not by forcing them into the same formulas.
-
-## 8. Research architecture, implementable without overengineering
+Market observations and issuer-published ETF characteristics are the principal inputs to **reusable conventional financial calculations**. Analysis begins with an economic question—such as whether extra long-duration exposure is better compensated, or whether worsening credit conditions explain an adverse corporate-bond move—and uses only the necessary data and exposure measures. Market-level illustrations can validate and explain an economic relationship before it is applied to actual ETFs.
 
 ```text
-FRED/Treasury/FX/spread observations           ETF issuer profile + total-return history
-                |                                       |
-                v                                       v
-       Market data preparation                  Product/exposure preparation
-                |                                       |
-                +---------> Conventional calculations <-+
-                                  |
-                      Market snapshot + exposure
-                                  |
-              Scenarios + compensation + reconciliation
-                                  |
-                     Explicit investment policy
-                                  |
-             ETF assessment / optional comparison
-                                  |
-                   Underlying market explanations
+     Bond-market observations                 Issuer-published ETF characteristics
+     Treasury yields / curve                  Identity / bond type / benchmark
+     Credit OAS / dated histories             Duration / published yield convention
+     Relevant factor variability              Credit exposure / FX hedge policy
+                    |                                      |
+                    +------------------+-------------------+
+                                       v
+                      CONVENTIONAL FINANCIAL CALCULATIONS
+                      - relevant market relationships
+                      - compatible exposure sensitivities
+                      - compensation and risk comparisons
+                      - scenario and break-even conditions
+                      - provenance, applicability, assumptions
+                                       |
+                                       v
+                          REUSABLE FINANCIAL RESULTS
+                                       |
+                 +---------------------+---------------------+
+                 v                     v                     v
+           Single-date view       Historical view       ETF-universe view
+
+     Optional market-reference tables and charts reuse the same inputs
+     and appropriate financial calculations; no preliminary market
+     investment judgment is required.
 ```
 
-An MVP can be a notebook with small, testable pure functions and cached input files; no new heavyweight plugin architecture is needed. External data acquisition, ETF profiles and actual market prices can be separate adapters without becoming separate analytical authorities. Export a compact dated JSON/CSV snapshot and a readable report. Local copies of research files must not overwrite Bondview-v2 documents.
+**Market-level reference:** The 10Y–2Y Treasury spread and its history require only Treasury yield observations. A duration-normalized *market reference* additionally requires documented durations of defined benchmark exposures or explicit hypothetical duration assumptions; the FRED constant-maturity tenor is not itself a bond with known duration.
 
-### 8.1 What an MVP must prove
+**ETF-level calculation:** An ETF's rate-price sensitivity uses its **issuer-published duration** with an economically relevant yield scenario, `-D_ETF * delta_y_relevant`. A benchmark instrument's duration cannot silently stand in for the ETF's published portfolio duration; an issuer's `10Y` product label is not a duration of 10. Source/document checks establish **provenance, definition and input suitability**; they do not constitute an independent audit of the disclosed portfolio.
 
-- Reproduce **all numerical example fixtures** when given their stated hypothetical inputs, or explicitly reject unsupported calculations (e.g., cash carry on a futures ETF).
-- Generate actual U.S. rate market reports from FRED and actual ETF profiles/returns from permitted sources; show time alignment and data gaps.
-- Provide both a within-ETF changing-conditions assessment and relevant cross-ETF comparisons without implicit forecasts or arbitrary integrated scores.
-- Distinguish FX and credit from pure Treasury duration and explain major model-vs-ETF return mismatches rather than overriding calculations to make results look good.
-- Compare practical decision usefulness and complexity with basic baselines: product facts alone, duration-only scenario, and cash/hold. Do not infer superior performance from elegant explanations alone.
+An economic relationship may be illustrated with benchmark segments and later applied to ETF data, but ETF evaluation does not depend on finishing a separate, categorical evaluation of the bond market. Comparisons across dates and products reuse the same definitions, with only justified relative calculations and date handling added.
 
-## 9. Feedback loop — changes made after checking examples
+## 3. Design principles and decision boundaries
 
-This version already incorporates one internal review iteration with the companion file:
+1. **Investment questions precede classifications.** Choose established analyses according to the decision they illuminate, not to populate a predetermined number of constituents, aspects, or charts. Different measures can answer the same question without becoming interchangeable.
+2. **Market information and product exposure work together.** Yield levels, curve movements and OAS are market facts; an ETF's duration, credit type and hedge policy govern their instrument-specific implications. Bond-market reference analysis is useful but is not a substitute for exposure-aware calculations.
+3. **Conventional, explicit mathematics.** Specify minimum accepted formulas, units, assumptions and hand-checkable examples. Justified established enhancements are allowed when the baseline remains independently reproducible.
+4. **Separate observation, assumption and conclusion.** Distinguish market levels, disclosed product characteristics, calculated sensitivities, counterfactual scenarios, compensation proxies, and conditional investment preferences.
+5. **Allow complementary analyses without forcing a contest.** A yield spread and a break-even cushion derived from the spread may convey different useful interpretations without being independent observations. A historical joint-rate-risk distribution answers another question. Distinct justified measures may coexist; they do **not** need to outperform or replace each other, nor be combined into an attractiveness score. Do not mistake mathematical rearrangements for independent corroborating evidence.
+6. **No unsupported attractiveness scalar.** Do not infer a universal investment objective by fitting historical ETF prices, optimizing indicator weights, or making every outcome a single directional score. Mixed conclusions across meaningful measures are valid.
+7. **Use issuer disclosures as authoritative operational inputs within scope.** Record the official source, as-of date, measure definition and currency/exposure conventions; check obvious internal inconsistencies and distinguish missing or unusable fields. Do **not** demand independent holdings reconstruction, a fitted duration from ETF prices, or a return-tracking study to certify issuer claims. Unavoidable disclosure dependence remains a stated limitation, not a blocker for otherwise sound calculations.
+8. **Do not confuse compensation with adequate compensation.** Higher yields or OAS can mean higher stated gross compensation **and** higher underlying risk. A break-even condition is not a forecast that market changes will remain below it.
+9. **Keep complexity proportional to economic decision value.** Start with Treasury maturity and credit-market relationships rather than detailed ETF replication. Optional convexity, KRD, term-premium, currency/hedge or implementation modeling should have a concrete economic question and usable inputs; a theoretical improvement alone does not mandate a new workstream.
+10. **Maintain applicability and comparability.** Distinguish `not applicable`, `unavailable`, `unsupported`, and `proxy`; show differences in reference currency, maturity, yield conventions and disclosure dates. An investment horizon does not restrict the maturities of the products compared.
 
-| Initial simplification tested | Example-driven failure | Revision now in architecture |
+## 4. Universe, applicability and product boundaries
+
+**Long-run catalog scope:** all Korean-listed ETFs offering U.S. fixed-income exposure, including Treasury and corporate-bond funds. Catalog inclusion does not guarantee every financial aspect is numerically assessable.
+
+**Initial model research:** Use a few representative, well-documented ETFs across relevant duration exposures, adding a credit example if valid credit inputs exist. The implementation agent may choose actual tickers based on current disclosure quality; no ETF list or issuer is mandated by this architecture.
+
+| Product type | Default treatment | Limitation |
 |---|---|---|
-| Treat all ETFs with Treasury tenor name as similar cash bonds | `308620` is futures; `440650` is credit-mixed | Product-type routing and unsupported-formula safeguards (§3.2, §7) |
-| Infer buying preference directly from observed direction and rate duration | 30Y high-compensation case can become less unsuitable without requiring a falling-yield forecast | Mandate + scenario budget + compensation, trend as context (§5) |
-| Treat currency `(H)` as removing all FX exposure | Hedged and unhedged 10Y pair have hedge carry and imperfect coverage | Separate FX identities, estimate residual (§4.4) |
-| Require one general scalar across bonds | HY credit spread widening can dominate falling Treasury yields | Credit-specific route and conditional eligibility (§4.4–5) |
-| Use hypothetical `-DΔy` as historical ETF performance | Current duration and historical term yields do not reconstruct ETF realized returns | Clear counterfactual/actual-return split (§4.2, §4.5) |
-| Use annual distribution yield as carry | Monthly payments do not identify portfolio economics | Yield-convention and missing-data checks (§4.3) |
+| Physical/cash Treasury ETF | Eligible for relevant rate and yield analysis | Issuer yield definition and duration conventions still matter |
+| Corporate investment-grade/high-yield ETF | Eligible for rates plus relevant credit aspects | Treasury-only risk assessment is incomplete; OAS does not price all credit risk |
+| Hedged/unhedged U.S. bond ETF | Eligible; show documented currency structure | Do not treat an `(H)` label as free/perfect hedging or USD yields as KRW net returns |
+| Active / mixed exposure | Eligible according to published portfolio-level characteristics | Benchmark is not proof of actual current exposure |
+| Treasury-futures ETF | Excluded from standard cash-bond evaluation by default; explicit user opt-in | Futures basis/collateral/roll differ; opt-in never validates cash-bond carry formulas |
+| Leveraged, inverse or option-overlay product | May be catalogued, normally `unsupported` for the baseline model | Must not be assigned ordinary cash-bond calculations by default |
 
-**Remaining concerns, not disguised as solved:** Reliable ETF duration/carry/hedge data may be unavailable; simple duration+carry scenarios can understate convexity, derivatives, default events and active rebalancing; the selected risk budget and horizon can alter purchase decisions; without an economic goal no universal ranking is defensible; unhedged vs hedged preference cannot be decided from historical FX alone; proof of improved realized investment outcomes awaits prospective or out-of-sample testing. These do not block a useful MVP but must constrain the claims made.
+**Every numerical aspect has its own eligibility check.** An ETF may be included in a table while having `N/A` for corporate OAS, `unavailable` for a missing issuer yield, or `unsupported` for futures cash-bond carry. None of these should silently become zero or a neutral attractiveness score.
 
-## 10. Sources and verification notes
+## 5. Input contracts and factor matching
 
-Economic methods: [CFA Institute — Fixed-Income Portfolio Management](https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/overview-fixed-income-portfolio-management), [Yield Curve Strategies](https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/yield-curve-strategies), [Convexity](https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/yield-based-bond-convexity-and-portfolio-properties).
+### 5.1 Market data: observations and economic reference analyses
 
-Market series: [FRED DGS10](https://fred.stlouisfed.org/series/DGS10), [FRED DEXKOUS](https://fred.stlouisfed.org/series/DEXKOUS), [ICE BofA HY OAS via FRED](https://fred.stlouisfed.org/series/BAMLH0A0HYM2) (check usage/history restrictions).
+| Inputs | Initial sources | Proper use |
+|---|---|---|
+| Treasury constant-maturity yields | FRED H.15 `DGS3MO`, `DGS6MO`, `DGS2`, `DGS5`, `DGS10`, `DGS20`, `DGS30` | Tenor levels/changes; 2Y/10Y/30Y relationships; common scenarios; historical yield variability; **not** ETF duration, actual ETF YTM or investable benchmark bond prices |
+| U.S. investment-grade/high-yield OAS | Permitted, appropriately matched ICE BofA/FRED or documented alternative | Spread compensation, Treasury-versus-credit divergence and scenario stress; not evidence of realized or forecast default losses by itself |
+| USD/KRW (KRW per USD) | `DEXKOUS` or documented equivalent | Currency-policy context initially; quantitative FX treatment deferred unless necessary and justified |
+| Dated short-rate/cash reference | Suitable KRW or USD benchmark, as explicitly chosen | Optional comparable-currency compensation analysis; USD T-bill yields are not KRW cash returns |
+| Real yields, estimated term premium, inflation expectations | Recognized, defined sources if economically useful | Candidate **additional** explanations of long-end yields; term premium is model-derived, not an observed pure return signal |
 
-ETF identity and structure: [ACE ETF September 2026 distribution notice](https://www.aceetf.co.kr/cs/notice/7002); [ACE 10Y launch material](https://www.aceetf.co.kr/info/report/1160); [KODEX 308620 official name change](https://www.samsungfund.com/etf/lounge/notice-view.do?no=58734); [KRX 455660 listing](https://kind.krx.co.kr/disclosure/etfisudetail.do?method=searchEtfIsuSummary&strIsurCd=45566); [ACE 440650 fund details](https://www.funetf.co.kr/product/etf/view/KR7440650000). The representative fund set is for architecture stress tests, **not a contemporaneous buy list**. Read current issuer fund sheets before MVP calculations.
+Preserve source, dates, units, publication/cutoff and relevant retrieval/revision metadata; align information available at each historical assessment cutoff. Do not silently interpolate future issuer inputs or forward-fill unavailable market days. A full user-selected historical window is supported; specific smoothing and lookback periods are research conventions, not established financial laws.
+
+**Historical yield variability** may be derived from the Treasury yield series under a declared sampling convention. For an `h`-observation change, define `delta_y_n,h(t) = y_n(t) - y_n(t-h)` on compatible accepted observations. Describe its historical dispersion or empirical distribution in **bp**, specifying the reference window and horizon. This is realized historical uncertainty **context**; it is not a yield forecast or an objective probability of a future shock. Align the yield-change horizon with any break-even or scenario comparison before interpreting relative magnitudes.
+
+### 5.2 Minimum issuer ETF profile
+
+Use dated official issuer or official listing materials directly. **Treat issuer-published characteristics as the source of truth for Bondview's exposure inputs, without asserting that Bondview has audited the issuer's underlying portfolio.** Source checks should establish identity, definition, observation date, units and whether the disclosed measure matches the intended calculation. Do not recreate underlying holdings or infer duration by fitting ETF price returns.
+
+| Profile field | Requirement |
+|---|---|
+| Ticker, official name, issuer | Required for identity and cataloguing |
+| Bond category, investment mandate, benchmark | Required to select relevant market risk factors; benchmark ≠ portfolio holdings |
+| Structure (cash, futures, active, leverage/overlay) | Required for model eligibility |
+| Economic currency and published hedge policy | Required for currency qualifications |
+| Published effective/modified duration **and its definition** | Required for precise first-order ETF rate-sensitivity output |
+| Relevant maturity/tenor exposure | Where published; must not be substituted mechanically for duration |
+| Issuer-published yield plus **exact yield definition** | Use if available; differentiate portfolio YTM/YTW, benchmark yield, SEC yield and distribution yield |
+| Credit quality/category and relevant benchmark | Required for credit-specific conclusions |
+| Source document URL, as-of date, units | Required for every material numerical input |
+
+Optional inputs: convexity, key-rate duration (KRD), spread duration, hedge coverage and other disclosed characteristics. Missing optional fields **do not** authorize holdings reconstruction. A benchmark proxy is permissible only when economically well matched and visibly labeled `proxy`, without implying the issuer reported it as a portfolio fact. If no suitable measure exists, omit the unsupported precision.
+
+**Disclosure reliance boundary:** ETF characteristics may change between issuer updates, and published measures may use inconsistent definitions or incomplete representations of active exposures. Bondview records those limitations; it does **not** independently validate the issuer's measurements by reconstructing individual holdings, inferring factor loadings from ETF returns or auditing the issuer. Lack of such independent verification does **not** invalidate a clearly labeled calculation based on an official disclosed measure. Flag contradictions or implausible metadata when noticed, but do not turn their resolution into a general research obligation.
+
+### 5.3 Matching market factors to exposures
+
+Choose relevant market factors based on the ETF's **published investment mandate and exposure characteristics**, not merely its name; no independent holdings audit is presumed:
+
+- For initial Treasury evaluations, match a disclosed duration with a defensible reference maturity segment and a **transparent single-factor approximation**. State any material term mismatch; do not equate a constant-maturity label with the ETF's numerical duration.
+- For bond-market reference studies, Treasury 2Y/10Y/30Y yields and spreads are useful directly. Any duration-based benchmark scenario needs **explicit representative bond durations**, sourced or illustrative, not synthetic numbers silently derived from CMT labels.
+- Published ETF KRDs may improve nonparallel yield-curve scenarios when available and relevant; they are a later refinement, **not** a requirement to reconstruct the ETF's holdings or underlying maturity weights.
+- For corporate bonds, separate matched Treasury rate movements from changes in investment-grade or high-yield OAS. Where feasible, match rate duration, spread duration and market-index coverage. Broad OAS series are market proxies, not a precise credit decomposition for every ETF.
+- Record FX exposure and hedge policy from issuer materials, but defer sophisticated hedge/FX scenario analysis from the immediate priority set. Never treat `(H)` as a perfect costless hedge.
+
+The matched market factor and compatible exposure measure enter the same calculation. Market-only context is available without a selected ETF, but an ETF conclusion requires its relevant characteristics.
+
+## 6. Baseline financial calculations
+
+Every result distinguishes `market_observation`, `issuer_characteristic`, `derived_sensitivity`, `illustrative_assumption`, `proxy`, and `unavailable/unsupported`. Retain units, dated inputs, comparability conditions and interpretation. The following methods are a reusable analytical toolkit; **their presence does not require every calculation or a chart for every ETF**.
+
+### 6.1 Treasury curve, relative maturity compensation and yield variability
+
+For Treasury tenor `n` and two valid observations:
+
+`delta_y_n(t0,t1) = y_n(t1) - y_n(t0)`.
+
+If stored internally as decimal yields, convert a difference to basis points with `10,000 * delta_y`; if stored as percentage-valued observations, use `100 * delta_y`. Prefer decimal units for financial computation and explicitly convert source-unit inputs.
+
+Market-reference comparisons include `y_10 - y_2`, `y_30 - y_10`, `y_30 - y_2`, and the history of these differences. Report movements in both endpoints; a change in a slope does not uniquely identify a change in long-bond risk or expected return.
+
+Historical yield-change **dispersion** (e.g. realized standard deviation or historical quantiles in bp at a stated lookback/horizon) describes how large observed market moves have been. It is a different analytical question from current relative yield compensation, not a challenger that must prove superiority to the break-even series.
+
+For a long-versus-short representative-exposure comparison, nonparallel moves matter. With fixed, declared durations `D_L`, `D_S` and contemporaneous tenor-specific yield changes over the **same historical horizon**, the first-order relative adverse rate-price shock is:
+
+`relative_rate_loss_L_vs_S ≈ D_L * delta_y_L - D_S * delta_y_S` (decimal return).
+
+Its historical distribution describes observed changes in the **relative** exposure, rather than incorrectly assuming a common parallel move. The corresponding relative price effect is its negative. Use a jointly observed yield history, stated duration/proxy conventions and a common measurement window. This differs from a break-even **parallel-shock** threshold; they must not be presented as two numerically interchangeable probabilities or forecasts. If comparing with a period-compensation estimate, state horizon compatibility and whether the compensation is merely a market-yield proxy. Neither analysis has to replace the other.
+
+### 6.2 Interest-rate sensitivity
+
+For compatible ETF effective/modified duration `D_ETF` and an explicitly hypothetical yield change `delta_y_relevant` in decimal units:
+
+`rate_price_effect_ETF ≈ -D_ETF * delta_y_relevant`.
+
+When compatible convexity `C_ETF` is available:
+
+`rate_price_effect_ETF ≈ -D_ETF * delta_y_relevant + 0.5 * C_ETF * (delta_y_relevant)^2`.
+
+For appropriate nonparallel Treasury factors and **published compatible** key-rate durations:
+
+`rate_price_effect_ETF ≈ -sum_k(KRD_ETF,k * delta_y_k)`.
+
+Do not add parallel and key-rate effects for the same shock. Use `+50bp`, `+100bp`, `-50bp` and selected nonparallel scenarios only where economically helpful. Constant `D_ETF` and a fixed hypothetical shock imply **constant fixed-shock sensitivity over history**, so that sensitivity alone cannot generate a changing attractiveness history.
+
+For a **bond-market benchmark** illustration, use a *defined representative bond's* duration or openly assumed illustrative duration, not the numerical Treasury tenor or ETF characteristics by implication. Present such outputs as benchmark scenarios. Present `-D_current * delta_y_historical` as a **current-exposure counterfactual**, never as actual ETF historical price performance.
+
+Key-rate and convexity refinements should be used only when they add meaningful information and have defensible inputs. Detailed ETF structure analysis is not a prerequisite for interpreting underlying 2Y/10Y/30Y market changes.
+
+### 6.3 Compensation, carry and conditional break-even
+
+Keep distinct:
+
+1. **Observed market compensation:** relevant Treasury yields, term spreads and credit OAS.
+2. **Published ETF yield:** issuer value with exact portfolio, benchmark or distribution yield convention and as-of date.
+3. **Defensible holding-period compensation:** carry, financing/hedge terms and roll effects appropriate to the exposure and horizon, **only where supportable**.
+
+A distribution yield is not automatically portfolio carry/YTM. A constant-duration ETF does not realize the roll-down of one fixed held-to-maturity bond. No gross USD market yield is automatically a net hedged KRW return.
+
+For a compatible cash-bond exposure under explicit assumptions:
+
+`illustrative_H_result ≈ defensible_H_carry + justified_roll_effect + rate_price_effect + supported_credit_effect`.
+
+A missing term cannot silently become zero in a purported **complete return** result. Where only partial effects exist, report them individually and label the result partial/counterfactual, not a total-return forecast.
+
+**Single-exposure break-even against a compatible cash comparator:**
+
+`break_even_rise_bp ≈ 10,000 * (defensible_H_carry - comparable_cash_return_H) / D`, where `D > 0` and returns are expressed as decimals over a matching horizon/currency.
+
+**Relative-exposure break-even under a common parallel rate shock:** for long and short exposures with comparable period compensation `c_L,H`, `c_S,H` (decimal returns) and compatible durations `D_L > D_S`, the incremental-rate-shock threshold is
+
+`relative_break_even_bp ≈ 10,000 * (c_L,H - c_S,H) / (D_L - D_S)`.
+
+This threshold is a **conditional offset of additional duration risk**, not a claim about the likelihood of a parallel shock or the performance of bonds with different rate paths. It may be negative if the longer exposure has a compensation disadvantage.
+
+**Market-reference exploration:** substituting the *relevant observed Treasury yields* for `c_L,H` and `c_S,H`, and stated **representative benchmark durations** for the ETF durations, produces an *indicative market-yield-based* break-even **proxy**, not actual ETF carry or a one-year return estimate. It can be followed across the full observation period to investigate whether relative maturity compensation has changed. Clearly state the strong approximation and avoid treating the result as an ETF-level net-return decision. For actual ETF comparisons, use compatible issuer yield/carry data and only escalate to a true horizon-return break-even when justified.
+
+Historical term/yield spreads and duration-normalized break-even proxies may depend on the **same Treasury observations**: they offer different interpretations, not independent signals. A distribution of **joint, tenor-specific historical rate movements** describes realized exposure variation rather than gross current compensation. Both are valid standalone analyses with distinct limitations; Bondview neither selects a universal winner between them nor manufactures a combined score. The provisional information-family count does not prevent adding a further justified measure when it addresses a genuinely different economic question.
+
+### 6.4 Credit and spread exposure
+
+For comparable bond-market references:
+
+`delta_y_corporate ≈ delta_y_matched_Treasury + delta_OAS`.
+
+For compatible rate and spread sensitivities:
+
+`credit_exposure_price_effect ≈ -D_rates * delta_y_matched_Treasury - D_spread * delta_OAS`.
+
+Separating rate and credit components helps answer **whether the corporate market moved adversely because of Treasury rates or credit-specific repricing**. For example, a stable/falling Treasury yield alongside a widening corporate OAS isolates credit-spread deterioration; a negative *Treasury-rate contribution* alone does **not** prove corporate credit distress. Widening OAS may reflect default expectations, liquidity, risk appetite or required risk premiums; **it is a warning/context, not proof of realized fundamental credit deterioration**.
+
+Credit OAS can be compared with an explicitly defined spread-duration shock to obtain an **indicative gross spread cushion** under comparable period assumptions. Such a cushion ignores defaults, migration, liquidity and optionality unless separately modeled; it is not net expected credit return. Choose credit benchmarks compatible with the exposure or label them proxies. Never apply a pure-Treasury conclusion to material unassessed corporate credit exposure.
+
+When the interpretation requires it, **optional corroborating public evidence** may include default rates, rating migration, credit-quality trends, financing/liquidity indicators, or lending-standard surveys. These indicators may help distinguish fundamental deterioration from changes in liquidity or the required risk premium, but none automatically proves causation or forecasts losses. Initial Treasury/OAS decomposition **does not depend** on collecting a comprehensive credit-fundamentals dataset; in its absence explicitly limit the conclusion to **credit-specific repricing**, not established default deterioration or attractive risk-adjusted net carry.
+
+### 6.5 Currency and hedge qualification — lower analytical priority
+
+For consistently defined **unhedged** USD bond returns and USD/KRW returns:
+
+`1 + R_KRW = (1 + R_USD) * (1 + R_USDKRW)`.
+
+This describes an accounting identity or declared scenario, not an FX prediction. For the initial research, record the issuer's currency/hedge policy and qualify cross-currency comparisons. Do **not** presume a perfect free hedge or generate net KRW compensation without adequate inputs. Detailed currency and hedge modeling is deferred without removing currency eligibility checks from the ETF profile.
+
+### 6.6 Model refinements
+
+These relationships define the **minimum conventional baselines**, not limits on mathematical accuracy. An established refinement (e.g. disclosed convexity, published KRD or improved period matching) may be used when it answers a relevant question, has credible inputs, keeps the baseline reproducible and justifies the added complexity. If it changes a scenario conclusion materially, show both the baseline and refinement and explain why; **do not require a fixed numerical threshold or empirical victory over every simpler calculation**. An analysis of a genuinely different economic question may be retained independently rather than classified as a replacement model.
+
+An enhancement need not preserve every baseline conclusion, but material changes in the economic question, investment objective, source authority or aggregation/ranking logic require an explicit design decision rather than a silent model substitution.
+
+## 7. Investment opportunity analyses and interpretation
+
+**Attractiveness remains an interpretive investment question, not a validated universal scalar.** A small number of independently meaningful financial analyses can support useful conditional decisions without weighted-score aggregation or a forced overall winner. Do not choose an analysis because it makes an attractive plot; choose it because it answers a meaningful fixed-income question.
+
+The following **seven provisional information families** organize accepted and candidate analyses; they are **not an exhaustive taxonomy, seven mandatory scoring dimensions, independent model engines or required charts**. Multiple quantitative measures within one family can remain separately useful. A new well-founded measure may be included within an existing family, or a new family added if a distinct economic question genuinely warrants one—without a special approval test of superiority over the existing measures.
+
+| Candidate family | Examples of evidence | Role and limitation |
+|---|---|---|
+| Market-rate level and change | Treasury tenor yields and dated movements | Foundational observations; not a standalone investment verdict |
+| Term compensation | 2s10s, 10s30s, matched tenor yield differences, model-estimated term premium if justified | Relative-maturity compensation; may rise because risk rises |
+| Rate sensitivity / risk | Duration shocks, optional convexity, distributions of historical **joint relative-rate exposure shocks** with explicit horizon | Distinct exposure/scenario and realized-variability questions; past movements are not future probabilities |
+| Yield/carry compensation | Compatible published yield measures, defensible period carry and conditional break-even | Economically important but sensitive to yield convention, funding, roll, hedging and missing inputs |
+| Credit | Matched Treasury versus OAS change, spread sensitivity, gross credit compensation cushion | Explains credit repricing; OAS is not default-adjusted expected profit |
+| Currency and hedging | Disclosed policy, optional legitimate FX/hedge scenarios | Relevant qualification; detailed analysis deferred initially |
+| Product compatibility and data quality | Instrument structure, source dates, missing/proxy disclosures | **Eligibility and confidence controls**, not a numerical investment signal |
+
+A single investment question can draw on multiple families. For example, *whether the compensation for extending from 10Y to 30Y has improved* may be examined with a yield spread and a duration-normalized break-even, while a distribution of **nonparallel historical 10Y-versus-30Y rate-price shocks** describes a different aspect of the exposure risk. Each valid analysis may stand on its own. Measures need **not** be ranked, selected as a winner, merged into a score, or proven incrementally useful through a never-ending search; simply disclose when they use the same observations and should not be counted as independent corroboration.
+
+For corporate credit, a change in total yield and the rate-versus-OAS decomposition answer different questions: one shows the changed financing/market rate, while the other identifies whether credit-specific repricing dominated. The additional OAS might be better gross compensation or a response to greater risk; the model should present both interpretations and their limits.
+
+**Provisional research priorities, not a fixed architecture of new constituents:**
+
+- Relative maturity compensation and **its duration-adjusted break-even history** for 2Y/10Y/30Y reference exposures.
+- Historical **joint relative-rate exposure changes** as a separate risk-context analysis, with consistent horizons, documented representative durations and no forward probability claim. This does not need to displace or combine with break-even compensation.
+- Treasury-versus-corporate-OAS divergence over time and conditional credit-spread compensation/stress.
+- Basic ETF exposure translation and product suitability; advanced KRD and detailed FX/hedge models only when warranted.
+
+Other sound analyses—including yield-curve modeling, externally sourced term-premium estimates, carry/roll, and convexity—remain possible later. For now, use the observed curve directly; do **not** require an internally fitted term-structure/term-premium model or assume its estimate predicts returns. Term-premium estimates may be displayed only as explicitly model-dependent additional evidence when a concrete investment question justifies them. Deferral does not reject an analysis, and the provisional count of seven is not a design contract.
+
+A valid conclusion may report `improved_on_measure_X`, `deteriorated_on_measure_Y`, `mixed_tradeoffs`, `conditional_preference_under_specified_assumptions`, `no_clear_preference`, or `insufficient_information`. These are explanatory results without invented thresholds. **Improvement in gross compensation is not proof that buying now is preferable to buying earlier or waiting.**
+
+## 8. Historical investment opportunity assessment
+
+Use the same applicable financial calculations across a **full user-selected date interval**, not only endpoint snapshots. Prioritize time series that explain **economically changing conditions**; a chart is not useful merely because Section 6 contains a formula.
+
+- For Treasury maturity comparisons, show the **evolution** of relative yield compensation, and, where assumptions are documented, the **duration-adjusted break-even margin** between representative maturities or actual comparable ETF exposures. Label a market-yield-proxy margin separately from defensible ETF carry-based break-even.
+- A 2Y/10Y/30Y break-even plot needs a defined pair of benchmark durations or actual compatible ETF durations. It cannot be deduced from the Treasury CMT maturity labels alone. Treat its changing value as a comparison of **compensation relative to additional duration**, not as a forecast or composite attractiveness score.
+- Where relevant, show **historical joint relative-rate exposure shocks** (e.g., `D_30 * delta_y_30 - D_10 * delta_y_10`) over a declared common horizon and observation window. This is a complementary risk view, **not** a more accurate estimate of the parallel-shock break-even. The chart is valid independently; it need not demonstrate statistical superiority over the compensation series or produce a synthesized attractiveness number. Neither historical frequencies nor historical percentiles are probabilities of future events.
+- For credit, track Treasury-rate and OAS changes separately, and illustrate episodes when spread deterioration offsets improving Treasury rate conditions. Distinguish credit-specific repricing from proven fundamental credit deterioration.
+- Use historical Treasury/OAS observations from their actual publication dates. Never insert today's issuer yield into an earlier date. Use point-in-time ETF disclosures only after their public availability dates.
+- If historical issuer duration/exposure values are unavailable, an explicitly labeled **constant-current-exposure counterfactual** may be applied to the historical market record. The counterfactual is not historical ETF P&L, historical total return or a reconstruction of its actual portfolio.
+- With fixed duration and a fixed hypothetical +50 bp shock, the calculated sensitivity **does not change**. Do not fill historical plots with this unchanged output; changing historical-sized shocks and new valid exposure measurements are different quantities and must be labeled accordingly.
+- Identify when outputs are algebraic transformations of the same yield spread and when they describe a different economic property (e.g. joint realized rate movements). Multiple views may coexist without forcing cross-measure rankings, weighted aggregation or a test proving one chart better than another.
+
+The analytical result should identify which relevant condition improved, which deteriorated, and what additional assumption would be needed to infer a stronger investment conclusion. Plotly and specific chart designs belong primarily in the companion examples/user-interface work; the architecture specifies the **economic information** worth visualizing, not a mandated chart inventory.
+
+## 9. ETF universe and comparative results
+
+The selected ETF universe may contain many products; **individual, historical and cross-universe views reuse the same financial definitions and calculation paths**. A 1:1 comparison is a focused presentation of the universe results, with any additional pairwise break-even relationship explicitly computed from compatible inputs rather than a separate ranking engine.
+
+For each financially relevant result, distinguish:
+
+| Status | Meaning | Example |
+|---|---|---|
+| `value` | Supported numerical or descriptive result under recorded conventions | Rate sensitivity of an ETF with published duration |
+| `not_applicable` (`N/A`) | Economic mechanism does not apply | Corporate credit OAS for a verified pure Treasury ETF |
+| `unavailable` | Applicable but material market/issuer data are missing | No usable portfolio duration disclosed |
+| `unsupported` | The baseline model is structurally unsuitable | Cash-bond carry applied to Treasury futures |
+| `proxy` / `limited_confidence` | Clearly declared approximation with limitations | Matched benchmark duration in an explicitly provisional scenario |
+
+Comparisons should answer an **identified economic question**: rate-risk sensitivity across tenors, additional compensation relative to that risk, or credit spread compensation versus Treasury exposure. A row or column exists because it communicates relevant evidence, **not** because seven provisional families mandate seven charts or rankings.
+
+The same measure can be compared through time and across all eligible ETFs. Avoid directly comparing incompatible currency-net returns, maturity proxies, ETF-published yield conventions, credit-quality segments or unobservable carry. A product may appear in the universe while some results remain N/A/unavailable/unsupported. The assessment relies on **official disclosed ETF characteristics without auditing holdings** and may appropriately conclude that no overall winner is established.
+
+## 10. Supplementary views
+
+### 10.1 Bond-market references
+
+Users may inspect current and historical Treasury 2Y/10Y/30Y yields, curves, yield spreads and relevant credit OAS **before selecting an ETF**. Where assumptions are explicit, economically meaningful reference calculations (including benchmark-duration break-even history) may also be displayed to help identify a market development that warrants further ETF review.
+
+These optional reference views reuse existing market data and conventional calculations. They do not constitute an independent mandatory market evaluation stage or an unconditional purchase recommendation. A simple tenor-yield chart can remain a diagnostic; more important user-facing analysis should explain **compensation, risk and their evolution**.
+
+### 10.2 ETF prices and realized performance
+
+ETF price/NAV history must **not** enter the ETF selection model, its weights, factor exposures, or calibration. A separate diagnostic may compare realized total-return behavior with published exposure estimates to flag unexplained differences; those observations do **not** silently update selection signals.
+
+A later convenience view may compare appropriately distribution-adjusted historical ETF returns, labeled clearly as **realized performance** rather than bond-market opportunity. Detailed NAV attribution is not required by the core model.
+
+## 11. User interface and implementation boundary
+
+**User interface:** One or more Jupyter `.ipynb` notebooks, organized as easy sequential workflows: select dates/products/market references → load market data and issuer profiles → call imported analytical functions → inspect tables, clear explanations and interactive Plotly charts where useful. The notebooks contain **no substantive function or class definitions**.
+
+**Implementation:** A small collection of cohesive Python `.py` modules implements data acquisition/validation, issuer profiles, applicable bond financial calculations, historical evaluation and optional plotting helpers. One reusable calculation model supports selected-date results, time series and universe-wide comparisons. Add comparison helpers only for legitimate *relative financial calculations*, not separate competing engines.
+
+**Output standard:** Show the economic question, underlying observations, ETF exposure when applicable, quantitative result, dates/units, assumptions/proxies, relevant counterevidence and limitations. A result may be visualized historically, across products, or in both ways whenever it is genuinely informative. Do **not** produce one chart per candidate family by default; do not repeat unchanged fixed-shock sensitivity or near-identical line shifts merely to display more figures.
+
+**Optional views:** Market-reference tables/charts can be used before an ETF is selected; ETF realized performance remains outside the decision model.
+
+**Verification:** Pure calculation/data-contract tests run from Python without interactive notebook execution. Visual demonstrations in the companion examples should exercise economic usefulness, not become implementation specifications for specific chart types.
+
+## 12. Minimum numerical and behavioral verification
+
+Use clearly labeled **synthetic** financial fixtures and independent numeric checks before interpreting live ETF data. Examples:
+
+| Fixture | Expected result / interpretation |
+|---|---|
+| ETF duration `D=8`, rate shock `+50 bp` | `-4.00%` first-order price sensitivity |
+| Same with compatible convexity `C=80` | `-3.90%` second-order result |
+| Spread duration `6`, OAS shock `+100 bp`, no Treasury-rate move | `-6.00%` spread-only price sensitivity |
+| Unhedged USD bond result `-2%`, USD/KRW appreciation `+8%` | `+5.84%` conditional KRW result (FX deferred as priority) |
+| 2Y `4.0%`, 10Y `4.5%` | `+50 bp` 2s10s market yield spread |
+| Historical 2s10s from `-10 bp` to `+100 bp` | `+110 bp` relative yield compensation change, **not an ETF verdict** |
+| Illustrative constant durations `D_2=1.9`, `D_10=7.5` and gross reference yields six months ago `y_2=4.60%`, `y_10=4.50%` | 10Y-vs-2Y indicative relative break-even **`-1.79 bp`**, under explicit one-year yield-as-compensation proxy and common parallel shock |
+| Same durations, current reference yields `y_2=4.10%`, `y_10=5.10%` | **`+17.86 bp`**; change in indicative break-even margin `+19.64 bp`, **not a forecast** |
+| Add `D_30=16.0`, market yields 30Y six months ago `5.00%`, now `5.40%`, with 10Y yields as above | 30Y-vs-10Y indicative margin changes from `+5.88 bp` to `+3.53 bp`: **relative compensation deteriorates under the proxy** |
+| Declared representative durations `D_10=7.5`, `D_2=1.9`; joint historical-horizon yield moves 10Y `+10 bp`, 2Y `+20 bp` | `relative_rate_loss_10_vs_2 = 7.5(0.001) - 1.9(0.002) = +0.0037` = **+0.37 percentage points adverse relative rate-price shock**; 10Y-minus-2Y modeled price effect is `-0.37 pp`. This is **not** the common-parallel break-even margin |
+| Credit rate duration `5.5`, spread duration `5`, Treasury change `-20 bp`, OAS change `+60 bp` | `+1.10%` Treasury price component, `-3.00%` credit spread component, `-1.90%` combined; credit repricing offsets favorable rate movement |
+
+The historical break-even fixtures use **hypothetical matched representative duration values and observed-like market yields as gross compensation proxies**, not ETF portfolio YTMs, hedge-adjusted carry, realized return or point-in-time historical ETF disclosures. Computed values are rounded for display; unit-test tolerance must be defined against unrounded decimal values (for elementary non-extreme calculations, `1e-10` decimal-return units is an example numerical tolerance, not a bound on economic approximation error).
+
+Behavioral invariants:
+
+1. Single-date, historical and universe presentations use **the same** financial definitions and consistent conventions; market-only views do not alter ETF results.
+2. Relevant bond-market reference yield/term analysis can operate without an ETF; ETF-specific rate sensitivity uses issuer duration or a transparently declared proxy, **not the Treasury tenor as duration**.
+3. A full historical series of indicative relative break-even margins changes only with its documented yield, duration or other accepted compensation inputs. Under fixed durations it is a transformed time series of yield differences, **not independent evidence**.
+4. Holding ETF duration and shock fixed leaves `-D * shock` unchanged through time. Do not present that static sensitivity as an evolving opportunity signal.
+5. Empirical yield variability and joint relative-rate-risk distributions report their historical sampling convention/horizon, use aligned tenor-specific observations and do not claim future probabilities. They are not judged by whether they outperform or can be aggregated with a parallel-shock break-even. A benchmark yield proxy cannot silently become comparable ETF period carry.
+6. Credit-rate and spread effects are separated where relevant; widening OAS is not automatically interpreted as proof of deteriorated issuer fundamentals.
+7. A pure Treasury, credit ETF and opt-in Treasury future distinguish `N/A`, `unavailable`, `unsupported`, and `proxy` appropriately. Never fabricate futures cash carry or unhedged-to-hedged net KRW compensation.
+8. Point-in-time issuer yields and durations do not leak into prior dates. Constant-current-exposure studies are clearly labeled counterfactual, not historical ETF P&L.
+9. ETF price/return histories have **no effect** on selection outputs. A published duration does not require holdings-level or price-regression certification. Model refinements preserve reproducible baselines and disclose additional data/assumptions.
+10. No single metric, historical trend, empirical distribution or break-even threshold is silently interpreted as a universal buy signal; mixed economic evidence is preserved.
+
+Tests establish financial arithmetic and documented behavior, not trading success. Independent review must separately examine economic validity and practical usefulness of actual sourced results.
+
+## 13. Minimum research validation
+
+**Status:** This is a proposed **bounded research question**, not authorization to execute Bernie Work. A separate accepted assignment is required. It does not define the future development roadmap.
+
+**Research question:** Can established fixed-income analyses produce **several distinct, decision-relevant interpretations** of Treasury maturity and corporate-credit opportunities, and can those results be translated to practical Korean-listed bond ETF comparisons **without detailed ETF implementation modeling or an arbitrary attractiveness index**?
+
+Begin with **economically meaningful bond-reference examples** (especially Treasury 2Y/10Y/30Y) using actual dated market histories and clearly documented representative duration assumptions. Then apply supported measures to **a few actual ETF issuer profiles** to examine where fund-specific exposure or yield conventions materially affect the conclusions. This is a research order, **not a requirement to construct separate market and ETF evaluation engines**. Include a credit-spread example where matching public data and products are available; detailed FX and ETF KRD are lower priorities. The user/agent need not fix ticker selections in this architecture.
+
+**Required inspectable findings for an eventual authorized experiment:**
+
+1. Dated market input histories and issuer product profiles with units, sources, comparable conventions and limitations.
+2. A full-period **duration-normalized relative-compensation/break-even time series** for at least one Treasury maturity pair, with documented benchmark versus actual ETF inputs. Explain what changed economically and what the measure cannot prove about buying now.
+3. At least one **separately interpretable historical relative-rate-risk** analysis using compatible jointly observed tenor moves and declared representative exposures, preferably comparing the corresponding maturity pair. Explain its distinct economic question and nonparallel-versus-parallel distinction; **no winner-selection, model-combination, incremental-utility trial or attractiveness score is required**.
+4. A matched Treasury-versus-credit-OAS **divergence example**, plus an appropriate spread-risk or gross compensation interpretation; distinguish credit repricing from inferred fundamentals.
+5. Direct application of supported calculations to several **issuer-published ETF profiles**, showing cross-maturity/credit differences and explicit N/A, missing, unsupported and proxy cases. Verify the **disclosure source, as-of date, units, definition and factor suitability**, not the independently audited truth of the holdings. No ETF holdings reconstruction, NAV regression, futures carry or issuer-accuracy validation is required.
+6. Reproducible numerical fixtures, time-alignment checks, baseline-versus-justified-enhancement comparisons where applicable, and evidence that ETF price histories never drive the selection result.
+7. A concise explanation of the economic question answered by each measure, any shared underlying observations, limitations and conditions for stronger ETF conclusions. **Do not require a demonstration that one valid measure is superior to another, or force redundant-looking but differently interpretable measures into a ranking contest.**
+
+**Research completion:** Correct, reproducible formulas, clearly sourced and appropriately qualified ETF inputs, the stated outputs, and honest conclusions/limitations. It **does not require** a universal attractiveness score, an empirical competition between valid formulas, independent auditing of issuer holdings, fully comparable net ETF returns, a profitable backtest or a definitive preferred ETF. The user and Archie can review the interpretation and practical presentation before any roadmap discussion.
+
+## 14. Resolved design choices, bounded validation and revision path
+
+The earlier list of seven equally open research questions is replaced by the following decisions. A financial model is not provisional merely because another valid analysis can be placed alongside it; **research does not have to select one winner among complementary, interpretable methods**.
+
+### 14.1 Design decisions accepted for the current research architecture
+
+1. **Treasury reference analysis and ETF translation.** Treasury 2Y/10Y/30Y levels, spreads, duration-normalized market-reference compensation and related history are legitimate economic analyses independently of ETF selection. ETF calculations use official, dated issuer disclosures (not a reconstructed portfolio). Bondview checks provenance, definitions, dates and factor mapping—not whether the issuer's holdings internally produce its published sensitivity. Reliance on official disclosures is an acknowledged scope limitation, **not a further validation requirement**.
+2. **Distinct compensation and rate-risk measures.** Duration-adjusted parallel-shock break-even and historical joint relative-rate-risk changes answer different questions. Keep both if economically appropriate; neither must outperform, replace, validate or be mathematically combined with the other. Use clear parallel/nonparallel and historical/forward qualifications. Additional conventional measures or families are allowed when justified by an economic question, with no fixed aspect count or score.
+3. **Market proxy versus ETF carry.** Observed Treasury yields may support an explicitly **gross, indicative benchmark-yield break-even proxy** with declared representative durations. Actual ETF holding-period or net-carry break-even requires compatible, supportable issuer/product compensation and currency conventions. Where missing, show valid market-level and sensitivity outputs without fabricating ETF carry or net expected returns.
+4. **Term-structure complexity.** Use the observed Treasury curve as the baseline. Do not develop an internal yield-curve or term-premium forecasting model in initial research. Externally documented term-premium estimates are optional, model-dependent evidence—not an independent proof of future returns.
+5. **Corporate credit.** Treasury/OAS decomposition and declared gross spread-risk sensitivity are appropriate baseline analyses. Widening OAS indicates credit-specific repricing, **not automatically** worsening defaults, or conversely adequate net compensation. Public fundamental/liquidity corroboration is optional when the investment claim needs it; lack of a comprehensive credit model must not block descriptive OAS analysis.
+6. **Optional exposure refinements and FX.** Use disclosed duration for first-order rate risk. Add convexity or published KRD when the input is available and the extra analysis answers a concrete question; compare baseline and refined results when important. Do not require arbitrary materiality thresholds, holdings reconstruction or detailed product mechanics. Record currency/hedging policies and limit invalid cross-currency comparisons; detailed FX/hedge economics remain deferred.
+7. **Multiple evidence families.** Retain the seven provisional families as a practical, expandable index of information—not seven model engines, seven mandatory charts or seven votes. Preserve individually meaningful measures, disclose mathematical overlap, and do not force a composite score or a contest to establish which one is 'best'.
+
+### 14.2 Legitimate checks during an authorized empirical experiment
+
+- Obtain **current official issuer documents** and determine which disclosed fields and conventions can be used for each ETF comparison. Document missing data, publication timing and material factor mismatch. **Do not independently audit an issuer's holdings or require fitted duration checks.**
+- Execute, display and hand-check the parallel break-even history and, separately, a joint-tenor historical relative-rate-risk example. Document horizon choices and their different interpretation; no incremental-value gate is necessary.
+- Execute a matched Treasury/OAS example and clearly distinguish established spread repricing from claims that would require optional default/credit-fundamental evidence.
+- Determine whether published yield/carry and optional convexity/KRD data are sufficiently compatible for particular ETF-level calculations; if not, report limited/unsupported outputs instead of expanding the architecture to manufacture the data.
+- Preserve explainable financial results and applicability labels even where data or reasonable investor objectives do not support a single preferred ETF.
+
+### 14.3 Revision boundary
+
+Revise accepted formulas or data contracts only for demonstrated economic or numerical defects, material improvements with defensible inputs, or a separately agreed change in investment purpose. Adding a complementary, correctly labeled analysis does not in itself invalidate an existing aspect or require an overarching selection rule. Keep the companion examples consistent with any subsequent substantive contract changes. **The development roadmap is deferred; no Work assignment is authorized by this document.**
+
+## 15. References and research provenance
+
+- [Companion examples — revised synthetic scenarios and visualizations; still provisional](bond_etf_decision_examples.md).
+- [Earlier Bondview-v3 critical design review](bondview_v3_critical_design_review_20261013.md) — reference material, not an accepted roadmap.
+- [FRED DGS10](https://fred.stlouisfed.org/series/DGS10), [FRED DEXKOUS](https://fred.stlouisfed.org/series/DEXKOUS), [FRED Treasury data](https://fred.stlouisfed.org/).
+- [CFA Institute: fixed-income portfolio management](https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/overview-fixed-income-portfolio-management), [yield-curve strategies](https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/yield-curve-strategies), [convexity](https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/yield-based-bond-convexity-and-portfolio-properties).
+
+This document contains **no current ETF investment recommendation**. Before producing decision-support results, establish the official sources, disclosure dates, definitions, factor compatibility and market cutoffs. This is **source and input validation, not a claim that Bondview independently verified the issuer's underlying holdings or financial reporting**.
