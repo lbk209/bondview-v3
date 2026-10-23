@@ -1,12 +1,12 @@
 # Bondview-v3 — Fixed-Income Analysis Examples
 
-**Status:** PROVISIONAL companion for design review — 2026-10-22. Rewritten against the `analysis` branch of `lbk209/bondview-v3`: [`bond_etf_decision_architecture.md`](https://github.com/lbk209/bondview-v3/blob/analysis/docs/bond_etf_decision_architecture.md) (Git blob `5f88f0e4ad1e94196a60862c264d890147798371`) and the prior examples (Git blob `8f6d61c2b11e3c761393845a8eabcea9ddbe91fc`). This document does **not** authorize implementation or recommend an investment.
+**Status:** PROVISIONAL companion for design review — updated 2026-10-23 from the GitHub `analysis` branch. Analysis 1 presentation examples have been revised against [`bond_etf_decision_architecture.md`](bond_etf_decision_architecture.md); other analysis examples remain unchanged. This document does **not** authorize implementation or recommend an investment.
 
 ## 1. Purpose and conventions
 
-This companion tests whether Bondview's established financial analyses produce useful investor-facing information, using **one investment question** and distinct outputs from **Analysis 1 (§3.1, Yield-Curve and Carry)** and **Analysis 2 (§3.2, Holding-Period Return)**. Analysis 1 is intentionally **results-first and not yet fully reviewed**: an example can expose missing inputs or insufficient economic interpretation that must be resolved in a later architecture review. The architecture remains the governing contract. It is not necessary to finish Analysis 1 before a valid conditional Analysis 2 calculation can be made.
+This companion illustrates what investors could learn from **Analysis 1 (§3.1, Treasury Market Conditions and Scenarios)** and **Analysis 2 (§3.2, Holding-Period Return)** in one investment case. Analysis 1 leads with **presentation sketches**: two candidate primary market results, an optional conditional-scenario result, and an optional PCA supporting note. Detailed method selection and presentation design are deferred. The architecture remains the governing contract, and Analysis 2 does not require a prior Analysis 1 run.
 
-**Constructed-data convention.** All dates, Treasury observations, exposure IDs, issuer-style profiles and numbers below are **illustrative**, not actual historical FRED data, real ETF disclosures, forecasts, or realized returns. The market and exposure inputs used for reproducible calculations come from the existing repository fixtures: [`constructed_market_daily.csv`](https://github.com/lbk209/bondview-v3/blob/analysis/docs/assets/constructed_market_daily.csv) and [`constructed_issuer_snapshots.csv`](https://github.com/lbk209/bondview-v3/blob/analysis/docs/assets/constructed_issuer_snapshots.csv). Where those fixtures lack an input (notably a published term-premium model series), no number is invented.
+**Constructed-data convention.** All dates, Treasury observations, exposure IDs, issuer-style profiles and numbers below are **illustrative**, not actual historical FRED data, real ETF disclosures, forecasts, or realized returns. Reproducible curve and Analysis 2 arithmetic use existing repository fixtures: [`constructed_market_daily.csv`](https://github.com/lbk209/bondview-v3/blob/analysis/docs/assets/constructed_market_daily.csv) and [`constructed_issuer_snapshots.csv`](https://github.com/lbk209/bondview-v3/blob/analysis/docs/assets/constructed_issuer_snapshots.csv). **Analysis 1 presentation-only mock-ups** for term-premium decomposition, conditional scenarios and PCA are explicitly labeled; their values are not derived from these fixtures, sourced estimates or an underlying synthetic dataset.
 
 **Reading conventions.** Each example leads with what an investor would see, followed by interpretation, inputs/assumptions, and verification. Yield changes and curve spreads are in **basis points (bp)**; modeled returns are percentages and differences between returns are in **percentage points (pp)**. A rate-change assumption is neither a forecast nor a probability estimate. ETF profiles are distinguished from reference Treasury tenors; no modeled USD gross bond-exposure return is presented as the net KRW outcome of a Korean-listed ETF. All modeled cash-bond exposures are assumed eligible under the architecture's data and factor-compatibility rules.
 
@@ -16,51 +16,80 @@ This companion tests whether Bondview's established financial analyses produce u
 
 **Assessment date:** 2026-10-20. **Reference market period:** 2026-04-20 → 2026-10-20. **Conditional investment horizon for Analysis 2:** 183 calendar days (`H = 183/365 = 0.501369863` under ACT/365 Fixed), chosen for illustration, **not** inferred as the likely future path from the prior six months.
 
-### 2.1 Analysis 1 — Yield-Curve and Carry (§3.1)
+### 2.1 Analysis 1 — Treasury Market Conditions and Scenarios (§3.1)
 
-**Financial question.** What changed in the Treasury yield curve, what can those changes establish, and what additional established market information would be needed to evaluate the investor's long-rate view?
+**Purpose.** Help investors interpret maturity-specific Treasury market conditions, distinguish expected-rate and term-premium explanations when supported, and supply coherent yield-curve scenarios to Analysis 2 when useful. The examples below are **display concepts**, not a requirement to publish a separate result for every model.
 
-#### A. User-facing result — Treasury market assessment
+#### A. Candidate primary user-facing results
 
-| Constructed observation | 2026-04-20 | 2026-07-20 | 2026-10-20 | April → October |
-|---|---:|---:|---:|---:|
-| **2Y Treasury yield** | 4.65% | 4.38% | 4.12% | **−53 bp** |
-| **10Y Treasury yield** | 4.50% | 4.70% | 5.06% | **+56 bp** |
-| **30Y Treasury yield** | 5.02% | 5.11% | 5.32% | **+30 bp** |
-| **10Y − 2Y spread** | −15 bp | +32 bp | **+94 bp** | **+109 bp** |
-| **30Y − 10Y spread** | +52 bp | +41 bp | **+26 bp** | **−26 bp** |
+##### A1. Treasury curve regime — where has rate pressure concentrated?
 
-**What this tells the investor:** The 10Y–2Y spread widened by 109 bp **because both legs moved in opposite directions**: short yields declined while longer yields rose. At the long end, the 30Y yield rose less than the 10Y yield, narrowing the 30Y–10Y spread. The curve did not undergo one common parallel shift.
+> **2Y–10Y steepening, 10Y–30Y flattening.** From April to October, the 2Y yield **fell 53 bp**, while the 10Y **rose 56 bp** and the 30Y **rose 30 bp**. This is a mixed curve twist, not a uniform bull or bear shift.
 
-**What remains unresolved:** Whether the increase in longer yields primarily reflects higher expected future short rates or higher required term-risk compensation; whether either component will persist or reverse; and which joint 2Y/10Y/30Y yield changes will occur over the next 183 days. The existing constructed CSV does **not** contain a published-model decomposition, so **term-premium attribution is unavailable in this example**, not zero.
+| Tenor | Yield at start | Yield at end | Change | Immediate interpretation |
+|---|---:|---:|---:|---|
+| **2Y** | 4.65% | 4.12% | **−53 bp** | Falling short-end yields supported short-tenor *rate-price* returns |
+| **10Y** | 4.50% | 5.06% | **+56 bp** | Greatest upward yield movement among these tenors |
+| **30Y** | 5.02% | 5.32% | **+30 bp** | Smaller yield rise than 10Y, but greater duration may still magnify the price effect |
 
-**Investor-facing follow-on information worth testing in Analysis 1:** An internally consistent published-model decomposition of a given Treasury zero-coupon/fitted yield into the model's expected-average-short-rate and term-premium components, with dated levels **and changes**. Such a result might help interpret the move, but it would not imply a future yield trajectory or itself rank ETFs. A simple par-yield spread cannot substitute for this decomposition.
+**Tenor-selection insight:** The recent rate move was more favorable to the short end than to the 10Y on a rate-price basis. This **describes the past**, rather than favoring a specific ETF for the next holding period. The current compensation and the investor's forward-looking rate view remain relevant.
 
-#### B. Financial interpretation
+##### A2. Long-yield decomposition — expected rates or term compensation?
 
-A larger positive 10Y–2Y spread is an observation about *relative yields*, not evidence by itself that longer bonds are cheap or that the spread must mean-revert. Here the 10Y yield increased 56 bp while the 2Y fell 53 bp; their opposing price effects have very different implications for duration exposures. Similarly, a 30Y yield level of 5.32% is not an ETF's portfolio YTM, nor proof that 30Y yields have reached a historical or economic ceiling.
+> **Illustrative model interpretation:** Most of an example increase in the 10Y **model-fitted yield** comes from the term-premium component, rather than revised expectations of future short rates.
 
-The current market data can narrow and sharpen the investor's question. They **cannot** justify assuming that the previous April–October movement will recur after October 20. Analysis 2 therefore displays *conditions* under which one exposure has a higher modeled return, rather than accepting a single “most likely” joint curve movement from Analysis 1.
+| Model-implied change over an illustrative interval | Contribution |
+|---|---:|
+| 10Y fitted zero-coupon yield | **+60 bp** |
+| Expected average future short-rate component | +15 bp |
+| Term-premium component | **+45 bp** |
 
-#### C. Construction and inputs
+**Tenor-selection insight:** Increased term compensation may help explain why long-maturity yields remained under upward pressure even without comparably large changes in expected policy rates. Long-duration ETF exposure could remain sensitive to premium changes independently of the near-term Fed policy path. The model does **not** identify a cause such as fiscal issuance or inflation uncertainty without separate evidence, nor does a larger premium imply an imminent decline.
 
-The values are dated rows from [`constructed_market_daily.csv`](https://github.com/lbk209/bondview-v3/blob/analysis/docs/assets/constructed_market_daily.csv), using `DGS2_pct`, `DGS10_pct` and `DGS30_pct`. Recalculate every spread from the underlying yield columns, not from the fixture's precomputed spread columns. All three tenors at each date are aligned. The displayed interval is 183 calendar days; it is not an estimate of future expected yields.
+*Presentation-only mock-up. These +60/+15/+45 bp figures are invented to illustrate the display, **not** an ACM, CR or KW estimate, not measured from the constructed market CSV, and not an attribution of the April–October curve changes above. A real result would use one internally consistent published model.*
 
-A **published term-premium-model result** requires a separately sourced and dated set of model-fitted/zero-coupon yields, expected-average short-rate components, and premia with matching model definitions. For instance, an ACM or Christensen–Rudebusch series could be examined once obtained. Do **not** force these series to add up to a raw `DGS10` par/constant-maturity yield, and do not mix components from different models. Neither actual nor synthetic values for such a decomposition are included in the available fixtures.
+#### B. Optional supporting user-facing result — conditional joint movements
 
-No unsupported roll-down return is calculated: Treasury par yield observations and selected ETF YTM/duration alone are insufficient to establish an ETF portfolio's aging and rebalancing mechanics.
+##### B1. What follows for 2Y and 30Y if the investor expects a moderate 10Y increase?
 
-#### D. Arithmetic and design-review checks
+**Investor's condition (input, not result):** 10Y yield increases **25–50 bp** over the next six months.
 
-- April: `(4.50 − 4.65) × 100 = −15 bp`; October: `(5.06 − 4.12) × 100 = +94 bp`; change: `94 − (−15) = +109 bp`.
-- April 30Y−10Y: `(5.02 − 4.50) × 100 = +52 bp`; October: `(5.32 − 5.06) × 100 = +26 bp`; change: `−26 bp`.
-- Treasury changes: `Δ2Y = −53 bp`, `Δ10Y = +56 bp`, `Δ30Y = +30 bp`, a **historically observed joint vector** for this particular interval, **not** an assumed future six-month vector.
+| Example joint curve outcome | Δ2Y | Δ10Y (conditioned) | Δ30Y | Curve interpretation |
+|---|---:|---:|---:|---|
+| Short end rises fastest | +65 bp | +35 bp | +15 bp | Bear flattening |
+| Broad rise | +30 bp | +40 bp | +45 bp | Approximately parallel |
+| Long end rises fastest | +5 bp | +40 bp | +75 bp | Bear steepening |
 
-**Questions for the later Analysis 1 architecture review (not accepted requirements):**
+**Finding the model should actually deliver:** How **other tenors move jointly** when the stated 10Y condition holds—including their variation and whether relative curve configurations differ. These examples illustrate why a view about one yield does not determine relative ETF outcomes.
 
-1. Is the derived-curve display, by itself, sufficiently informative, or is a published term-premium decomposition an essential user-facing result for this investment question? The latter needs actual model series and explicit provenance.
-2. Should Analysis 1 present observed cross-tenor co-movements over a properly matched reference horizon, and how should regime sensitivity and strongly overlapping samples be disclosed? No PCA/regression model or probabilities are presumed here.
-3. What is the minimum additional market evidence needed to evaluate the *plausibility* of a specific long-rate view without turning Analysis 1 into an automatic forecasting or scenario-generation engine?
+**Use:** Supply the *complete, coherent vectors* to Analysis 2 for matched ETF return comparisons. A standalone scenario table is optional if it adds no investment insight beyond Analysis 2.
+
+*Presentation-only hypothetical vectors, **not** observed historical intervals, estimated conditional quantiles or assigned probabilities. Actual historical conditioning must retain same-interval 2Y/10Y/30Y moves; a model-based method must preserve justified cross-factor relationships.*
+
+##### B2. PCA factor structure — optional explanatory note, not a required result
+
+| Historical factor interpretation | Illustrative explained variance |
+|---|---:|
+| Broad common movement (level-like) | 75% |
+| Relative short/long movement (slope-like) | 20% |
+| Intermediate-versus-end movement (curvature-like) | 5% |
+
+**Tenor-selection insight:** A large common factor suggests substantial shared interest-rate exposure across tenors, while slope and curvature differences can still matter for ETF comparisons. The factor analysis is **supporting evidence**, not a preferred-tenor result; if used for Analysis 2 scenarios, PCA requires an additional conditioning/construction method.
+
+*Illustrative PCA percentages, not calculated loadings. Explained variance is **not** the fraction of dates on which all tenors moved in the same direction. Factor labels would require checking actual loadings.*
+
+#### C. Supporting observations and deferred design notes
+
+The A1 curve observations above are drawn from the constructed `DGS2_pct`, `DGS10_pct` and `DGS30_pct` rows for **2026-04-20 → 2026-10-20** in [`constructed_market_daily.csv`](https://github.com/lbk209/bondview-v3/blob/analysis/docs/assets/constructed_market_daily.csv). The intermediate 2026-07-20 observations remain available in that fixture. Spreads should be recalculated from aligned yields, not treated as independent inputs.
+
+| Constructed spread | At start | At end | Change |
+|---|---:|---:|---:|
+| 10Y − 2Y | −15 bp | +94 bp | **+109 bp** |
+| 30Y − 10Y | +52 bp | +26 bp | **−26 bp** |
+
+The April–October changes form one **observed-in-the-constructed-dataset** joint vector `(−53, +56, +30) bp`; they are **not** a projection for the next six months. The decomposed yield in A2 must use matching fitted-model components, not be forced to equal `DGS10`. The scenario vectors in B1 are unrelated hypothetical presentation examples, not selected observations from the fixture. Any carry/roll refinement of a holding-return baseline belongs within **Analysis 2** when justified; it is not a separate Analysis 1 result.
+
+The usefulness of published decomposition estimates, choice of historical conditioning versus regression/PCA, sample/regime sensitivity and whether optional outputs deserve screen space remain for later discussion. No model is mandatory merely because its format appears here.
 
 ### 2.2 Analysis 2 — Holding-Period Return (§3.2)
 
