@@ -108,13 +108,17 @@ Sections **3.1–3.5** define the five Analyses: (1) Treasury Market Conditions 
 
 ### 3.1 Treasury Market Conditions and Scenarios Analysis
 
-**Questions.**
+**Question.** What does U.S. Treasury market evidence reveal about interest-rate conditions and relationships across maturities relevant to tenor selection?
 
-1. How have Treasury yield-curve conditions and relative movements across maturities evolved, and what do they imply for interpreting maturity-specific interest-rate exposure?
-2. To what extent do changes in Treasury yields reflect model-estimated expected short rates versus term premiums, and what economic interpretation can the evidence support?
-3. Given an investment horizon and an investor's partial market view, what joint movements of **other Treasury maturities** are supported by relevant historical relationships or justified models?
+**Yield-curve conditions and movements.**
 
-**Independent market interpretation.** Derive maturity-specific yields and 10Y−2Y, 30Y−10Y and other relevant spreads from aligned Treasury observations. Examine both the shape of the curve and the **underlying tenor changes** that produced it: the same change in slope can accompany materially different rate-price consequences. Compare levels, changes and economically meaningful curve features across tenors and assessment dates. Where supported, examine compatible forward-rate information to interpret the market-implied rate structure, distinguishing it from a forecast of future spot rates.
+*How have Treasury yield levels and curve shapes changed across maturities, and what do those changes reveal about maturity-specific interest-rate conditions?*
+
+Derive maturity-specific yields and 10Y−2Y, 30Y−10Y and other relevant spreads from aligned Treasury observations. Examine both the shape of the curve and the **underlying tenor changes** that produced it: the same change in slope can accompany materially different rate-price consequences. Compare levels, changes and economically meaningful curve features across tenors and assessment dates. Where supported, examine compatible forward-rate information to interpret the market-implied rate structure, distinguishing it from a forecast of future spot rates.
+
+**Expected short rates and term premiums.**
+
+*To what extent do model-estimated expected short rates and term premiums explain changes in Treasury yields?*
 
 For a consistently defined nominal Treasury zero-coupon yield, an established decomposition is:
 
@@ -122,13 +126,23 @@ For a consistently defined nominal Treasury zero-coupon yield, an established de
 
 When useful, apply suitable published decompositions using mutually consistent model-fitted yields, expected short-rate components and term premiums. These model quantities are not directly interchangeable with observed constant-maturity or par yields. Examine expected-rate and term-premium **levels and changes** to distinguish economic explanations of the same observed long-yield movement. Term premiums are model-estimated and may differ across models; no particular published model, maturity coverage or decomposition is required when unsupported. The decomposition distinguishes estimated yield components, **not the underlying macroeconomic causes** (such as Treasury supply or inflation uncertainty), which require separate evidence.
 
-**Conditional joint-scenario evidence.** An investor may provide a limited, interpretable view—such as a rise, decline or approximate stability in 10Y yields over a chosen horizon—without specifying independent future changes for 2Y and 30Y. Under a **documented numerical condition** representing that view, examine complete multi-tenor yield movements using coherent historical observations or an appropriately justified conventional statistical/model-based method. Historical conditioning, regression, PCA and other term-structure approaches are possible methods; select according to the financial question, available data and intended output. PCA may also describe historical common yield-curve movement factors (often level, slope and curvature), but its factors alone do **not** produce conditional joint scenarios without a justified conditioning and scenario-construction step. A simple historical method may be sufficient; added sophistication requires a useful analytical benefit.
+**Conditional joint yield movements.**
+
+*Given an investor's partial rate view and investment horizon, what corresponding movements across other Treasury maturities are supported by historical relationships or justified models?*
+
+An investor may provide a limited, interpretable view—such as a rise, decline or approximate stability in 10Y yields over a chosen horizon—without specifying independent future changes for 2Y and 30Y. Under a **documented numerical condition** representing that view, examine complete multi-tenor yield movements using coherent historical observations or an appropriately justified conventional statistical/model-based method.
+
+Historical conditioning, regression, PCA and other term-structure approaches are possible methods; select according to the financial question, available data and intended output. PCA may also describe historical common yield-curve movement factors (often level, slope and curvature), but its factors alone do **not** produce conditional joint scenarios without a justified conditioning and scenario-construction step. A simple historical method may be sufficient; added sophistication requires a useful analytical benefit.
 
 The scenario output is the **set of coherent joint yield-change vectors**, with its conditioning rule, market factors, horizon, reference period and construction method. When a view conditions one tenor, retain the **same-interval movements of the other tenors** in historical scenarios, or the relevant cross-factor relationships implied by the justified modeled method; independently predicting every tenor is not a default requirement of the investor. Marginal ranges and co-movement descriptions may explain the set but must not be combined into purported historical joint vectors. Direction-only views require a clearly defined rate-change range or a justified conditioning convention; no universal rising/stable/falling thresholds are imposed. The selected historical or model-conditioned set is not automatically an estimated future probability distribution.
 
-**Distinct roles of the outputs.** Yield-curve evolution, compatible forward-rate information and supported expected-rate/term-premium decomposition can provide **standalone market insight**. Joint-scenario evidence may instead support **Analysis 2** without a separate user-facing result. These functions need not use the same model: a yield decomposition is not automatically a scenario generator, and scenario construction need not independently establish ETF attractiveness.
+**Results and analytical relationships.**
 
-**Results.** Provide relevant dated yield-curve measures, supported interpretations of their movements and model-consistent decomposition estimates where useful. When needed, provide coherent conditional joint scenarios or descriptive summaries for Analysis 2. Compare maturities and dates without equating Treasury-market/model measures with actual ETF portfolio returns. Analysis 1 need not predict a unique future curve or precede an independently specified Analysis 2 scenario.
+Provide relevant dated yield-curve measures, supported interpretations of their movements and model-consistent decomposition estimates where useful. Yield-curve evolution, compatible forward-rate information and supported expected-rate/term-premium decomposition can provide **standalone market insight**.
+
+When needed, provide coherent conditional joint scenarios or descriptive summaries for Analysis 2 without requiring a separate user-facing result. These functions need not use the same model: a yield decomposition is not automatically a scenario generator, and scenario construction need not independently establish ETF attractiveness.
+
+Compare maturities and dates without equating Treasury-market/model measures with actual ETF portfolio returns. Analysis 1 need not predict a unique future curve or precede an independently specified Analysis 2 scenario.
 
 ### 3.2 Holding-Period Return Analysis — initial primary
 
