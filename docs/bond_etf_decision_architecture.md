@@ -108,7 +108,7 @@ Sections **3.1–3.5** define the five Analyses: (1) Treasury Market Conditions 
 
 ### 3.1 Treasury Market Conditions and Scenarios Analysis
 
-**Question.** What does U.S. Treasury market evidence reveal about interest-rate conditions and relationships across maturities relevant to tenor selection?
+**Question.** *What does U.S. Treasury market evidence reveal about interest-rate conditions and relationships across maturities relevant to tenor selection?*
 
 **Yield-curve conditions and movements.**
 
@@ -124,7 +124,7 @@ For a consistently defined nominal Treasury zero-coupon yield, an established de
 
 `model_yield_n(t) ≈ model_expected_average_future_short_rates_n(t) + model_term_premium_n(t)`.
 
-When useful, apply suitable published decompositions using mutually consistent model-fitted yields, expected short-rate components and term premiums. These model quantities are not directly interchangeable with observed constant-maturity or par yields. Examine expected-rate and term-premium **levels and changes** to distinguish economic explanations of the same observed long-yield movement. Term premiums are model-estimated and may differ across models; no particular published model, maturity coverage or decomposition is required when unsupported. The decomposition distinguishes estimated yield components, **not the underlying macroeconomic causes** (such as Treasury supply or inflation uncertainty), which require separate evidence.
+When useful, apply suitable published decompositions using mutually consistent model-fitted yields, expected short-rate components and term premiums. These model quantities are not directly interchangeable with observed constant-maturity or par yields. Examine expected-rate and term-premium **levels and changes** to identify their model-estimated contributions to Treasury yield movements and interpret interest-rate conditions relevant to tenor selection. These contributions can also guide investigation of potential macroeconomic influences, such as monetary-policy expectations, Treasury supply, inflation uncertainty and investor demand. Term premiums are model-estimated and may differ across models; no particular published model, maturity coverage or decomposition is required when unsupported. Attributing yield movements to specific underlying macroeconomic causes requires additional evidence.
 
 **Conditional joint yield movements.**
 
@@ -162,7 +162,7 @@ Compare maturities and dates without equating Treasury-market/model measures wit
 
 `B_ref_i,H ≈ portfolio_YTM_i * H_years`.
 
-The selected yield definition must be suitable; distribution yield is not a substitute. This baseline is a **first-order yield-based compensation proxy**, not realized coupon income or an independently measured roll-down return, and may not precisely describe a rebalanced ETF. A curve-consistent carry/roll refinement of the baseline may be considered when supported by exposure data and material decision benefit, with appropriate aging/rebalancing conventions and no double counting. A detailed reconstruction of every issuer holding is not a prerequisite.
+The selected yield definition must be suitable; distribution yield is not a substitute. This baseline is a first-order yield-based compensation proxy, not realized coupon income or an independently measured roll-down return, and may not precisely describe a rebalanced ETF. Baseline approximation errors can affect absolute returns and relative comparisons across ETFs or assessment dates. A curve-consistent carry/roll refinement of the baseline may be considered when supported by exposure data and material decision benefit, with appropriate aging/rebalancing conventions and no double counting. A detailed reconstruction of every issuer holding is not a prerequisite.
 
 **Comparison across a scenario set.** For each joint vector `s`, calculate supported outcomes for **all compatible candidates** and the **paired differences** `R_hat_i,H(s) − R_hat_j,H(s)`. Then characterize the collection of paired outcomes and any economically meaningful conclusions, including:
 
