@@ -148,6 +148,8 @@ Compare maturities and dates without equating Treasury-market/model measures wit
 
 **Questions.** *For the selected holding period and coherent market conditions, what supported gross returns are implied for eligible Treasury-tenor, ETF or benchmark exposures? Which outcomes and relative advantages persist or change across an entire relevant scenario set, and how do the opportunities compare across assessment dates?*
 
+#### Return model
+
 **Financial result.** The primary quantity is the **modeled gross USD holding-period total return of a compatible cash-bond exposure**, as a percentage of initial value, including supported compensation/accrual and rate-price effects. Relative modeled returns are expressed in **percentage points (pp)**. Do not equate this estimate with a quoted yield, a rate-only price change, an actually realized ETF return or a net KRW investor return. An observed realized total return instead uses the actual ending value and distributions under a stated convention.
 
 **Scenario inputs.** Select the assessment date `t`, the eligible ETF, explicitly selected benchmark or reference Treasury exposure, and holding horizon `H`. Analyze either (i) a **complete, dated historical joint yield-change vector or a set of such vectors**, (ii) coherent modeled/conditioned vectors informed by Analysis 1 or another defensible source, or (iii) fully specified hypothetical vectors with their assumptions and any held-fixed factors. Preserve the **same complete scenario** when comparing exposures, and map its factors to each exposure using compatible sensitivity definitions. A separately supplied scenario remains valid without first running Analysis 1. General scenario and date conventions are in §4.
@@ -164,7 +166,11 @@ Compare maturities and dates without equating Treasury-market/model measures wit
 
 The selected yield definition must be suitable; distribution yield is not a substitute. This baseline is a first-order yield-based compensation proxy, not realized coupon income or an independently measured roll-down return, and may not precisely describe a rebalanced ETF. Baseline approximation errors can affect absolute returns and relative comparisons across ETFs or assessment dates. A curve-consistent carry/roll refinement of the baseline may be considered when supported by exposure data and material decision benefit, with appropriate aging/rebalancing conventions and no double counting. A detailed reconstruction of every issuer holding is not a prerequisite.
 
-**Comparison across a scenario set.** For each joint vector `s`, calculate supported outcomes for **all compatible candidates** and the **paired differences** `R_hat_i,H(s) − R_hat_j,H(s)`. Then characterize the collection of paired outcomes and any economically meaningful conclusions, including:
+**Instrument and model scope.** A selected cash-bond ETF or compatible selected cash-bond benchmark can support the stated baseline and repricing approach. Futures-linked ETF returns require their own supported futures/roll/collateral economics; a chosen cash-bond benchmark produces results **for the benchmark exposure**, not the futures ETF itself. Static assessment-date duration approximates local exposure over the stated shock; convexity improves local nonlinearity but does not capture future portfolio changes. For unsupported baseline, spread, hedge or other material terms, report a qualified **partial return or rate-price effect** rather than a complete total return. Realized ETF/index total-return histories are independent diagnostics, not a hidden baseline to which rate effects are added.
+
+#### Return comparisons
+
+**Comparison across a scenario set.** For each joint vector `s`, calculate supported outcomes for **all compatible candidates** and the **paired differences** `R_hat_i,H(s) − R_hat_j,H(s)`. Characterize the collection of paired outcomes and economically meaningful conclusions, including:
 
 - **Scenario-wide results:** e.g., a positive modeled outcome for one exposure, or a relative advantage that holds **throughout the specified set**.
 - **Conditional comparative results:** the magnitude and direction of relative returns, circumstances that reverse a preference, and return compensation relative to the extra duration assumed.
@@ -173,7 +179,7 @@ The selected yield definition must be suitable; distribution yield is not a subs
 
 Meaningful trade-offs and insufficient discrimination are reportable financial results. Quantiles of different tenors' yield changes or different ETFs' modeled returns calculated **separately** are marginal summaries; they are not a simultaneously observed joint scenario. Preserve pairing when drawing cross-exposure conclusions.
 
-**Break-even and sensitivity comparisons.** For two compatible single-factor cash-bond exposures under the first-order approximation, ignoring unsupported refinements:
+**Break-even and sensitivity comparisons.** Relative-return comparisons can also identify conditions under which two exposures produce equal modeled returns. For two compatible single-factor cash-bond exposures under the first-order approximation, ignoring unsupported refinements:
 
 `R_hat_i,H(s) − R_hat_j,H(s) ≈ (B_ref_i,H − B_ref_j,H) − D_i * delta_y_i(s) + D_j * delta_y_j(s)`.
 
@@ -183,9 +189,9 @@ Setting this difference to zero gives a conditional **equal-return relation** am
 
 The scalar expression does not apply as a universal cross-tenor threshold under nonparallel movements. When supported convexity, spread effects or key-rate sensitivities materially change relative returns, calculate break-even conditions using the full compatible model rather than retaining an inapplicable linear approximation. Such comparisons establish **conditional return relations**, not the expected future yield path.
 
-**Instrument and model scope.** A selected cash-bond ETF or compatible selected cash-bond benchmark can support the stated baseline and repricing approach. Futures-linked ETF returns require their own supported futures/roll/collateral economics; a chosen cash-bond benchmark produces results **for the benchmark exposure**, not the futures ETF itself. Static assessment-date duration approximates local exposure over the stated shock; convexity improves local nonlinearity but does not capture future portfolio changes. For unsupported baseline, spread, hedge or other material terms, report a qualified **partial return or rate-price effect** rather than a complete total return. Realized ETF/index total-return histories are independent diagnostics, not a hidden baseline to which rate effects are added.
+#### Output contract
 
-**Output contract.** Report the selected ETF/benchmark/reference source; assessment date and exposure-profile date; horizon and year fraction; scenario source, type and conditioning (including historical endpoints where applicable); factor mapping; baseline and supported repricing components; modeled return **scope and units**; and matched relative comparisons. Provide a concise conclusion across the specified set whenever supported, clearly distinguishing conditional conclusions from claims about outcomes outside the set. Credit, currency and hedging extensions in Analyses 4–5 can subsequently modify a rate-only/gross USD comparison when defensibly modeled.
+Report the selected ETF/benchmark/reference source; assessment date and exposure-profile date; horizon and year fraction; scenario source, type and conditioning (including historical endpoints where applicable); factor mapping; baseline and supported repricing components; modeled return **scope and units**; and matched relative comparisons. Provide a concise conclusion across the specified set whenever supported, clearly distinguishing conditional conclusions from claims about outcomes outside the set. Credit, currency and hedging extensions in Analyses 4–5 can subsequently modify a rate-only/gross USD comparison when defensibly modeled.
 
 ### 3.3 Risk and Stress Analysis — initial primary
 
