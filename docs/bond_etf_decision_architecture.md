@@ -148,7 +148,7 @@ Compare maturities and dates without equating Treasury-market/model measures wit
 
 **Question.** *How do modeled holding-period returns and break-even conditions inform the comparison of Treasury-tenor and ETF exposures?*
 
-#### A. Return model
+#### A. Holding-period returns and comparisons
 
 *Which exposures offer higher modeled returns under supported market scenarios, and how do their relative advantages change across assessment dates?*
 
@@ -181,7 +181,7 @@ The selected yield definition must be suitable; distribution yield is not a subs
 
 **Instrument and model scope.** A selected cash-bond ETF or compatible selected cash-bond benchmark can support the stated baseline and repricing approach. Futures-linked ETF returns require their own supported futures/roll/collateral economics; a chosen cash-bond benchmark produces results **for the benchmark exposure**, not the futures ETF itself. Static assessment-date duration approximates local exposure over the stated shock; convexity improves local nonlinearity but does not capture future portfolio changes. For unsupported baseline, spread, hedge or other material terms, report a qualified **partial return or rate-price effect** rather than a complete total return. Realized ETF/index total-return histories are independent diagnostics, not a hidden baseline to which rate effects are added.
 
-#### Return comparisons
+**Return comparisons**
 
 **Comparison across a scenario set.** For each joint vector $s$, calculate supported outcomes for **all compatible candidates** and the **paired differences** $\widehat R_{i,H}(s) - \widehat R_{j,H}(s)$. Characterize the collection of paired outcomes and economically meaningful conclusions, including:
 
