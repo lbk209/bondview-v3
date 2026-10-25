@@ -110,13 +110,13 @@ Sections **3.1–3.5** define the five Analyses: (1) Treasury Market Conditions 
 
 **Question.** *What does U.S. Treasury market evidence reveal about interest-rate conditions and relationships across maturities relevant to tenor selection?*
 
-**Yield-curve conditions and movements.**
+#### A. Yield-curve conditions and movements
 
 *How have Treasury yield levels and curve shapes changed across maturities, and what do those changes reveal about maturity-specific interest-rate conditions?*
 
 Derive maturity-specific yields and 10Y−2Y, 30Y−10Y and other relevant spreads from aligned Treasury observations. Examine both the shape of the curve and the **underlying tenor changes** that produced it: the same change in slope can accompany materially different rate-price consequences. Compare levels, changes and economically meaningful curve features across tenors and assessment dates. Where supported, examine compatible forward-rate information to interpret the market-implied rate structure, distinguishing it from a forecast of future spot rates.
 
-**Expected short rates and term premiums.**
+#### B. Expected short rates and term premiums
 
 *To what extent do model-estimated expected short rates and term premiums explain changes in Treasury yields?*
 
@@ -126,7 +126,7 @@ For a consistently defined nominal Treasury zero-coupon yield, an established de
 
 When useful, apply suitable published decompositions using mutually consistent model-fitted yields, expected short-rate components and term premiums. These model quantities are not directly interchangeable with observed constant-maturity or par yields. Examine expected-rate and term-premium **levels and changes** to identify their model-estimated contributions to Treasury yield movements and interpret interest-rate conditions relevant to tenor selection. These contributions can also guide investigation of potential macroeconomic influences, such as monetary-policy expectations, Treasury supply, inflation uncertainty and investor demand. Term premiums are model-estimated and may differ across models; no particular published model, maturity coverage or decomposition is required when unsupported. Attributing yield movements to specific underlying macroeconomic causes requires additional evidence.
 
-**Conditional joint yield movements.**
+#### C. Conditional joint yield movements
 
 *Given an investor's partial rate view and investment horizon, what corresponding movements across other Treasury maturities are supported by historical relationships or justified models?*
 
@@ -136,7 +136,7 @@ Historical conditioning, regression, PCA and other term-structure approaches are
 
 The scenario output is the **set of coherent joint yield-change vectors**, with its conditioning rule, market factors, horizon, reference period and construction method. When a view conditions one tenor, retain the **same-interval movements of the other tenors** in historical scenarios, or the relevant cross-factor relationships implied by the justified modeled method; independently predicting every tenor is not a default requirement of the investor. Marginal ranges and co-movement descriptions may explain the set but must not be combined into purported historical joint vectors. Direction-only views require a clearly defined rate-change range or a justified conditioning convention; no universal rising/stable/falling thresholds are imposed. The selected historical or model-conditioned set is not automatically an estimated future probability distribution.
 
-**Results and analytical relationships.**
+#### Results and analytical relationships
 
 Provide relevant dated yield-curve measures, supported interpretations of their movements and model-consistent decomposition estimates where useful. Yield-curve evolution, compatible forward-rate information and supported expected-rate/term-premium decomposition can provide **standalone market insight**.
 
@@ -148,7 +148,7 @@ Compare maturities and dates without equating Treasury-market/model measures wit
 
 **Question.** *How do modeled holding-period returns and break-even conditions inform the comparison of Treasury-tenor and ETF exposures?*
 
-#### Return model
+#### A. Return model
 
 *Which exposures offer higher modeled returns under supported market scenarios, and how do their relative advantages change across assessment dates?*
 
@@ -194,11 +194,11 @@ Meaningful trade-offs and insufficient discrimination are reportable financial r
 
 When useful, paired return comparisons may also identify the market conditions under which exposures produce equal modeled returns.
 
-#### Compensation and break-even comparisons
+#### B. Compensation and break-even comparisons
 
 *How do compensation and break-even conditions reveal each exposure's return resilience and its changes across assessment dates?*
 
-**Individual zero-return break-even.** For a compatible single-factor cash-bond exposure under the first-order approximation, the **zero-return break-even yield rise** is the increase in its matched yield that offsets modeled holding-period compensation:
+**Zero-return break-even.** For a compatible single-factor cash-bond exposure under the first-order approximation, the **zero-return break-even yield rise** is the increase in its matched yield that offsets modeled holding-period compensation:
 
 $$
 \Delta y^{\mathrm{BE}}_{i,H,\mathrm{bp}}
