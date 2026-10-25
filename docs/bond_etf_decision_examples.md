@@ -6,7 +6,7 @@
 
 This document demonstrates how fixed-income analysis could help an investor interpret U.S. Treasury conditions and compare eligible bond exposures. Each analysis introduces its own question and any additional inputs. An analysis may use results from an earlier one, but the examples are not a mandatory processing sequence or a single investment case that already covers all five analyses. The methods and eligibility rules are defined in [`bond_etf_decision_architecture.md`](bond_etf_decision_architecture.md); they are not restated here.
 
-**Illustrative data.** All dates, market observations, ETF-like exposure profiles and numerical outcomes in this document are illustrative, not actual market histories, real ETF disclosures or forecasts. The A1 curve observations and Analysis 2 calculations use the constructed repository fixtures [`constructed_market_daily.csv`](https://github.com/lbk209/bondview-v3/blob/analysis/docs/assets/constructed_market_daily.csv) and [`constructed_issuer_snapshots.csv`](https://github.com/lbk209/bondview-v3/blob/analysis/docs/assets/constructed_issuer_snapshots.csv). The A2 term-premium decomposition, B1 illustrative scenario rows and B2 PCA percentages are separate presentation examples: they were not estimated from the fixtures, and A2 does not represent an ACM, CR or KW model result. These different examples should not be read as measurements of one common historical episode.
+**Illustrative data and results.** The examples demonstrate analytical methods, financial interpretations, and potential investment applications. They may use historical observations, constructed datasets, or simplified assumptions, and do not necessarily represent a single historical episode. Numerical results should be understood as illustrations of the analyses rather than independent evidence supporting an investment decision.
 
 **Interpretation and units.** Historical changes describe an interval; scenario assumptions define *conditional* outcomes rather than predicted market paths or probabilities. Treasury-market measures, modeled gross USD cash-bond returns, and realized net KRW ETF returns are distinct quantities. Yield/spread changes and yield-rise cushions are in basis points (bp); modeled returns are percentages of initial value and return differences are percentage points (pp). Individual examples state additional qualifications only where they affect the meaning of a result.
 
@@ -20,19 +20,24 @@ This document demonstrates how fixed-income analysis could help an investor inte
 
 ##### A1. Treasury curve conditions and movements — where has rate pressure concentrated?
 
-**Observation interval:** 2026-04-20 → 2026-10-20.
-
-| Treasury measure | Start | End | Change | Curve configuration | Movement / regime |
+| Treasury measure | 2024-09-16 | 2025-01-13 | Change | Curve configuration | Movement / regime |
 |---|---:|---:|---:|---|---|
-| 2Y yield | 4.65% | 4.12% | **−53 bp** | — | Yield fell |
-| 10Y yield | 4.50% | 5.06% | **+56 bp** | — | Yield rose |
-| 30Y yield | 5.02% | 5.32% | **+30 bp** | — | Yield rose |
-| **10Y − 2Y spread** | **−15 bp** | **+94 bp** | **+109 bp** | **Inverted → upward-sloping** | **Twist steepening** |
-| **30Y − 10Y spread** | **+52 bp** | **+26 bp** | **−26 bp** | **Upward-sloping → upward-sloping** | **Bear flattening** |
+| 2Y yield | 3.56% | 4.40% | **+84 bp** | — | Yield rose |
+| 10Y yield | 3.63% | 4.79% | **+116 bp** | — | Yield rose |
+| 30Y yield | 3.94% | 4.97% | **+103 bp** | — | Yield rose |
+| **10Y − 2Y spread** | **+7 bp** | **+39 bp** | **+32 bp** | Upward-sloping → upward-sloping | **Bear steepening** |
+| **30Y − 10Y spread** | **+31 bp** | **+18 bp** | **−13 bp** | Upward-sloping → upward-sloping | **Bear flattening** |
 
-**What the investor learns.** The front-to-intermediate curve moved out of inversion because the 2Y yield declined while the 10Y yield increased. The 10Y–30Y segment stayed upward-sloping but flattened because both yields increased, with a larger increase at 10Y. This separates a short-end rally from upward pressure at longer maturities, and suggests investigating policy-rate expectations and term-premium changes rather than treating the entire curve as a uniform rate move.
+**What the investor learns.** Treasury yields rose across all three maturities, but the 10Y yield increased the most. The **10Y − 2Y spread** widened as the 10Y yield rose faster than the 2Y yield, producing bear steepening. Meanwhile, the **30Y − 10Y spread** narrowed as the 10Y yield rose faster than the 30Y yield, producing bear flattening. This identifies the 10Y tenor as the point of greatest upward yield pressure among the three observations and motivates further investigation of expected-rate and term-premium changes.
 
-The spread rows are calculated from the individual tenor yields at the same endpoints. The two movement regimes describe **different curve segments**; they are not two labels for the entire Treasury curve. The yield changes establish the direction of each tenor's rate-price effect, while exposure duration determines the magnitude examined in Analysis 2.
+**Observation-date selection.** The starting and ending dates determine the net movement reported in the table and therefore require careful selection. One approach is to examine the 10Y yield history, identify a period with a recognizable upward or downward direction, and select endpoints representing that movement. Here, the dates illustrate a substantial rise in the 10Y yield from its September 2024 low to January 2025. The resulting classifications describe the **net changes between the selected dates**, not every movement along the intervening path. The 10Y direction motivates the date selection; the relative movements of other tenors provide additional curve information.
+
+**Data source.** U.S. Treasury Daily Treasury Par Yield Curve Rates:
+- [September 2024](https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?field_tdr_date_value=2024&type=daily_treasury_yield_curve)
+- [January 2025](https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?field_tdr_date_value_month=202501&type=daily_treasury_yield_curve)
+
+Spreads are calculated from the corresponding tenor yields at each date. The classifications apply separately to the 2Y–10Y and 10Y–30Y curve segments. Yield movements indicate the direction of rate-price effects, while their magnitudes for ETF exposures depend on duration and other characteristics examined in Analysis 2.
+
 
 ##### A2. Long-yield decomposition — expected rates or term compensation?
 
