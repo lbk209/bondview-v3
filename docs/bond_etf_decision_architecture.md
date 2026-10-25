@@ -144,15 +144,17 @@ When needed, provide coherent conditional joint scenarios or descriptive summari
 
 Compare maturities and dates without equating Treasury-market/model measures with actual ETF portfolio returns. Analysis 1 need not predict a unique future curve or precede an independently specified Analysis 2 scenario.
 
-### 3.2 Holding-Period Return Analysis — initial primary
+### 3.2 Holding-Period Return Analysis
 
-**Questions.** *For the selected holding period and coherent market conditions, what supported gross returns are implied for eligible Treasury-tenor, ETF or benchmark exposures? Which outcomes and relative advantages persist or change across an entire relevant scenario set, and how do the opportunities compare across assessment dates?*
+**Question.** *How do modeled holding-period returns and break-even conditions inform the comparison of Treasury-tenor and ETF exposures?*
 
 #### Return model
 
+*Which exposures offer higher modeled returns under supported market scenarios, and how do their relative advantages change across assessment dates?*
+
 **Financial result.** The primary quantity is the **modeled gross USD holding-period total return of a compatible cash-bond exposure**, as a percentage of initial value, including supported compensation/accrual and rate-price effects. Relative modeled returns are expressed in **percentage points (pp)**. Do not equate this estimate with a quoted yield, a rate-only price change, an actually realized ETF return or a net KRW investor return. An observed realized total return instead uses the actual ending value and distributions under a stated convention.
 
-**Scenario inputs.** Select the assessment date `t`, the eligible ETF, explicitly selected benchmark or reference Treasury exposure, and holding horizon `H`. Analyze either (i) a **complete, dated historical joint yield-change vector or a set of such vectors**, (ii) coherent modeled/conditioned vectors informed by Analysis 1 or another defensible source, or (iii) fully specified hypothetical vectors with their assumptions and any held-fixed factors. Preserve the **same complete scenario** when comparing exposures, and map its factors to each exposure using compatible sensitivity definitions. A separately supplied scenario remains valid without first running Analysis 1. General scenario and date conventions are in §4.
+**Inputs and scenarios.** Select the assessment date `t`, the eligible ETF, explicitly selected benchmark or reference Treasury exposure, and holding horizon `H`. For scenario-based return comparisons, use either (i) **complete, dated historical joint yield-change vectors** or (ii) **coherent modeled/conditioned joint vectors** informed by Analysis 1 or another defensible source. Preserve the **same complete scenario** when comparing exposures, and map its factors to each exposure using compatible sensitivity definitions. A separately supplied scenario remains valid without first running Analysis 1. General scenario types, assumptions, and date conventions are in §4.
 
 **Recognized return approximation.** The first-order cash-bond approach combines holding-period yield-based compensation with duration-based repricing. For a compatible exposure `i` in scenario `s`:
 
@@ -179,7 +181,17 @@ The selected yield definition must be suitable; distribution yield is not a subs
 
 Meaningful trade-offs and insufficient discrimination are reportable financial results. Quantiles of different tenors' yield changes or different ETFs' modeled returns calculated **separately** are marginal summaries; they are not a simultaneously observed joint scenario. Preserve pairing when drawing cross-exposure conclusions.
 
-**Break-even and sensitivity comparisons.** Relative-return comparisons can also identify conditions under which two exposures produce equal modeled returns. For two compatible single-factor cash-bond exposures under the first-order approximation, ignoring unsupported refinements:
+#### Compensation and break-even comparisons
+
+*How do compensation and break-even conditions reveal each exposure's return resilience and its changes across assessment dates?*
+
+**Individual zero-return break-even.** For a compatible single-factor cash-bond exposure under the first-order approximation, the **zero-return break-even yield rise** is the increase in its matched yield that offsets modeled holding-period compensation:
+
+`zero_return_break_even_rise_bp ≈ 10,000 * B_ref_i,H / D_i`, for `D_i > 0`.
+
+Compare compensation and break-even resilience together, including their changes across assessment dates. This describes the evolving compensation–duration trade-off without requiring a specified joint yield-change scenario. The break-even threshold is derived from compensation and duration, not an independent source of investment evidence. Absolute cross-tenor differences largely reflect structural duration differences and do not establish relative investment attractiveness without considering relevant tenor-specific market movements.
+
+**Relative-return break-even.** Relative-return comparisons can also identify conditions under which two exposures produce equal modeled returns. For two compatible single-factor cash-bond exposures under the first-order approximation, ignoring unsupported refinements:
 
 `R_hat_i,H(s) − R_hat_j,H(s) ≈ (B_ref_i,H − B_ref_j,H) − D_i * delta_y_i(s) + D_j * delta_y_j(s)`.
 
@@ -187,11 +199,11 @@ Setting this difference to zero gives a conditional **equal-return relation** am
 
 `relative_break_even_rise_bp ≈ 10,000 * (B_ref_i,H − B_ref_j,H) / (D_i − D_j)`.
 
-The scalar expression does not apply as a universal cross-tenor threshold under nonparallel movements. When supported convexity, spread effects or key-rate sensitivities materially change relative returns, calculate break-even conditions using the full compatible model rather than retaining an inapplicable linear approximation. Such comparisons establish **conditional return relations**, not the expected future yield path.
+The scalar expression does not apply as a universal cross-tenor threshold under nonparallel movements. When supported convexity, spread effects or key-rate sensitivities materially change break-even or relative-return results, calculate them using the full compatible model rather than retaining an inapplicable linear approximation. Break-even conditions describe compensation resilience or conditional return relationships, not the expected future yield path.
 
 #### Output contract
 
-Report the selected ETF/benchmark/reference source; assessment date and exposure-profile date; horizon and year fraction; scenario source, type and conditioning (including historical endpoints where applicable); factor mapping; baseline and supported repricing components; modeled return **scope and units**; and matched relative comparisons. Provide a concise conclusion across the specified set whenever supported, clearly distinguishing conditional conclusions from claims about outcomes outside the set. Credit, currency and hedging extensions in Analyses 4–5 can subsequently modify a rate-only/gross USD comparison when defensibly modeled.
+Report the selected ETF/benchmark/reference source; assessment date and exposure-profile date; horizon and year fraction; applicable factor mapping; baseline compensation and sensitivity inputs; and modeled result **scope and units**. For break-even comparisons, identify the reference return condition and relevant yield factor. For scenario-based comparisons, additionally report scenario source, type and conditioning (including historical endpoints where applicable), supported repricing components and matched relative comparisons. Provide a concise conclusion across the specified set whenever supported, clearly distinguishing conditional conclusions from claims about outcomes outside the set. Credit, currency and hedging extensions in Analyses 4–5 can subsequently modify a rate-only/gross USD comparison when defensibly modeled.
 
 ### 3.3 Risk and Stress Analysis — initial primary
 
