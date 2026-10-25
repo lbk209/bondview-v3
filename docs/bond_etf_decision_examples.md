@@ -39,17 +39,28 @@ This document demonstrates how fixed-income analysis could help an investor inte
 Spreads are calculated from the corresponding tenor yields at each date. The classifications apply separately to the 2Y–10Y and 10Y–30Y curve segments. Yield movements indicate the direction of rate-price effects, while their magnitudes for ETF exposures depend on duration and other characteristics examined in Analysis 2.
 
 
-##### A2. Long-yield decomposition — expected rates or term compensation?
+##### A2. Long-yield decomposition — what explains changes in the 10Y yield?
 
-**Illustrative model-component changes over a separate interval:**
+| 10Y model component | 2025-01-10 | 2025-06-10 | Change |
+|---|---:|---:|---:|
+| Expected average future short rates | 2.95% | 3.10% | +15 bp |
+| Term premium | 1.05% | 1.50% | **+45 bp** |
+| **Total: model-fitted zero-coupon yield** | **4.00%** | **4.60%** | **+60 bp** |
 
-| 10Y model component | Change |
-|---|---:|
-| Model-fitted zero-coupon yield | **+60 bp** |
-| Expected average future short-rate component | +15 bp |
-| Term-premium component | **+45 bp** |
+**What the investor learns.** The model-fitted 10Y yield increased by 60 bp, with 45 bp (75%) attributable to the term premium and 15 bp (25%) to expected future short rates. The larger term-premium contribution indicates that higher compensation for long-term interest-rate risk, rather than revisions to the expected short-rate path, dominated the modeled yield increase.
 
-**What the investor learns.** In this example, the term-premium component accounts for three-quarters of the modeled increase in the 10Y yield. This directs attention to changes in long-horizon risk compensation, rather than interpreting the whole yield rise as a change in expected monetary policy. A next investigation might consider inflation uncertainty, Treasury supply or investor demand, while using additional evidence before attributing the premium movement to any particular cause.
+The two components capture distinct economic dimensions:
+
+| Component | Core interpretation | Main candidate drivers |
+|---|---|---|
+| **Expected future short rates** | Expected level and path of future short-term interest rates | Monetary-policy outlook, inflation and growth expectations |
+| **Term premium** | Required compensation for bearing long-term interest-rate risk | Macroeconomic uncertainty, Treasury duration supply–demand, hedging value |
+
+For example, if investors revise their expectations toward more Fed tightening while viewing the policy path as predictable and credible, the expected short-rate component may increase while the term premium remains relatively stable. If uncertainty about future inflation or interest rates also increases, the term premium may rise. However, term premium is not simply a measure of volatility: it also depends on investors' required risk compensation and the hedging value of long-term Treasuries.
+
+The expected-rate component reflects the model-implied **average short-term rate over the next ten years**, not expectations about the Fed's next decision. Its increase represents an upward revision to that expected average, not necessarily an expectation of imminent rate hikes.
+
+The table uses illustrative component estimates rather than actual ACM, CR or KW model outputs. Each component is estimated at the two observation dates, and its change is calculated from those estimates.
 
 #### B. Optional scenario and factor results
 
