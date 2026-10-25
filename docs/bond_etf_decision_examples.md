@@ -1,6 +1,6 @@
 # Bondview-v3 — Fixed-Income Analysis Examples
 
-**Status:** PROVISIONAL companion for design review — updated 2026-10-23 from the GitHub `analysis` branch. Analysis 1 presentation examples have been revised against [`bond_etf_decision_architecture.md`](bond_etf_decision_architecture.md); other analysis examples remain unchanged. This document does **not** authorize implementation or recommend an investment.
+**Status:** PROVISIONAL companion for design review — updated 2026-10-24 from the GitHub `analysis` branch. Analysis 1 and Analysis 2 presentation examples have been revised against [`bond_etf_decision_architecture.md`](bond_etf_decision_architecture.md); remaining analysis examples are pending review. This document does **not** authorize implementation or recommend an investment.
 
 ## 1. Purpose and conventions
 
@@ -8,7 +8,7 @@ This companion illustrates what investors could learn from **Analysis 1 (§3.1, 
 
 **Constructed-data convention.** All dates, Treasury observations, exposure IDs, issuer-style profiles and numbers below are **illustrative**, not actual historical FRED data, real ETF disclosures, forecasts, or realized returns. Reproducible curve and Analysis 2 arithmetic use existing repository fixtures: [`constructed_market_daily.csv`](https://github.com/lbk209/bondview-v3/blob/analysis/docs/assets/constructed_market_daily.csv) and [`constructed_issuer_snapshots.csv`](https://github.com/lbk209/bondview-v3/blob/analysis/docs/assets/constructed_issuer_snapshots.csv). **Analysis 1 presentation-only mock-ups** for term-premium decomposition, conditional scenarios and PCA are explicitly labeled; their values are not derived from these fixtures, sourced estimates or an underlying synthetic dataset.
 
-**Reading conventions.** Each example leads with what an investor would see, followed by interpretation, inputs/assumptions, and verification. Yield changes and curve spreads are in **basis points (bp)**; modeled returns are percentages and differences between returns are in **percentage points (pp)**. A rate-change assumption is neither a forecast nor a probability estimate. ETF profiles are distinguished from reference Treasury tenors; no modeled USD gross bond-exposure return is presented as the net KRW outcome of a Korean-listed ETF. All modeled cash-bond exposures are assumed eligible under the architecture's data and factor-compatibility rules.
+**Reading conventions.** Each example leads with what an investor would see, followed by interpretation and inputs/assumptions for reproduction. Yield changes and curve spreads are in **basis points (bp)**; modeled returns are percentages and differences between returns are in **percentage points (pp)**. A rate-change assumption is neither a forecast nor a probability estimate. ETF profiles are distinguished from reference Treasury tenors; no modeled USD gross bond-exposure return is presented as the net KRW outcome of a Korean-listed ETF. All modeled cash-bond exposures are assumed eligible under the architecture's data and factor-compatibility rules.
 
 ## 2. One investment case: evaluating Treasury duration
 
@@ -93,83 +93,55 @@ The usefulness of published decomposition estimates, choice of historical condit
 
 ### 2.2 Analysis 2 — Holding-Period Return (§3.2)
 
-**Financial question.** Under what combinations of Treasury yield changes would the eligible S, I and L exposures have higher modeled returns over the chosen six-month horizon? How much does the answer depend on the other tenors, even if the investor has a view about one long rate?
+**Purpose.** Compare six-month gross USD return opportunities for short (S), intermediate (I), and long (L) Treasury ETF-like cash-bond exposures under *matched, economically defined joint yield movements*. Separately, examine how each tenor's compensation–duration trade-off changed across assessment dates. These are illustrative modeled exposure results, not realized Korean-listed ETF returns.
 
-#### A. User-facing result — conditional ETF preference regions
+#### A. User-facing result — matched-scenario returns
 
-**Assessment:** 2026-10-20 issuer-style ETF profiles; **horizon:** `H = 183/365` years. **Quantity:** approximate **gross USD cash-Treasury exposure holding-period return**, before fees, transaction costs, taxes, and KRW FX/hedging. No forward path or probability is predicted.
+![Modeled six-month return distributions under the same joint Treasury yield scenarios, with seven highlighted scenarios shown in a Plotly-style legend](assets/analysis2_matched_scenario_returns.png)
 
-![ETF conditional return-preference regions, with 10Y versus 30Y assumed yield changes and three separate fixed 2Y change assumptions](assets/bond_etf_preference_regions.png)
+[**Interactive Plotly chart — toggle scenarios H1–H7 in the legend**](assets/analysis2_matched_scenario_returns.html)
 
-**How to read the chart:** The horizontal axis is the **assumed 10Y yield change** and the vertical axis the **assumed 30Y yield change**, both in bp over the chosen horizon. Each panel fixes the **2Y yield change** at −50, 0, or +50 bp. A region identifies **which exposure has the largest modeled return**, conditional on the displayed three-tenor movements. Thin boundaries are equal-return conditions. No color represents a forecast probability, an ETF recommendation, or risk-adjusted attractiveness.
+**What the investor learns.** In this constructed example, S produces the highest modeled return for **all 28 selected joint-yield windows**, using either the April or October exposure profile. S's October median is approximately **+2.99%**; I's is **−0.39%**, and L's is **−0.96%**. The advantage is conditional on this selected episode, in which 10Y yields increased **25–50 bp** while 2Y yields generally declined and 30Y yields increased. It is not evidence that the episode will recur or that S is unconditionally preferable.
 
-**A few points to read from the regions** (illustrations of the formula, **not** selected plausible forecasts):
+The paired April/October panels show how **different dated exposure characteristics** change returns under **the same market movements**: S's modeled returns decline modestly between the profiles, I's center remains similar, and L's become less negative. The comparison isolates exposure-profile effects under a common *retrospectively applied* scenario set; it is **not an April-as-of opportunity backtest**, because all 28 selected windows end after April. It also does not depict actual returns earned between April and October.
 
-| Fixed 2Y | Assumed 10Y | Assumed 30Y | S return | I return | L return | Highest modeled return |
-|---:|---:|---:|---:|---:|---:|---|
-| 0 bp | 0 bp | 0 bp | +2.06% | +2.51% | +2.64% | **L** |
-| 0 bp | 0 bp | +30 bp | +2.06% | +2.51% | −1.92% | **I** |
-| 0 bp | +30 bp | +30 bp | +2.06% | +0.26% | −1.92% | **S** |
-| −50 bp | 0 bp | 0 bp | +2.98% | +2.51% | +2.64% | **S** |
+**Reading the plot:** Each grey box summarizes the **28** selected return outcomes for one exposure at one assessment date (median, quartiles and range). The seven colored scenario lines are individual, same-window yield vectors highlighted from that set; the **same legend color and scenario ID** apply across S, I, L and both dates. The image is a static preview; the linked Plotly version lets the investor show/hide a scenario by clicking its legend entry. The 28 windows substantially overlap, so their count is descriptive rather than a frequency-based forecast.
 
-The crucial finding is not which ETF wins at a chosen point: **the market view about one tenor does not by itself determine the relative outcome among different-duration ETFs.** The chart exposes the missing joint-rate assumptions rather than disguising them in a few hand-selected scenarios.
+#### B. Supporting result — compensation and yield-rise resilience across dates
 
-#### B. Financial interpretation
+![April-normalized trajectories of six-month compensation and zero-return break-even yield rise for the S, I and L exposures](assets/analysis2_compensation_break_even_indexed.png)
 
-At unchanged factor yields and under this **first-order constant-yield compensation reference**, L's higher YTM produces the highest modeled USD return. But its much greater duration makes its result more sensitive to an increase in the 30Y yield. If 30Y rises materially while 10Y stays flat, I can outperform L; if both long tenors rise enough, S may outperform both. Even if the 30Y does not rise, a sufficiently large **decline** in 2Y yields can make S superior to L. This is not evidence that any of those joint combinations will happen.
+[Interactive version — inspect each date's absolute compensation, break-even rise, YTM and duration](assets/analysis2_compensation_break_even_indexed.html)
 
-**Connection to Analysis 1:** The observed divergence of 2Y and longer yields explains why the investor must consider different curve configurations, not merely “rates rise/fall.” Analysis 1 can investigate market information that bears on the plausibility of configurations, but its yield spreads and term-premium decomposition **cannot uniquely supply the yield-change vector**. Analysis 2's regions are therefore conditional comparisons, not conclusions inferred from Analysis 1.
+**What the investor learns.** All three trajectories begin at `(100, 100)` in April. Moving right means *more six-month yield-based compensation* relative to that tenor's April level; moving up means a *larger rise in its own matched Treasury yield* can be absorbed before its modeled return reaches zero. From April to October, S deteriorates on both measures; I gains compensation with almost unchanged break-even resilience; L improves on both measures. The result identifies **within-tenor changes** rather than treating the structurally much larger absolute 2Y cushion as evidence of an unconditional tenor advantage.
 
-The chart deliberately considers a broad rectangular shock range (−50 to +50 bp on the 10Y and 30Y axes) to **show where comparative outcomes switch**. This range is an illustrative *display domain*, not an estimated plausible interval, confidence region, or assumption that its points are equally likely. Risk, likelihood, and downside questions need separately justified evidence, potentially in Analysis 3.
+Absolute levels remain available to prevent normalization from hiding economically material exposures:
 
-#### C. Construction: exposure data and modeling choices
+| Exposure | April compensation | October compensation | April break-even rise | October break-even rise |
+|---|---:|---:|---:|---:|
+| **S — 2Y** | +2.28% | +2.06% | +126.7 bp | +111.1 bp |
+| **I — 10Y** | +2.31% | +2.51% | +32.9 bp | +33.4 bp |
+| **L — 30Y** | +2.51% | +2.64% | +15.9 bp | +17.4 bp |
 
-All three exposures use the **2026-10-20 issuer-style ETF profile** from [`constructed_issuer_snapshots.csv`](https://github.com/lbk209/bondview-v3/blob/analysis/docs/assets/constructed_issuer_snapshots.csv); none is a user-substituted benchmark. They are illustrative **USD cash Treasury exposures**.
+Break-even yield rise is an **individual zero-return threshold**, not the equal-return boundary between two ETFs. It measures each exposure's compensation cushion against a rise in its *own* reference yield. Because different tenor yields need not move by similar amounts, absolute break-even levels are **not comparable probabilities of loss**. The measure adds a useful explanation of the compensation–duration trade-off, not independent evidence beyond its inputs.
 
-| Exposure | Matched Treasury factor | Gross portfolio YTM | Effective/modified duration used | First-order compensation `YTM × 183/365` |
-|---|---|---:|---:|---:|
-| **S — short** | 2Y | 4.10% | 1.85 | +2.055616% |
-| **I — intermediate** | 10Y | 5.00% | 7.50 | +2.506849% |
-| **L — long** | 30Y | 5.26% | 15.20 | +2.637205% |
+#### C. Model, inputs and reproduction
 
-The published-style profiles are assumed to have the same compatible **gross portfolio YTM** definition and durations appropriate for the indicated *single-tenor-factor* first-order calculation. Real ETFs may have multiple key-rate exposures. Duration is measured at the **October 20 assessment date**, which is the *initial exposure* being stressed, not the ending duration of a realized April–October investment. All profiles are held fixed for the conditional exercise.
+**Common convention.** Both plots use the cash-Treasury gross USD first-order holding-period return approximation in [the architecture, §3.2](https://github.com/lbk209/bondview-v3/blob/analysis/docs/bond_etf_decision_architecture.md#32-holding-period-return-analysis--initial-primary), with `H = 183/365` years. Compensation is estimated from **gross portfolio YTM × H**; the rate-price effect uses the compatible reported duration and the corresponding tenor yield change. Available constructed profiles do not support a separate convexity, roll-down, hedging, spread or fee term; none is invented. The source is an illustrative exposure profile, not actual ETF holdings or Korean-won returns.
 
-**Calculation choice:** `modeled gross USD return ≈ YTM × H − D × Δy` with `Δy` in decimal units. This is a **recognized first-order professional holding-period-return approximation**, not a Bondview-specific attractiveness score. It does not measure coupon cash received or separate roll-down. No unsupported convexity, spread or hedge terms are invented; convexity was not supplied in the fixture. Yield movements are treated as finite static-exposure shocks, not an explicit sequence of ETF rebalancings or a full cash-flow revaluation. Larger shocks and evolving ETF holdings can reduce approximation accuracy. The display does not infer net Korean-listed ETF performance.
+**Exposure inputs.** Take the issuer-style dated profiles for S (`DGS2`), I (`DGS10`) and L (`DGS30`) from [`constructed_issuer_snapshots.csv`](https://github.com/lbk209/bondview-v3/blob/analysis/docs/assets/constructed_issuer_snapshots.csv):
 
-For every chart point, the three factor changes collectively form a **hypothetical joint vector** `(Δ2Y, Δ10Y, Δ30Y)`; unlike Analysis 1's April–October vector, these are **user-inspectable assumptions**, not observed historical intervals. The horizon is chosen independently and shared by the three profiles. No hypothetical shock is derived by replaying the prior six months or automatically generated from 3C.
+| Assessment date | S: YTM / duration | I: YTM / duration | L: YTM / duration |
+|---|---:|---:|---:|
+| 2026-04-20 | 4.55% / 1.80 | 4.60% / 7.00 | 5.00% / 15.80 |
+| 2026-07-20 | 4.35% / 1.90 | 4.85% / 7.30 | 5.18% / 15.50 |
+| 2026-10-20 | 4.10% / 1.85 | 5.00% / 7.50 | 5.26% / 15.20 |
 
-#### D. Calculations, equal-return boundaries, and verification
+**Plot A — scenario construction and returns.** From [`constructed_market_daily.csv`](https://github.com/lbk209/bondview-v3/blob/analysis/docs/assets/constructed_market_daily.csv), form matched `DGS2`, `DGS10` and `DGS30` changes between each eligible endpoint and the nearest available observation approximately six calendar months earlier (accept **183 ± 7 days**). Keep complete joint windows with **+25 to +50 bp change in 10Y**, ending no later than 2026-10-20; **28 windows** qualify. Preserve each window's actual start/end dates and all three observed-together yield changes. Apply every *same* vector to all three exposures using each April or October profile, retaining their different YTMs and durations. The grey boxes use all 28 outcomes per exposure/date. Highlight seven chronologically spaced windows as **H1–H7** (see [`scenario data`](assets/analysis2_conditioned_joint_windows.csv)); a legend toggle controls each complete scenario across the two panels. These fixture-derived vectors are distinct from the *presentation-only hypothetical* rows in Analysis 1, §2.1 B1.
 
-Use return units in **percentage points** and yield shocks in **basis points**. With `B_S = 2.055616`, `B_I = 2.506849`, and `B_L = 2.637205` in percentage-point units:
+**Plot B — dated compensation and break-even comparison.** For each of the **April, July and October** issuer snapshots, calculate six-month compensation from the stated portfolio YTM and the individual **zero-return break-even yield rise** from that compensation and duration, using the *same first-order return model*. Index **each exposure's April compensation and April break-even level separately to 100**, then connect July and October. Retain absolute values in the supporting table and Plotly hover details; do not compare indexed values as if they were absolute return or yield differences.
 
-```text
-R_S (%) ≈ B_S − 0.0185 × Δ2Y_bp
-R_I (%) ≈ B_I − 0.0750 × Δ10Y_bp
-R_L (%) ≈ B_L − 0.1520 × Δ30Y_bp
-```
-
-These coefficients are the respective durations divided by 100 because a 1 bp yield change is `0.0001` in decimal units and a return percent equals 100 times its decimal fraction.
-
-The **equal-return boundaries** are obtained directly from the same Analysis 2 return approximations, not a distinct decision model:
-
-```text
-I = S :  Δ10Y_bp = (B_I − B_S + 0.0185 × Δ2Y_bp) / 0.0750
-L = S :  Δ30Y_bp = (B_L − B_S + 0.0185 × Δ2Y_bp) / 0.1520
-L = I :  Δ30Y_bp = (B_L − B_I + 0.0750 × Δ10Y_bp) / 0.1520
-```
-
-For `Δ2Y = 0`, the I=S threshold is `Δ10Y ≈ +6.02 bp`; L=S is `Δ30Y ≈ +3.83 bp`. If `Δ10Y = 0`, the L=I boundary is `Δ30Y ≈ +0.86 bp`. These are **pairwise** equal-return conditions. Only the boundary portions separating the *highest-return regions* are emphasized in the figure. The three boundaries intersect at approximately `(Δ10Y, Δ30Y) = (+6.02, +3.83) bp` when `Δ2Y = 0`. The boundaries shift when the assumed 2Y change shifts; they do not tell us which region is likely.
-
-**Verification examples:**
-
-- At `(Δ2Y, Δ10Y, Δ30Y) = (0,0,0)` bp, `(S,I,L) = (+2.055616,+2.506849,+2.637205)%`, so L is highest.
-- At `(0,0,+30)` bp, L becomes `2.637205 − 0.152 × 30 = −1.922795%`; I remains `+2.506849%`, so I is highest.
-- At `(0,+30,+30)` bp, I becomes `2.506849 − 0.075 × 30 = +0.256849%`; S remains `+2.055616%`, so S is highest.
-- At `(−50,0,0)` bp, S becomes `2.055616 + 0.0185 × 50 = +2.980616%`, exceeding both I and L.
-
-**Separate historical-stress arithmetic, retained from the prior example:** If the *observed* April 20–October 20 vector `(−53,+56,+30)` bp is applied **as a historical stress**, not the next-six-month expected path, the model gives S `+3.036116%`, I `−1.693151%`, L `−1.922795%`; S−I is `+4.729267 pp`, S−L is `+4.958911 pp`, and I−L is `+0.229644 pp`. These are current-exposure counterfactual returns and **not** the realized ETF returns during those dates. This stress is supplementary; it is not the main scenario or preference map.
-
-**Validation rules:** Reconcile the chart classification against the largest of the three numeric modeled returns at each plotted point; verify return/bp conversions, common horizon, issuer source and as-of date, correct tenor mapping, and pairwise equality. Do not present the preference-region colors as calibrated event frequencies, probabilities, total risks, or buy/sell signals. A valid rate-only price effect without an eligible baseline must be labeled a **partial** result, not a complete return. ETF or benchmark realized total-return series must never be substituted for the compensation baseline.
+**Interpretation boundary.** The scenario set is conditional, heavily overlapping and retrospectively reused for the April profile; neither the scenario frequencies nor the normalized resilience paths are forecasts. Future product-level implementation must use appropriately dated, compatible issuer inputs and a defensible source of market scenarios. The figures illustrate complementary purposes: **conditional cross-tenor returns** and **within-tenor changes in compensation versus rate sensitivity**.
 
 ### 2.3 Other analyses (examples pending review)
 
