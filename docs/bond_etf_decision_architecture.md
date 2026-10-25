@@ -156,15 +156,26 @@ Compare maturities and dates without equating Treasury-market/model measures wit
 
 **Inputs and scenarios.** Select the assessment date `t`, the eligible ETF, explicitly selected benchmark or reference Treasury exposure, and holding horizon `H`. For scenario-based return comparisons, use either (i) **complete, dated historical joint yield-change vectors** or (ii) **coherent modeled/conditioned joint vectors** informed by Analysis 1 or another defensible source. Preserve the **same complete scenario** when comparing exposures, and map its factors to each exposure using compatible sensitivity definitions. A separately supplied scenario remains valid without first running Analysis 1. General scenario types, assumptions, and date conventions are in §4.
 
-**Recognized return approximation.** The first-order cash-bond approach combines holding-period yield-based compensation with duration-based repricing. For a compatible exposure `i` in scenario `s`:
+**Recognized return approximation.** The first-order cash-bond approach combines holding-period yield-based compensation with duration-based repricing. For a compatible exposure $i$ in scenario $s$:
 
-`R_hat_USD_bond_i,H(s) ≈ B_ref_i,H − D_i * delta_y_i(s) + 0.5 * C_i * [delta_y_i(s)]^2 + supported_credit_price_effect_i(s)`.
+$$
+\widehat R_{i,H}(s)
+\approx
+B_{\mathrm{ref},i,H}
+- D_i \Delta y_i(s)
++ \frac{1}{2} C_i [\Delta y_i(s)]^2
++ \mathrm{CreditPriceEffect}_i(s)
+$$
 
-`B_ref_i,H` is a baseline compensation estimate under a stated yield/curve convention; `D_i` is a compatible effective or modified duration; `C_i` is compatible convexity **only when available**. `delta_y_i(s)` is a **decimal** yield change mapped consistently from the scenario to the selected exposure. Where nonparallel movements or multi-tenor holdings make one yield factor inadequate, use supported key-rate durations or other compatible factor sensitivities. For such cases, replace the scalar sensitivity with the corresponding multi-factor repricing approximation rather than summing an inappropriate single-tenor duration effect. Material corporate-credit repricing requires qualified spread factors and sensitivities (§3.4).
+$B_{\mathrm{ref},i,H}$ is a baseline compensation estimate under a stated yield/curve convention; $D_i$ is a compatible effective or modified duration; $C_i$ is compatible convexity **only when available**. $\Delta y_i(s)$ is a **decimal** yield change mapped consistently from the scenario to the selected exposure. Where nonparallel movements or multi-tenor holdings make one yield factor inadequate, use supported key-rate durations or other compatible factor sensitivities. For such cases, replace the scalar sensitivity with the corresponding multi-factor repricing approximation rather than summing an inappropriate single-tenor duration effect. Material corporate-credit repricing requires qualified spread factors and sensitivities (§3.4).
 
 **Baseline compensation.** For a compatible dated issuer ETF or selected benchmark **portfolio YTM**, the initial gross USD approximation is:
 
-`B_ref_i,H ≈ portfolio_YTM_i * H_years`.
+$$
+B_{\mathrm{ref},i,H}
+\approx
+\mathrm{PortfolioYTM}_i \times H_{\mathrm{years}}
+$$
 
 The selected yield definition must be suitable; distribution yield is not a substitute. This baseline is a first-order yield-based compensation proxy, not realized coupon income or an independently measured roll-down return, and may not precisely describe a rebalanced ETF. Baseline approximation errors can affect absolute returns and relative comparisons across ETFs or assessment dates. A curve-consistent carry/roll refinement of the baseline may be considered when supported by exposure data and material decision benefit, with appropriate aging/rebalancing conventions and no double counting. A detailed reconstruction of every issuer holding is not a prerequisite.
 
@@ -172,7 +183,7 @@ The selected yield definition must be suitable; distribution yield is not a subs
 
 #### Return comparisons
 
-**Comparison across a scenario set.** For each joint vector `s`, calculate supported outcomes for **all compatible candidates** and the **paired differences** `R_hat_i,H(s) − R_hat_j,H(s)`. Characterize the collection of paired outcomes and economically meaningful conclusions, including:
+**Comparison across a scenario set.** For each joint vector $s$, calculate supported outcomes for **all compatible candidates** and the **paired differences** $\widehat R_{i,H}(s) - \widehat R_{j,H}(s)$. Characterize the collection of paired outcomes and economically meaningful conclusions, including:
 
 - **Scenario-wide results:** e.g., a positive modeled outcome for one exposure, or a relative advantage that holds **throughout the specified set**.
 - **Conditional comparative results:** the magnitude and direction of relative returns, circumstances that reverse a preference, and return compensation relative to the extra duration assumed.
@@ -181,25 +192,22 @@ The selected yield definition must be suitable; distribution yield is not a subs
 
 Meaningful trade-offs and insufficient discrimination are reportable financial results. Quantiles of different tenors' yield changes or different ETFs' modeled returns calculated **separately** are marginal summaries; they are not a simultaneously observed joint scenario. Preserve pairing when drawing cross-exposure conclusions.
 
+When useful, paired return comparisons may also identify the market conditions under which exposures produce equal modeled returns.
+
 #### Compensation and break-even comparisons
 
 *How do compensation and break-even conditions reveal each exposure's return resilience and its changes across assessment dates?*
 
 **Individual zero-return break-even.** For a compatible single-factor cash-bond exposure under the first-order approximation, the **zero-return break-even yield rise** is the increase in its matched yield that offsets modeled holding-period compensation:
 
-`zero_return_break_even_rise_bp ≈ 10,000 * B_ref_i,H / D_i`, for `D_i > 0`.
+$$
+\Delta y^{\mathrm{BE}}_{i,H,\mathrm{bp}}
+\approx
+10{,}000 \times \frac{B_{\mathrm{ref},i,H}}{D_i},
+\qquad D_i > 0
+$$
 
 Compare compensation and break-even resilience together, including their changes across assessment dates. This describes the evolving compensation–duration trade-off without requiring a specified joint yield-change scenario. The break-even threshold is derived from compensation and duration, not an independent source of investment evidence. Absolute cross-tenor differences largely reflect structural duration differences and do not establish relative investment attractiveness without considering relevant tenor-specific market movements.
-
-**Relative-return break-even.** Relative-return comparisons can also identify conditions under which two exposures produce equal modeled returns. For two compatible single-factor cash-bond exposures under the first-order approximation, ignoring unsupported refinements:
-
-`R_hat_i,H(s) − R_hat_j,H(s) ≈ (B_ref_i,H − B_ref_j,H) − D_i * delta_y_i(s) + D_j * delta_y_j(s)`.
-
-Setting this difference to zero gives a conditional **equal-return relation** among the relevant joint yield changes; it does not require assuming a parallel shift. Present a tabulated boundary or a fixed-factor slice/region plot only when it improves understanding of the actual comparison. For the special case of a **common parallel yield change** and nonzero duration difference:
-
-`relative_break_even_rise_bp ≈ 10,000 * (B_ref_i,H − B_ref_j,H) / (D_i − D_j)`.
-
-The scalar expression does not apply as a universal cross-tenor threshold under nonparallel movements. When supported convexity, spread effects or key-rate sensitivities materially change break-even or relative-return results, calculate them using the full compatible model rather than retaining an inapplicable linear approximation. Break-even conditions describe compensation resilience or conditional return relationships, not the expected future yield path.
 
 #### Output contract
 
