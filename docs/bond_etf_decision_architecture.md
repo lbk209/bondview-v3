@@ -122,7 +122,15 @@ Derive maturity-specific yields and 10Y−2Y, 30Y−10Y and other relevant sprea
 
 For a consistently defined nominal Treasury zero-coupon yield, an established decomposition is:
 
-`model_yield_n(t) ≈ model_expected_average_future_short_rates_n(t) + model_term_premium_n(t)`.
+$$
+y_n^{\mathrm{model}}(t)
+\approx
+\bar r_n^{\mathrm{exp}}(t)
++
+\mathrm{TP}_n^{\mathrm{model}}(t)
+$$
+
+Here, $n$ denotes maturity and $t$ the assessment date; $y_n^{\mathrm{model}}$ is the model-fitted yield, $\bar r_n^{\mathrm{exp}}$ the model-implied average expected future short rate, and $\mathrm{TP}_n^{\mathrm{model}}$ the estimated term premium.
 
 When useful, apply suitable published decompositions using mutually consistent model-fitted yields, expected short-rate components and term premiums. These model quantities are not directly interchangeable with observed constant-maturity or par yields. Examine expected-rate and term-premium **levels and changes** to identify their model-estimated contributions to Treasury yield movements and interpret interest-rate conditions relevant to tenor selection. These contributions can also guide investigation of potential macroeconomic influences, such as monetary-policy expectations, Treasury supply, inflation uncertainty and investor demand. Term premiums are model-estimated and may differ across models; no particular published model, maturity coverage or decomposition is required when unsupported. Attributing yield movements to specific underlying macroeconomic causes requires additional evidence.
 
