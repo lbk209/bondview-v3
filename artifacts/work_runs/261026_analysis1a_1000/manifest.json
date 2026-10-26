@@ -1,0 +1,47 @@
+{
+  "run_id": "261026_analysis1a_1000",
+  "assignment_id": "Analysis 1.A \u2014 standalone notebook implementation",
+  "task": "Treasury curve conditions and movements",
+  "design_revision": "58f874e133a6c9405782b1a25f09df257a58413f",
+  "source_commit": "58f874e133a6c9405782b1a25f09df257a58413f",
+  "result_commit": "b489e070ed5d8278f4fa026b514ea6e698befb49",
+  "result_commit_scope": "Verified implementation and calculation evidence; report/manifest follow in same task PR.",
+  "final_report_path": "reports/261026_analysis1a_curve_1000_report.md",
+  "status": "PASS_WITH_LIMITATIONS",
+  "session_branch": "codex/session/261026_1000",
+  "task_branch": "codex/task/261026_1000_analysis1a",
+  "task_pr_url": "https://github.com/lbk209/bondview-v3/pull/35",
+  "publication_snapshot": "Task PR open at report authoring; subsequent merge, cleanup and final PR verified in PR history and final session response.",
+  "test_commands": [
+    "poetry install --only-root",
+    "poetry check --lock",
+    "poetry run python -m unittest discover -s tests -v",
+    "poetry run python -m py_compile <all src/tests Python files>",
+    "git diff --check",
+    "nbformat.validate; output-free notebook check",
+    "nbclient real-data notebook file-mode execution"
+  ],
+  "test_count": 21,
+  "live_fred_retrieval": true,
+  "live_fred_transport": "FRED public graph CSV",
+  "live_keyed_api": "NOT_RUN: FRED_API_KEY unavailable",
+  "evidence_paths": [
+    "artifacts/work_runs/261026_analysis1a_1000/evidence/checks.json",
+    "artifacts/work_runs/261026_analysis1a_1000/evidence/edge_examples.json",
+    "artifacts/work_runs/261026_analysis1a_1000/evidence/notebook_execution.json",
+    "artifacts/work_runs/261026_analysis1a_1000/evidence/real_fred.json",
+    "artifacts/work_runs/261026_analysis1a_1000/examples/missing_30y_start.csv",
+    "artifacts/work_runs/261026_analysis1a_1000/examples/real_fred_comparison.csv"
+  ],
+  "generated_at": "2026-10-26T07:54:13.030945+00:00",
+  "usage": {
+    "subagents": 0,
+    "token_credit_usage": "not_exposed"
+  },
+  "limitations": [
+    "Keyed API validated with fixtures only; no credential available.",
+    "No browser/app available for visual interaction QA.",
+    "Retrieval-time snapshot, not a historical availability/vintage reconstruction.",
+    "Offline files use canonical JSON; no arbitrary CSV units/provenance inference."
+  ]
+}
