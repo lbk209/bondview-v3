@@ -1,0 +1,64 @@
+{
+  "real_retrieval": true,
+  "fixture": false,
+  "metadata": {
+    "source": "FRED / Federal Reserve H.15",
+    "transport": "FRED public graph CSV; known H.15 daily Percent series",
+    "retrieved_at_utc": "2026-10-26T07:45:15.134022+00:00",
+    "requested_start": "2024-01-01",
+    "requested_end": "2025-01-31",
+    "series": {
+      "DGS2": {
+        "units": "Percent",
+        "frequency": "D",
+        "source_url": "https://fred.stlouisfed.org/series/DGS2"
+      },
+      "DGS10": {
+        "units": "Percent",
+        "frequency": "D",
+        "source_url": "https://fred.stlouisfed.org/series/DGS10"
+      },
+      "DGS30": {
+        "units": "Percent",
+        "frequency": "D",
+        "source_url": "https://fred.stlouisfed.org/series/DGS30"
+      }
+    },
+    "missing_policy": "No filling or date substitution; null means unavailable.",
+    "availability": "Known at retrieval; historical release availability is not reconstructed.",
+    "vintage": "Retrieval-time snapshot; source observations may be revised."
+  },
+  "rows": 285,
+  "first_date": "2024-01-01",
+  "last_date": "2025-01-31",
+  "missing_counts": {
+    "DGS2": 14,
+    "DGS10": 14,
+    "DGS30": 14
+  },
+  "cache_path_ignored": "data/fred/treasury_yields.json",
+  "cache_sha256": "abe652299d5f577fc0edaaa6acd58ba56ff2ca2b3170639360a8b07aaccde32b",
+  "download_load_equivalence": true,
+  "example_change_bp": [
+    84,
+    116,
+    103,
+    32,
+    -13
+  ],
+  "fred_change_bp": [
+    84.0,
+    116.0,
+    103.0,
+    32.0,
+    -13.0
+  ],
+  "difference_from_example_bp": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "interpretation": "Greatest upward yield movement among available tenors: 10Y (+116.00 bp). 10Y\u22122Y spread: Bear steepening. 30Y\u221210Y spread: Bear flattening. These are net endpoint movements, not the full path or a forecast. ETF rate-price effects depend on duration and other product characteristics."
+}

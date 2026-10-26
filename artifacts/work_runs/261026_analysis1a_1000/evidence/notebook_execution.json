@@ -1,0 +1,20 @@
+{
+  "mode": "file",
+  "inputs": "Real FRED observations downloaded by implemented module",
+  "working_directory": "notebooks/",
+  "kernel": "python3 in Poetry environment",
+  "executed_code_cells": 5,
+  "errors": 0,
+  "historical_traces": 3,
+  "observations_per_trace": 285,
+  "date_control_widget_outputs": 1,
+  "table_has_both_expected_segment_classifications": true,
+  "offline_fixture_modes": [
+    "file",
+    "download"
+  ],
+  "manual_rerun": "Covered by test_notebook: exact Sunday start; end values preserved; network forbidden.",
+  "visual_frontend": "NOT_RUN: computer-use inventory returned no apps or browsers. Plotly MIME, historical trace lengths, widget outputs and HTML table content were verified programmatically. Static nbconvert export could not represent Plotly MIME; independent Plotly HTML was generated only in /tmp.",
+  "transient_executed_notebook": "/tmp/bondview_analysis1a_executed.ipynb",
+  "transient_html": "/tmp/bondview_analysis1a_notebook.html"
+}
