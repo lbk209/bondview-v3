@@ -77,57 +77,49 @@ The table summarizes each tenor separately; its median values do not constitute 
 
 ### 2.2 Analysis 2 — Holding-Period Return (§3.2)
 
-**Investor's question.** If 10Y Treasury yields rise moderately over the next six months, how do the modeled returns of short-, intermediate- and long-duration exposures compare under the *same* yield movements? Separately, how has the compensation available for each exposure changed over time?
+**Investor's question.** Under a selected set of joint Treasury yield scenarios, how do the modeled six-month return distributions of short-, intermediate- and long-duration exposures compare? How does their relative attractiveness change between assessment dates?
 
-**Additional inputs.** The assessment date is **2026-10-20**; the modeled holding horizon is **183 calendar days**, or `183/365 = 0.501369863` years (ACT/365 Fixed). Three synthetic cash-Treasury ETF-like profiles are compared: short (S, 2Y-like), intermediate (I, 10Y-like) and long (L, 30Y-like). Analysis 2 uses fixture-derived joint scenarios conditioned on a **+25 to +50 bp 10Y change**, rather than the illustrative rows in B1.
+**Additional inputs.** This example compares three constructed cash-Treasury ETF-like exposures—short (S), intermediate (I) and long (L)—under 60 illustrative six-month joint yield-change scenarios. The investor-selected condition is a **+5 to +30 bp 10Y yield change**. The same scenario vectors are applied to the exposures at **Start** and **End** assessment dates; those labels refer to exposure snapshots, not the endpoints of a realized six-month return.
 
-#### A. User-facing result — matched-scenario returns
+#### A. User-facing result — conditional return distributions
 
-![Modeled six-month return distributions under the same joint Treasury yield scenarios, with seven highlighted scenarios shown in a Plotly-style legend](assets/analysis2_matched_scenario_returns.png)
+![Side-by-side distributions of modeled six-month returns for S, I and L exposures at Start and End assessment dates. Points are unconnected, with distribution summaries.](assets/analysis2_illustrative_return_distributions.png)
 
-[**Interactive Plotly chart — toggle scenarios H1–H7 in the legend**](assets/analysis2_matched_scenario_returns.html)
+**What the investor learns.** At Start, S outperforms I in **all 60 paired scenarios**, with a median of +2.19% versus +1.07% for I. At End, the distributions are closer: S's median is +1.86% versus +1.44% for I, and I outperforms S in **15 of the 60** matched scenarios. The conclusion has shifted from a consistent S advantage over I within this set to a less decisive preference. L exhibits much wider dispersion and substantial negative-return outcomes at both dates.
 
-**What the investor learns.** S produces the highest modeled return in **all 28 selected joint-yield windows**, using either the April or October exposure profile. With the October profile, the modeled median return is approximately **+2.99% for S**, **−0.39% for I** and **−0.96% for L**. The result quantifies how a specific curve-movement pattern—falling 2Y yields and rising 10Y/30Y yields—affects differently positioned exposures.
+| Exposure | Start median (middle 50%) | End median (middle 50%) |
+|---|---:|---:|
+| **S — Short** | +2.19% (+2.05% to +2.34%) | +1.86% (+1.72% to +2.02%) |
+| **I — Intermediate** | +1.07% (+0.62% to +1.53%) | +1.44% (+0.95% to +1.93%) |
+| **L — Long** | −0.56% (−2.07% to +0.46%) | −0.14% (−1.60% to +0.84%) |
 
-Comparing the April and October panels under the **same scenario vectors** isolates the effect of changed YTM and duration profiles: S's modeled outcomes decline modestly, I's central result remains similar, and L's becomes less negative. This is a comparison of dated exposure profiles under a common set of movements, not a realized return between April and October.
+Each dot represents one complete joint yield-change scenario evaluated for one exposure; boxes show the interquartile ranges and medians. The spread and overlap of each return distribution help show dispersion and how clearly exposures can be distinguished. **Relative preference is assessed using returns paired by scenario**, not distribution overlap alone: S outperforms I in 60/60 scenarios at Start and 45/60 at End. These counts describe the constructed set, not future probabilities.
 
-**Reading the plot.** Each grey box summarizes the 28 return outcomes for one exposure/profile date (median, quartiles and range). Seven colored lines highlight individual matched windows: a given scenario ID uses the same complete yield vector across S, I, L and both panels. The linked interactive chart allows those highlighted scenarios to be shown or hidden.
+#### B. Supporting result — compensation and yield-rise resilience
 
-#### B. Supporting result — compensation and yield-rise resilience across dates
-
-![April-normalized trajectories of six-month compensation and zero-return break-even yield rise for the S, I and L exposures](assets/analysis2_compensation_break_even_indexed.png)
-
-[Interactive version — inspect each date's absolute compensation, break-even rise, YTM and duration](assets/analysis2_compensation_break_even_indexed.html)
-
-**What the investor learns.** All three trajectories start at `(100, 100)` in April. Moving right means **greater six-month yield-based compensation** relative to the same exposure's April value; moving up means a **larger zero-return break-even rise in its own matched yield**. By October, S has declined on both dimensions; I offers greater compensation with nearly unchanged break-even resilience; L has improved on both. The paired changes make it easier to judge whether additional compensation is keeping pace with each exposure's rate sensitivity.
-
-Absolute levels remain available alongside the indexed display:
-
-| Exposure | April compensation | October compensation | April break-even rise | October break-even rise |
+| Exposure | Start compensation | End compensation | Start break-even yield rise | End break-even yield rise |
 |---|---:|---:|---:|---:|
-| **S — 2Y** | +2.28% | +2.06% | +126.7 bp | +111.1 bp |
-| **I — 10Y** | +2.31% | +2.51% | +32.9 bp | +33.4 bp |
-| **L — 30Y** | +2.51% | +2.64% | +15.9 bp | +17.4 bp |
+| **S — Short** | +2.28% | +1.95% | +126.4 bp | +105.4 bp |
+| **I — Intermediate** | +2.30% | +2.75% | +32.9 bp | +36.7 bp |
+| **L — Long** | +2.50% | +2.80% | +15.8 bp | +18.4 bp |
 
-The break-even rise is the yield increase that offsets **one exposure's** modeled compensation; it is not the yield movement at which two ETFs have equal returns. Its absolute value depends strongly on duration, so the indexed chart emphasizes **within-tenor changes** while retaining the absolute cushions for context.
+**What the investor learns.** S's modeled yield-based compensation and zero-return break-even cushion decrease between Start and End, while I's increase. That helps explain I's improved position in the return distributions. L also gains compensation, but its much greater duration leaves it more sensitive to adverse yield moves. Break-even levels are **within-exposure** zero-return conditions, not yield thresholds at which two exposures have equal returns; their absolute cross-tenor differences are strongly influenced by duration.
 
 #### C. Inputs, calculations and reproduction
 
-**Exposure profiles.** The constructed issuer-style snapshots supply gross portfolio YTM, duration and reference tenor:
+**Exposure profiles.** The two sets of constructed cash-Treasury exposure characteristics are applied separately to the same joint yield-change scenarios:
 
-| Assessment date | S: YTM / duration | I: YTM / duration | L: YTM / duration |
-|---|---:|---:|---:|
-| 2026-04-20 | 4.55% / 1.80 | 4.60% / 7.00 | 5.00% / 15.80 |
-| 2026-07-20 | 4.35% / 1.90 | 4.85% / 7.30 | 5.18% / 15.50 |
-| 2026-10-20 | 4.10% / 1.85 | 5.00% / 7.50 | 5.26% / 15.20 |
+| Exposure | Start YTM / duration | End YTM / duration | Matched rate factor |
+|---|---:|---:|---|
+| **S — Short** | 4.55% / 1.80 | 3.90% / 1.85 | 2Y Treasury |
+| **I — Intermediate** | 4.60% / 7.00 | 5.50% / 7.50 | 10Y Treasury |
+| **L — Long** | 5.00% / 15.80 | 5.60% / 15.20 | 30Y Treasury |
 
-**Return calculation.** For each profile, estimate six-month compensation from its portfolio YTM × `183/365`, and the rate-price effect from the matched tenor yield change and duration. The constructed exposure data do not supply additional convexity or roll-down terms, so the displayed outcomes use the first-order compensation-plus-duration approximation. This produces **modeled gross USD cash-bond exposure returns**, not actual ETF holding-period returns.
+**Scenario basis.** The 60 constructed joint vectors each contain matched 2Y, 10Y and 30Y yield changes, with 10Y changes between **+5 and +30 bp**. Other-tenor changes vary across the scenarios. The complete vectors and corresponding modeled exposure returns are provided in the [illustrative scenario data](assets/analysis2_illustrative_joint_scenarios.csv). Analysis 1C illustrates the *procedure* for obtaining conditional joint movements; the numerical scenarios here are separate illustrative inputs, not its 28 selected observations. The constructed variations are not calibrated historical frequencies or estimates of a future distribution.
 
-**Scenario selection and paired returns.** For each eligible ending date through **2026-10-20**, match the closest available starting observation to the date **six calendar months earlier**, allowing a ±7-day tolerance. From the constructed market dataset, retain complete DGS2/DGS10/DGS30 vectors where the 10Y yield increased **25–50 bp**: **28** windows qualify. Preserve the actual start/end dates and their observed-together changes; apply each complete vector to S, I and L under both April and October profiles. Seven chronologically spaced windows are highlighted as **H1–H7**; their endpoints and changes are in the [scenario data](assets/analysis2_conditioned_joint_windows.csv). The six-month historical windows are matched by calendar date, while the modeled compensation horizon uses the stated `183/365` year fraction.
+**Return calculation.** For each exposure/profile and each matched scenario, modeled six-month return is approximated by `portfolio YTM × 0.5 − duration × matched tenor yield change (decimal)`. This first-order expression combines yield-based compensation with the local duration price effect, without added convexity, roll-down or portfolio-rebalancing effects. The results are **modeled gross USD cash-bond exposure returns**, not actual ETF returns or realized returns between Start and End. Applying common shocks to both dated profiles isolates the effect of their different YTM/duration assumptions.
 
-These windows substantially overlap and all selected windows end after the April assessment date. Accordingly, the April panel is a **retrospective application** of scenarios also used at October, not an April-as-of backtest. Scenario counts describe the selected constructed sample, not estimated future probabilities.
-
-**Compensation and break-even comparison.** For April, July and October, derive each exposure's zero-return break-even yield rise from the *same* compensation and duration assumptions. Index compensation and break-even **separately for each exposure** to 100 at April, connecting the three dated snapshots. The table and interactive hover information retain unindexed compensation, break-even, YTM and duration.
+**Compensation and break-even calculation.** Six-month compensation is `portfolio YTM × 0.5`. The first-order zero-return break-even yield rise (bp) is `10,000 × compensation / duration` for the exposure's matched yield. All plots, medians, interquartile ranges and scenario-paired comparisons use the same constructed profile inputs and complete yield-change vectors.
 
 ### 2.3 Analyses awaiting examples
 
