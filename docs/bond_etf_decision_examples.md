@@ -97,15 +97,17 @@ Each dot represents one complete joint yield-change scenario evaluated for one e
 
 #### B. Supporting result — compensation and yield-rise resilience
 
+![Start-to-End trajectories of indexed six-month compensation and zero-return break-even yield rise for the S, I and L exposures.](assets/analysis2_compensation_break_even_start_end.png)
+
 | Exposure | Start compensation | End compensation | Start break-even yield rise | End break-even yield rise |
 |---|---:|---:|---:|---:|
 | **S — Short** | +2.28% | +1.95% | +126.4 bp | +105.4 bp |
 | **I — Intermediate** | +2.30% | +2.75% | +32.9 bp | +36.7 bp |
 | **L — Long** | +2.50% | +2.80% | +15.8 bp | +18.4 bp |
 
-**What the investor learns.** S's modeled yield-based compensation and zero-return break-even cushion decrease between Start and End, while I's increase. That helps explain I's improved position in the return distributions. L also gains compensation, but its much greater duration leaves it more sensitive to adverse yield moves. Break-even levels are **within-exposure** zero-return conditions, not yield thresholds at which two exposures have equal returns; their absolute cross-tenor differences are strongly influenced by duration.
+**What the investor learns.** Each exposure begins at (100, 100), indexing its own Start compensation and break-even yield rise separately. The trajectories show **within-exposure changes**, not absolute cross-exposure rankings. S's modeled yield-based compensation and zero-return break-even cushion decrease between Start and End, while I's increase. That helps explain I's improved position in the return distributions. L also gains compensation, but its much greater duration leaves it more sensitive to adverse yield moves. Break-even levels are **within-exposure** zero-return conditions, not yield thresholds at which two exposures have equal returns; their absolute cross-tenor differences are strongly influenced by duration.
 
-#### C. Inputs, calculations and reproduction
+#### Inputs, calculations and reproduction
 
 **Exposure profiles.** The two sets of constructed cash-Treasury exposure characteristics are applied separately to the same joint yield-change scenarios:
 
@@ -119,7 +121,7 @@ Each dot represents one complete joint yield-change scenario evaluated for one e
 
 **Return calculation.** For each exposure/profile and each matched scenario, modeled six-month return is approximated by `portfolio YTM × 0.5 − duration × matched tenor yield change (decimal)`. This first-order expression combines yield-based compensation with the local duration price effect, without added convexity, roll-down or portfolio-rebalancing effects. The results are **modeled gross USD cash-bond exposure returns**, not actual ETF returns or realized returns between Start and End. Applying common shocks to both dated profiles isolates the effect of their different YTM/duration assumptions.
 
-**Compensation and break-even calculation.** Six-month compensation is `portfolio YTM × 0.5`. The first-order zero-return break-even yield rise (bp) is `10,000 × compensation / duration` for the exposure's matched yield. All plots, medians, interquartile ranges and scenario-paired comparisons use the same constructed profile inputs and complete yield-change vectors.
+**Compensation and break-even calculation.** Six-month compensation is `portfolio YTM × 0.5`. The first-order zero-return break-even yield rise (bp) is `10,000 × compensation / duration` for the exposure's matched yield. The supporting plot indexes both quantities separately to 100 at Start for each exposure and connects Start with End; the table retains absolute values. All plots, medians, interquartile ranges and scenario-paired comparisons use the same constructed profile inputs and complete yield-change vectors.
 
 ### 2.3 Analyses awaiting examples
 
