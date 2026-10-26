@@ -45,5 +45,5 @@ Thumbs.db
 # Local private notes
 _private/
 
-# Local observations (including canonical FRED JSON files)
+# Local observations (including self-contained FRED CSV snapshots)
 /data/

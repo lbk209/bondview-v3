@@ -1,0 +1,28 @@
+{
+  "test_command": "poetry run python -m unittest discover -s tests -v",
+  "tests_run": 26,
+  "tests_passed": 26,
+  "fresh_notebook_modes": [
+    "file",
+    "download"
+  ],
+  "anywidget_installed": false,
+  "anywidget_import_blocked_in_notebook_tests": true,
+  "python_syntax_files_passed": 14,
+  "notebook_schema": "PASS",
+  "poetry_check": "PASS",
+  "git_diff_check": "PASS",
+  "python": "3.12.1",
+  "packages": {
+    "pandas": "3.0.6",
+    "numpy": "2.5.4",
+    "plotly": "6.9.0",
+    "ipywidgets": "8.1.9",
+    "nbclient": "0.11.0",
+    "PyYAML": "6.0.3"
+  },
+  "new_live_fred_retrieval": false,
+  "interactive_browser_qa": "NOT_RUN",
+  "initial_kernel_restriction": "Sandbox local sockets denied; resolved by permission-enabled execution",
+  "generated_at": "2026-10-26T09:37:38.185834+00:00"
+}

@@ -1,0 +1,33 @@
+test_api_rejects_truncation_and_missing_measurement_metadata (test_fred.DownloadTests.test_api_rejects_truncation_and_missing_measurement_metadata) ... ok
+test_api_requests_native_units_and_frequency_without_transformation (test_fred.DownloadTests.test_api_requests_native_units_and_frequency_without_transformation) ... ok
+test_download_rejects_invalid_inputs_before_network (test_fred.DownloadTests.test_download_rejects_invalid_inputs_before_network) ... ok
+test_key_environment_precedence_and_dotenv (test_fred.DownloadTests.test_key_environment_precedence_and_dotenv) ... ok
+test_public_download_save_and_file_equivalence (test_fred.DownloadTests.test_public_download_save_and_file_equivalence) ... ok
+test_request_failures_do_not_leak_credentials (test_fred.DownloadTests.test_request_failures_do_not_leak_credentials) ... ok
+test_invalid_csv_and_metadata (test_fred.FileTests.test_invalid_csv_and_metadata) ... ok
+test_invalid_in_memory_data (test_fred.FileTests.test_invalid_in_memory_data) ... ok
+test_invalid_metadata_does_not_truncate_existing_snapshot (test_fred.FileTests.test_invalid_metadata_does_not_truncate_existing_snapshot) ... ok
+test_mixed_units_and_frequency_and_manager_independent_provenance (test_fred.FileTests.test_mixed_units_and_frequency_and_manager_independent_provenance) ... ok
+test_roundtrip_preserves_metadata_missing_values_and_calculations (test_fred.FileTests.test_roundtrip_preserves_metadata_missing_values_and_calculations) ... ok
+test_both_modes_and_independent_manual_reruns_without_anywidget (test_notebook.NotebookTests.test_both_modes_and_independent_manual_reruns_without_anywidget) ... [IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+ok
+test_concise_manual_steps_use_widgets_directly (test_notebook.NotebookTests.test_concise_manual_steps_use_widgets_directly) ... ok
+test_classification_sign_grid (test_treasury_curve.CurveTests.test_classification_sign_grid) ... ok
+test_configuration_and_downward_interpretation (test_treasury_curve.CurveTests.test_configuration_and_downward_interpretation) ... ok
+test_design_example_and_display_units (test_treasury_curve.CurveTests.test_design_example_and_display_units) ... ok
+test_exact_date_validation (test_treasury_curve.CurveTests.test_exact_date_validation) ... ok
+test_exact_weekends_holidays_and_outside_coverage (test_treasury_curve.CurveTests.test_exact_weekends_holidays_and_outside_coverage) ... ok
+test_historical_plot_and_coverage_widget_defaults (test_treasury_curve.CurveTests.test_historical_plot_and_coverage_widget_defaults) ... ok
+test_partial_endpoints_preserve_independent_results (test_treasury_curve.CurveTests.test_partial_endpoints_preserve_independent_results) ... ok
+test_percent_and_basis_points (test_treasury_curve.CurveTests.test_percent_and_basis_points) ... ok
+test_regimes_preserve_display_conventions (test_treasury_curve.CurveTests.test_regimes_preserve_display_conventions) ... ok
+test_same_day_and_reversed_dates (test_treasury_curve.CurveTests.test_same_day_and_reversed_dates) ... ok
+test_slope_tolerance_is_separate_from_yield_direction (test_treasury_curve.CurveTests.test_slope_tolerance_is_separate_from_yield_direction) ... ok
+test_treasury_contract_and_explicit_provenance (test_treasury_curve.CurveTests.test_treasury_contract_and_explicit_provenance) ... ok
+test_yaml_changes_display_without_changing_financial_results (test_treasury_curve.CurveTests.test_yaml_changes_display_without_changing_financial_results) ... ok
+
+----------------------------------------------------------------------
+Ran 26 tests in 5.207s
+
+OK
