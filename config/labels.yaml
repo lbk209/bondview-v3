@@ -1,0 +1,66 @@
+# Presentation only: no financial thresholds or classification rules.
+na: N/A
+not_applicable: "—"
+tenors:
+  DGS2: 2Y
+  DGS10: 10Y
+  DGS30: 30Y
+measures:
+  DGS2: 2Y yield
+  DGS10: 10Y yield
+  DGS30: 30Y yield
+  DGS10_DGS2: 10Y−2Y spread
+  DGS30_DGS10: 30Y−10Y spread
+units:
+  percent: "{value:.2f}%"
+  bp: "{value:+.2f} bp"
+configuration:
+  upward: Upward-sloping
+  inverted: Inverted
+  flat: Flat
+configuration_transition: "{start} → {end}"
+direction:
+  rose: Yield rose
+  fell: Yield fell
+  unchanged: Yield unchanged
+slope:
+  unchanged: Unchanged slope
+  steepening: Steepening
+  flattening: Flattening
+movement:
+  unchanged: Unchanged yields
+  parallel_up: Parallel upward shift
+  parallel_down: Parallel downward shift
+  bear: "Bear {slope}"
+  bull: "Bull {slope}"
+  twist: "Opposing-direction twist {slope}"
+  short_only: "Short {direction}, other unchanged; {slope}"
+  long_only: "Long {direction}, other unchanged; {slope}"
+table:
+  measure: Treasury measure
+  end: "End {date}"
+  change: Change
+  configuration: Curve configuration
+  movement: Movement / regime
+interpretation:
+  no_data: No tenor has both selected-date observations. Endpoint movements are unavailable; inspect the history and choose other dates if useful.
+  upward: "Greatest upward yield movement among available tenors: {names} ({change})."
+  downward: "Greatest downward yield movement among available tenors: {names} ({change})."
+  unchanged: Available tenor yields were unchanged.
+  partial: This comparison is partial because some endpoint observations are unavailable.
+  segment: "{measure}: {movement}."
+  qualification: These are net endpoint movements, not the full path or a forecast. ETF rate-price effects depend on duration and other product characteristics.
+plot:
+  title: U.S. Treasury constant-maturity yield history — FRED/H.15
+  xaxis: Observation date
+  yaxis: Yield (%)
+  legend: Treasury tenor
+  trace: "{tenor} ({series_id})"
+  hover: "%{x|%Y-%m-%d}<br>%{y:.2f}%<extra>%{fullData.name}</extra>"
+dates:
+  start: Start
+  end: End
+data:
+  summary: "{source} | Retrieved: {retrieved}\nLoaded coverage: {start} to {end} | {rows} rows | {path}"
+  series: "{series_id}: {units}, {frequency}; missing: {missing}"
+  snapshot: Retrieval-time snapshot; historical data availability at the observation date is not reconstructed.

@@ -1,0 +1,18 @@
+{
+  "baseline_commit": "98bf94087ab52ec6ada23dd5cbec031155dcd22d",
+  "synthetic_comparisons": 510,
+  "archived_real_comparisons": 1,
+  "numeric_differences": 0,
+  "formatted_table_differences": 0,
+  "interpretation_differences": 0,
+  "archived_endpoint_rows_roundtripped": 2,
+  "archived_retrieved_at_utc": "2026-10-26T07:45:15.134022+00:00",
+  "archived_change_bp": [
+    84.0,
+    116.0,
+    103.0,
+    32.0,
+    -13.0
+  ],
+  "fresh_market_retrieval": false
+}

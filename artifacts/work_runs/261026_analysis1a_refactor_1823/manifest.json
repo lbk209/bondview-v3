@@ -1,0 +1,28 @@
+{
+  "run_id": "261026_analysis1a_refactor_1823",
+  "assignment": "Standalone Analysis 1.A refactor of PR #36",
+  "source_commit": "98bf94087ab52ec6ada23dd5cbec031155dcd22d",
+  "session_branch": "codex/session/261026_1000",
+  "task_branch": "codex/task/261026_1823_analysis1a_refactor",
+  "final_review_pr": "https://github.com/lbk209/bondview-v3/pull/36",
+  "status": "PASS_WITH_VALIDATION_LIMITATIONS",
+  "report": "reports/261026_analysis1a_refactor_1823_report.md",
+  "evidence_paths": [
+    "evidence/baseline_comparison.json",
+    "evidence/check_baseline.py",
+    "evidence/checks.json",
+    "evidence/unittest.txt",
+    "examples/archived_real_display.csv",
+    "examples/archived_real_endpoints.csv",
+    "examples/archived_real_results.csv"
+  ],
+  "limitations": [
+    "No new live FRED request; native-frequency API behavior fixture-tested.",
+    "No interactive browser gesture or rendering QA; notebook kernels and Figure state tested.",
+    "Old JSON caches need explicit conversion or a fresh CSV download.",
+    "Source/editable Poetry workflow tested; standalone wheel deployment not tested."
+  ],
+  "subagents": 0,
+  "usage": "not_exposed",
+  "generated_at": "2026-10-26T09:37:38.186376+00:00"
+}
