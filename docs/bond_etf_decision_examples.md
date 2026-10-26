@@ -16,9 +16,7 @@ This document demonstrates how fixed-income analysis could help an investor inte
 
 **Investor's question.** Where has interest-rate pressure concentrated across Treasury maturities, what might account for long-yield changes, and what joint yield movements are compatible with a partial market view?
 
-#### A. Primary Treasury-market results
-
-##### A1. Treasury curve conditions and movements — where has rate pressure concentrated?
+#### A. Treasury curve conditions and movements — where has rate pressure concentrated?
 
 | Treasury measure | 2024-09-16 | 2025-01-13 | Change | Curve configuration | Movement / regime |
 |---|---:|---:|---:|---|---|
@@ -39,7 +37,7 @@ This document demonstrates how fixed-income analysis could help an investor inte
 Spreads are calculated from the corresponding tenor yields at each date. The classifications apply separately to the 2Y–10Y and 10Y–30Y curve segments. Yield movements indicate the direction of rate-price effects, while their magnitudes for ETF exposures depend on duration and other characteristics examined in Analysis 2.
 
 
-##### A2. Long-yield decomposition — what explains changes in the 10Y yield?
+#### B. Long-yield decomposition — what explains changes in the 10Y yield?
 
 | 10Y model component | 2025-01-10 | 2025-06-10 | Change |
 |---|---:|---:|---:|
@@ -62,29 +60,21 @@ The expected-rate component reflects the model-implied **average short-term rate
 
 The table uses illustrative component estimates rather than actual ACM, CR or KW model outputs. Each component is estimated at the two observation dates, and its change is calculated from those estimates.
 
-#### B. Optional scenario and factor results
+#### C. Conditional joint yield movements — scenario inputs for Analysis 2
 
-##### B1. What happens at other maturities if the investor expects a moderate 10Y increase?
+**Investor-specified condition:** The 10Y Treasury yield rises by **25–50 bp over six months**.
 
-**Investor-specified condition:** 10Y yield rises **25–50 bp** over six months. The rows below illustrate possible *complete* joint yield-change vectors under that assumption.
+Historical-style conditioning selects complete 2Y/10Y/30Y yield-change vectors from the constructed market series. For each six-calendar-month observation pair (with a ±7-day matching tolerance), the 10Y change is checked against the condition; when it qualifies, the changes at the other tenors from **the same interval** are retained with it. The dataset supplies **28 qualifying joint scenarios**.
 
-| Illustrative curve outcome | Δ2Y | Δ10Y | Δ30Y | Curve interpretation |
-|---|---:|---:|---:|---|
-| Short end rises fastest | +65 bp | +35 bp | +15 bp | Bear flattening |
-| Broad rise | +30 bp | +40 bp | +45 bp | Approximately parallel increase |
-| Long end rises fastest | +5 bp | +40 bp | +75 bp | Bear steepening |
+| Treasury yield change | Minimum | Median | Maximum |
+|---|---:|---:|---:|
+| Δ2Y | −54.4 bp | −50.3 bp | −45.2 bp |
+| **Δ10Y (conditioned)** | **+25.2 bp** | **+38.6 bp** | **+49.2 bp** |
+| Δ30Y | +19.5 bp | +23.7 bp | +29.2 bp |
 
-**What the investor learns.** The same partial view on 10Y yields can coexist with very different changes elsewhere on the curve. A historical-conditioning or supported statistical analysis could replace these presentation vectors with **dated, coherent joint scenarios** and show the range of accompanying movements. Those scenarios can then be used for paired ETF-return comparisons in Analysis 2; the three illustrative rows above are not the scenario sample used in Analysis 2.
+The table summarizes each tenor separately; its median values do not constitute a single jointly observed scenario.
 
-##### B2. PCA factor structure — optional supporting interpretation
-
-| Illustrative historical factor | Explained variance |
-|---|---:|
-| Common movement (level-like) | 75% |
-| Short-versus-long movement (slope-like) | 20% |
-| Intermediate-versus-end movement (curvature-like) | 5% |
-
-**What the investor learns.** A dominant common factor would suggest substantial shared rate exposure across maturities, while slope and curvature variation could still matter for tenor selection. Factor loadings would establish the appropriate economic labels; the explained-variance shares alone do not supply joint scenarios or describe how often tenors move together.
+**Use in Analysis 2.** All 28 complete joint scenarios are applied consistently to the short-, intermediate- and long-duration exposures for matched holding-period return comparisons. These substantially overlapping windows constitute a limited constructed sample, not a forecast distribution or estimated future probabilities. The underlying vectors and further selection details are provided in Analysis 2.
 
 ### 2.2 Analysis 2 — Holding-Period Return (§3.2)
 
