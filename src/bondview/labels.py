@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 
-DEFAULT_LABELS_PATH = Path(__file__).resolve().parents[2] / "config/labels.yaml"
+DEFAULT_LABELS_PATH = Path(__file__).resolve().parent / "config" / "labels.yaml"
 
 
 def load_labels(path=None):
