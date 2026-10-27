@@ -19,7 +19,7 @@ def date_picker_defaults(observations, *, labels_path=None):
     if not isinstance(index, pd.DatetimeIndex) or index.empty or index.hasnans:
         raise ValueError("Date selection requires a nonempty DatetimeIndex without missing dates.")
 
-    labels = load_labels(labels_path)["dates"]
+    labels = load_labels(labels_path)["widgets"]["dates"]
     return (
         {"description": labels["start"], "value": index.min().date()},
         {"description": labels["end"], "value": index.max().date()},

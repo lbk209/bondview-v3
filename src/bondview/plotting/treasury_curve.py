@@ -17,21 +17,23 @@ def plot_yield_history(data, start, end, *, labels_path=None, metadata=None):
     selected = data.loc[(data.index >= start) & (data.index <= end)]
 
     labels = load_labels(labels_path)
+    tenors = labels["common"]["tenors"]
+    plot = labels["analyses"]["treasury_curve"]["plot"]
     figure = go.Figure()
     for series_id, dash in zip(SERIES, ("solid", "dash", "dot")):
         figure.add_trace(go.Scatter(
             x=selected.index, y=selected[series_id],
-            name=labels["plot"]["trace"].format(tenor=labels["tenors"][series_id], series_id=series_id),
+            name=plot["trace"].format(tenor=tenors[series_id], series_id=series_id),
             mode="lines", line={"dash": dash}, connectgaps=False,
-            hovertemplate=labels["plot"]["hover"],
+            hovertemplate=plot["hover"],
         ))
     figure.update_layout(
-        title=labels["plot"]["title"],
-        xaxis_title=labels["plot"]["xaxis"], yaxis_title=labels["plot"]["yaxis"],
+        title=plot["title"],
+        xaxis_title=plot["xaxis"], yaxis_title=plot["yaxis"],
         hovermode="x unified", template="plotly_white",
         xaxis={"type": "date", "range": [str(start.date()), str(end.date())]},
         yaxis={"autorange": True},
-        legend_title_text=labels["plot"]["legend"], height=520,
+        legend_title_text=plot["legend"], height=520,
     )
     return figure
 
