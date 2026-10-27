@@ -39,7 +39,7 @@ def _display_table(result, labels):
         )
         rows.append({labels["table"]["measure"]: labels["measures"][measure],
                      result.attrs["start"]: level(row.start),
-                     labels["table"]["end"].format(date=result.attrs["end"]): level(row.end),
+                     result.attrs["end"]: level(row.end),
                      labels["table"]["change"]: labels["na"] if pd.isna(row.change_bp) else labels["units"]["bp"].format(value=row.change_bp),
                      labels["table"]["configuration"]: config,
                      labels["table"]["movement"]: _movement(row, labels)})

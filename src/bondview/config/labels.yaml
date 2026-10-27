@@ -38,7 +38,6 @@ movement:
   long_only: "Long {direction}, other little change; {slope}"
 table:
   measure: Treasury measure
-  end: "End {date}"
   change: Change
   configuration: Curve configuration
   movement: Movement / regime

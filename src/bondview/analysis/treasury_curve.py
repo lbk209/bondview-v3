@@ -1,4 +1,4 @@
-"""Exact-date Treasury calculations with stable IDs, independent of terminology.
+"""Treasury changes over selected date ranges, independent of terminology.
 
 Yield levels are percent; spread levels and all changes are basis points.
 """
@@ -7,7 +7,8 @@ import math
 
 import pandas as pd
 
-from bondview.data.fred import SERIES, exact_date, validate_treasury_observations
+from bondview.data.fred import SERIES, validate_treasury_observations
+from bondview.utils import select_date_range
 
 # Round floating-point cancellation only, far below source quotation precision.
 NUMERICAL_DECIMALS = 10
@@ -82,18 +83,20 @@ def analyze_curve(
 ) -> pd.DataFrame:
     """Return five structured rows, preserving available endpoints independently.
 
-    Row IDs and categorical values are stable identifiers. Missing dates,
-    including weekends and dates outside coverage, remain unavailable. Explicit
-    provenance may be supplied when DataFrame attrs are absent.
+    Start and end bound an inclusive interval. The first and last dates with
+    any Treasury observation are used as effective endpoints. Each tenor still
+    reports unavailable changes when either endpoint observation is missing.
+    Explicit provenance may be supplied when DataFrame attrs are absent.
     """
     data = validate_treasury_observations(data, metadata)
     classify_segment(0, 0, slope_tolerance_bp,
                      yield_change_tolerance_bp=yield_change_tolerance_bp)
-    start, end = exact_date(start), exact_date(end)
-    if start > end:
-        raise ValueError("Selected start must be on or before end.")
-    endpoints = data.reindex([start, end])
-    initial, final = endpoints.iloc[0], endpoints.iloc[1]
+    selected = select_date_range(data, start, end)
+    available = selected.dropna(how="all", subset=list(SERIES))
+    if available.empty:
+        raise ValueError("No Treasury observations within the selected date range.")
+    start, end = available.index[0], available.index[-1]
+    initial, final = available.iloc[0], available.iloc[-1]
     changes = {s: _bp(final[s] - initial[s]) for s in SERIES}
     rows = []
     for s in SERIES:
