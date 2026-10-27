@@ -20,7 +20,7 @@ def plot_yield_history(data, start, end, *, labels_path=None, metadata=None):
     tenors = labels["common"]["tenors"]
     plot = labels["analyses"]["treasury_curve"]["plot"]
     figure = go.Figure()
-    for series_id, dash in zip(SERIES, ("solid", "dash", "dot")):
+    for series_id, dash in zip(SERIES, ("solid", "solid", "solid")):
         figure.add_trace(go.Scatter(
             x=selected.index, y=selected[series_id],
             name=plot["trace"].format(tenor=tenors[series_id], series_id=series_id),

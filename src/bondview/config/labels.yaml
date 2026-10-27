@@ -87,7 +87,7 @@ analyses:
       unchanged: No tenor yield change exceeds the selected tolerance.
       partial: This comparison is partial because some endpoint observations are unavailable.
       segment: "{measure}: {movement}."
-      qualification: These are net endpoint movements, not the full path or a forecast. ETF rate-price effects depend on duration and other product characteristics.
+      qualification: These are net endpoint movements, not the full path or a forecast. #ETF rate-price effects depend on duration and other product characteristics.
 
     plot:
       title: U.S. Treasury constant-maturity yield history — FRED/H.15
