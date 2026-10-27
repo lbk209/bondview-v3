@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from bondview.data.fred import SERIES, validate_treasury_observations
+from bondview.data.fred import SERIES
 from bondview.labels import load_labels
 
 
@@ -82,14 +82,3 @@ def show_curve_results(result, *, labels_path=None):
     labels = load_labels(labels_path)
     display(_display_table(result, labels))
     display(Markdown(_interpret_curve(result, labels)))
-
-
-def date_picker_defaults(data, *, labels_path=None):
-    """Stateless widget arguments based on loaded date coverage, without bounds.
-
-    Users can still select missing dates or dates outside loaded coverage.
-    """
-    data = validate_treasury_observations(data)
-    labels = load_labels(labels_path)["dates"]
-    return ({"description": labels["start"], "value": data.index.min().date()},
-            {"description": labels["end"], "value": data.index.max().date()})
