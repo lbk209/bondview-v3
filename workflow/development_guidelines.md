@@ -26,8 +26,16 @@ This is a user-maintained, evolving set of practical guidelines, **not** an inde
 ## 3. Calculations and presentation configuration
 
 - Keep numerical calculations and analytical classifications separate from user-facing text, terminology, and display formatting.
-- Use the established presentation configuration (such as `labels.yaml`) for configurable labels, units, and explanatory wording rather than duplicating them in calculation code.
+- Use established presentation configuration (such as `labels.yaml`) for labels, display units, formatting, and explanatory wording. Keep computational units and calculation logic in Python.
 - Share presentation definitions only when their meanings are genuinely common across consumers. Do not couple separate analyses merely because their labels look alike.
+
+### Configuration and YAML usage
+
+- Before hardcoding values in Python, evaluate whether external configuration would provide a practical maintenance benefit.
+- Prefer reusing and extending existing YAML configuration files when values are intended to be maintained independently of implementation code. Do not introduce new configuration files or abstractions without a clear need.
+- Keep financial calculations, control flow, internal implementation details, and ordinary code constants in Python unless external configuration provides a justified benefit.
+- Codex may independently decide routine configuration placement. Do not introduce or modify financial-model assumptions, thresholds, or decision policies without authorization from the applicable accepted design or the user.
+- When changing configuration structure, update all affected consumers and verify that the configuration and code remain consistent, including the configuration actually loaded at runtime.
 
 ## 4. Validation after changes
 
