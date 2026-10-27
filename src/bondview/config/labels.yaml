@@ -1,0 +1,98 @@
+# Bondview presentation labels and formatting templates.
+#
+# This file defines user-facing text and display formats only.
+# It must not define data inputs, financial calculations, thresholds,
+# or investment decision rules.
+#
+# Organization:
+# - common: Shared terminology and display formats.
+# - widgets: Labels for reusable interface components.
+# - data: Labels for data-source reporting.
+# - analyses: Presentation resources owned by each analysis.
+#
+# Add new analyses under analyses.<analysis_name>.
+# Existing analysis sections should remain independent and unchanged.
+# Shared entries should retain their meaning as new analyses are added.
+
+common:
+  na: N/A
+  not_applicable: "—"
+
+  units:
+    percent_2dp: "{value:.2f}%"
+    bp_signed_0dp: "{value:+.0f} bp"
+
+  tenors:
+    DGS2: 2Y
+    DGS10: 10Y
+    DGS30: 30Y
+
+widgets:
+  dates:
+    start: Start
+    end: End
+
+data:
+  fred:
+    summary: "{source} | Retrieved: {retrieved}\nLoaded coverage: {start} to {end} | {rows} rows | {path}"
+    series: "{series_id}: {units}, {frequency}; missing: {missing}"
+    snapshot: Retrieval-time snapshot; historical data availability at the observation date is not reconstructed.
+
+analyses:
+  treasury_curve:
+    measures:
+      DGS2: 2Y yield
+      DGS10: 10Y yield
+      DGS30: 30Y yield
+      DGS10_DGS2: 10Y−2Y spread
+      DGS30_DGS10: 30Y−10Y spread
+
+    configuration:
+      upward: Upward-sloping
+      inverted: Inverted
+      flat: Flat
+
+    configuration_transition: "{start} → {end}"
+
+    direction:
+      rose: Yield rose
+      fell: Yield fell
+      unchanged: Little yield movement
+
+    slope:
+      unchanged: Little slope change
+      steepening: Steepening
+      flattening: Flattening
+
+    movement:
+      unchanged: Little yield movement
+      parallel_up: Yields rose; little slope change
+      parallel_down: Yields fell; little slope change
+      bear: "Bear {slope}"
+      bull: "Bull {slope}"
+      twist: "Opposing-direction twist {slope}"
+      short_only: "Short {direction}, other little change; {slope}"
+      long_only: "Long {direction}, other little change; {slope}"
+
+    table:
+      measure: Treasury measure
+      change: Change
+      configuration: Curve configuration
+      movement: Movement / regime
+
+    interpretation:
+      no_data: No tenor has observations at both effective endpoints. Yield movements are unavailable; choose another interval.
+      upward: "Greatest upward yield movement among available tenors: {names} ({change})."
+      downward: "Greatest downward yield movement among available tenors: {names} ({change})."
+      unchanged: No tenor yield change exceeds the selected tolerance.
+      partial: This comparison is partial because some endpoint observations are unavailable.
+      segment: "{measure}: {movement}."
+      qualification: These are net endpoint movements, not the full path or a forecast. #ETF rate-price effects depend on duration and other product characteristics.
+
+    plot:
+      title: U.S. Treasury constant-maturity yield history — FRED/H.15
+      xaxis: Observation date
+      yaxis: Yield (%)
+      legend: Treasury tenor
+      trace: "{tenor} ({series_id})"
+      hover: "%{x|%Y-%m-%d}<br>%{y:.2f}%<extra>%{fullData.name}</extra>"

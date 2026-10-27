@@ -1,0 +1,58 @@
+[
+  {
+    "command": [
+      "/home/lbk/.cache/pypoetry/virtualenvs/bondview-v3-trCSYVBi-py3.12/bin/python",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-v"
+    ],
+    "exit_code": 0,
+    "output": "test_both_modes_and_manual_date_rerun_without_network (test_notebook.NotebookTests.test_both_modes_and_manual_date_rerun_without_network) ... [IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.\n[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.\nok\ntest_classification_sign_grid (test_treasury_curve.CurveTests.test_classification_sign_grid) ... ok\ntest_configuration_and_downward_interpretation (test_treasury_curve.CurveTests.test_configuration_and_downward_interpretation) ... ok\ntest_design_example (test_treasury_curve.CurveTests.test_design_example) ... ok\ntest_exact_date_validation (test_treasury_curve.CurveTests.test_exact_date_validation) ... ok\ntest_exact_weekends_holidays_and_outside_coverage (test_treasury_curve.CurveTests.test_exact_weekends_holidays_and_outside_coverage) ... ok\ntest_historical_plot_has_all_observations_and_gaps (test_treasury_curve.CurveTests.test_historical_plot_has_all_observations_and_gaps) ... ok\ntest_partial_endpoints_preserve_independent_results (test_treasury_curve.CurveTests.test_partial_endpoints_preserve_independent_results) ... ok\ntest_percent_and_basis_points (test_treasury_curve.CurveTests.test_percent_and_basis_points) ... ok\ntest_regimes (test_treasury_curve.CurveTests.test_regimes) ... ok\ntest_same_day_and_reversed_dates (test_treasury_curve.CurveTests.test_same_day_and_reversed_dates) ... ok\ntest_slope_tolerance_is_separate_from_yield_direction (test_treasury_curve.CurveTests.test_slope_tolerance_is_separate_from_yield_direction) ... ok\ntest_api_requests_units_and_metadata (test_treasury_curve.DownloadTests.test_api_requests_units_and_metadata) ... ok\ntest_api_validates_source_units_and_truncation (test_treasury_curve.DownloadTests.test_api_validates_source_units_and_truncation) ... ok\ntest_download_rejects_invalid_inputs_before_network (test_treasury_curve.DownloadTests.test_download_rejects_invalid_inputs_before_network) ... ok\ntest_key_environment_precedence_and_dotenv (test_treasury_curve.DownloadTests.test_key_environment_precedence_and_dotenv) ... ok\ntest_public_download_save_and_file_equivalence (test_treasury_curve.DownloadTests.test_public_download_save_and_file_equivalence) ... ok\ntest_request_failures_do_not_leak_credentials (test_treasury_curve.DownloadTests.test_request_failures_do_not_leak_credentials) ... ok\ntest_invalid_files_and_units (test_treasury_curve.FileTests.test_invalid_files_and_units) ... ok\ntest_invalid_in_memory_data (test_treasury_curve.FileTests.test_invalid_in_memory_data) ... ok\ntest_roundtrip_preserves_metadata_missing_values_and_calculations (test_treasury_curve.FileTests.test_roundtrip_preserves_metadata_missing_values_and_calculations) ... ok\n\n----------------------------------------------------------------------\nRan 21 tests in 4.799s\n\nOK\n"
+  },
+  {
+    "command": [
+      "/home/lbk/.cache/pypoetry/virtualenvs/bondview-v3-trCSYVBi-py3.12/bin/python",
+      "-m",
+      "py_compile",
+      "src/bondview/__init__.py",
+      "src/bondview/analysis/__init__.py",
+      "src/bondview/analysis/treasury_curve.py",
+      "src/bondview/plotting/__init__.py",
+      "src/bondview/plotting/treasury_curve.py",
+      "src/bondview/data/__init__.py",
+      "src/bondview/data/fred.py",
+      "tests/test_treasury_curve.py",
+      "tests/test_notebook.py"
+    ],
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "command": [
+      "poetry",
+      "check",
+      "--lock"
+    ],
+    "exit_code": 0,
+    "output": "All set!\n"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "command": [
+      "nbformat.validate; committed notebook output check"
+    ],
+    "exit_code": 0,
+    "output": "Valid notebook; all delivered code cells unexecuted and output-free."
+  }
+]

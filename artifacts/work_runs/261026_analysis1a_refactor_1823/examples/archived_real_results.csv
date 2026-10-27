@@ -1,0 +1,6 @@
+measure,start,end,level_unit,change_bp,configuration_start,configuration_end,movement,slope,short_direction,long_direction
+DGS2,3.56,4.4,%,84.0,not_applicable,not_applicable,rose,not_applicable,not_applicable,not_applicable
+DGS10,3.63,4.79,%,116.0,not_applicable,not_applicable,rose,not_applicable,not_applicable,not_applicable
+DGS30,3.94,4.97,%,103.0,not_applicable,not_applicable,rose,not_applicable,not_applicable,not_applicable
+DGS10_DGS2,7.0,39.0,bp,32.0,upward,upward,bear,steepening,rose,rose
+DGS30_DGS10,31.0,18.0,bp,-13.0,upward,upward,bear,flattening,rose,rose

@@ -1,0 +1,13 @@
+# format: "bondview.fred_observations.csv.v1"
+# source: "FRED / Federal Reserve H.15"
+# transport: "FRED public graph CSV; known H.15 daily Percent series"
+# retrieved_at_utc: "2026-10-26T07:45:15.134022+00:00"
+# requested_start: "2024-01-01"
+# requested_end: "2025-01-31"
+# series: {"DGS2": {"units": "Percent", "frequency": "D", "source_url": "https://fred.stlouisfed.org/series/DGS2"}, "DGS10": {"units": "Percent", "frequency": "D", "source_url": "https://fred.stlouisfed.org/series/DGS10"}, "DGS30": {"units": "Percent", "frequency": "D", "source_url": "https://fred.stlouisfed.org/series/DGS30"}}
+# missing_policy: "No filling or date substitution; null means unavailable."
+# availability: "Known at retrieval; historical release availability is not reconstructed."
+# vintage: "Retrieval-time snapshot; source observations may be revised."
+date,DGS2,DGS10,DGS30
+2024-09-16,3.56,3.63,3.94
+2025-01-13,4.4,4.79,4.97

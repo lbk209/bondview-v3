@@ -1,0 +1,26 @@
+{
+  "data_type": "Synthetic missing-data modification of real FRED observations",
+  "modification": "Set DGS30 on 2024-09-16 to missing; preserve all other observations",
+  "observed": {
+    "10Y_minus_2Y_change_bp": 32.0,
+    "30Y_start": "N/A",
+    "30Y_end_percent": 4.97,
+    "30Y_change": "N/A",
+    "30Y_minus_10Y_end_bp": 18.0
+  },
+  "tolerance_example": {
+    "data_type": "Synthetic hand-checkable yield changes",
+    "short_change_bp": 10,
+    "long_change_bp": 11,
+    "zero_tolerance": {
+      "slope": "Steepening",
+      "direction": "Short: yield rose; long: yield rose",
+      "movement": "Bear steepening"
+    },
+    "one_bp_tolerance": {
+      "slope": "Unchanged slope",
+      "direction": "Short: yield rose; long: yield rose",
+      "movement": "Bear unchanged slope"
+    }
+  }
+}
