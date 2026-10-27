@@ -390,7 +390,7 @@ class FredDataManager:
         """Print provenance, coverage and missing counts without exposing keys."""
         from bondview.labels import load_labels
 
-        labels = load_labels(labels_path)["data"]
+        labels = load_labels(labels_path)["data"]["fred"]
         data = self.validate()
 
         print(labels["summary"].format(

@@ -1,0 +1,61 @@
+{
+  "status": "PASS",
+  "source_revision": "693bf09c32607705d1bc926258d0dfad00ef67b1",
+  "checks": [
+    "Hand-checked table, signed zero-decimal bp, two-decimal percent, full interpretation, no result mutation",
+    "13 movement cases; three configurations; upward/downward/tied/unchanged interpretations; tolerance retained",
+    "Six independent missing endpoints and no paired tenor observations",
+    "Plot labels, hover, three traces, dates, values, gaps, selected-period slicing and both display wrappers",
+    "Date defaults and actual DateRangePicker descriptions and selected dates",
+    "Exact multiline FRED report, provenance, coverage, rows, per-series metadata/missing counts; snapshot unchanged",
+    "Temporary nested YAML customization across all four consumers and shared formats; rereading; calculations unchanged",
+    "All function signatures unchanged; AST scan rejects obsolete root lookups and old unit keys",
+    "Protected YAML, instructions, docs, workflow, tests, notebooks, analysis and utilities unchanged from the authorized source"
+  ],
+  "movement_cases": 13,
+  "missing_endpoint_cases": 6,
+  "example_table": [
+    {
+      "Treasury measure": "2Y yield",
+      "2024-09-16": "3.56%",
+      "2025-01-13": "4.40%",
+      "Change": "+84 bp",
+      "Curve configuration": "—",
+      "Movement / regime": "Yield rose"
+    },
+    {
+      "Treasury measure": "10Y yield",
+      "2024-09-16": "3.63%",
+      "2025-01-13": "4.79%",
+      "Change": "+116 bp",
+      "Curve configuration": "—",
+      "Movement / regime": "Yield rose"
+    },
+    {
+      "Treasury measure": "30Y yield",
+      "2024-09-16": "3.94%",
+      "2025-01-13": "4.97%",
+      "Change": "+103 bp",
+      "Curve configuration": "—",
+      "Movement / regime": "Yield rose"
+    },
+    {
+      "Treasury measure": "10Y−2Y spread",
+      "2024-09-16": "+7 bp",
+      "2025-01-13": "+39 bp",
+      "Change": "+32 bp",
+      "Curve configuration": "Upward-sloping → Upward-sloping",
+      "Movement / regime": "Bear steepening"
+    },
+    {
+      "Treasury measure": "30Y−10Y spread",
+      "2024-09-16": "+31 bp",
+      "2025-01-13": "+18 bp",
+      "Change": "-13 bp",
+      "Curve configuration": "Upward-sloping → Upward-sloping",
+      "Movement / regime": "Bear flattening"
+    }
+  ],
+  "example_interpretation": "Greatest upward yield movement among available tenors: 10Y (+116 bp). 10Y−2Y spread: Bear steepening. 30Y−10Y spread: Bear flattening. These are net endpoint movements, not the full path or a forecast. ETF rate-price effects depend on duration and other product characteristics.",
+  "example_fred_report": "Synthetic verification fixture; not market retrieval | Retrieved: 2026-10-27T00:00:00+00:00\nLoaded coverage: 2024-09-16 to 2025-01-13 | 3 rows | <temporary snapshot.csv>\nDGS2: Percent, D; missing: 1\nDGS10: Percent, D; missing: 1\nDGS30: Percent, D; missing: 1\nRetrieval-time snapshot; historical data availability at the observation date is not reconstructed.\n"
+}
