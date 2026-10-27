@@ -56,8 +56,12 @@ def _interpret_curve(result, labels):
     changes = result.loc[list(SERIES), "change_bp"].dropna()
     if changes.empty:
         return text["no_data"]
+    tolerance = result.attrs.get("yield_change_tolerance_bp", 0.0)
     statements = []
-    for predicate, extreme, direction in ((changes > 0, max, "upward"), (changes < 0, min, "downward")):
+    for predicate, extreme, direction in (
+        (changes > tolerance, max, "upward"),
+        (changes < -tolerance, min, "downward"),
+    ):
         subset = changes[predicate]
         if not subset.empty:
             value = extreme(subset)

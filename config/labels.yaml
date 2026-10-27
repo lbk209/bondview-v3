@@ -13,7 +13,7 @@ measures:
   DGS30_DGS10: 30Y−10Y spread
 units:
   percent: "{value:.2f}%"
-  bp: "{value:+.2f} bp"
+  bp: "{value:+.0f} bp"
 configuration:
   upward: Upward-sloping
   inverted: Inverted
@@ -22,20 +22,20 @@ configuration_transition: "{start} → {end}"
 direction:
   rose: Yield rose
   fell: Yield fell
-  unchanged: Yield unchanged
+  unchanged: Little yield movement
 slope:
-  unchanged: Unchanged slope
+  unchanged: Little slope change
   steepening: Steepening
   flattening: Flattening
 movement:
-  unchanged: Unchanged yields
-  parallel_up: Parallel upward shift
-  parallel_down: Parallel downward shift
+  unchanged: Little yield movement
+  parallel_up: Yields rose; little slope change
+  parallel_down: Yields fell; little slope change
   bear: "Bear {slope}"
   bull: "Bull {slope}"
   twist: "Opposing-direction twist {slope}"
-  short_only: "Short {direction}, other unchanged; {slope}"
-  long_only: "Long {direction}, other unchanged; {slope}"
+  short_only: "Short {direction}, other little change; {slope}"
+  long_only: "Long {direction}, other little change; {slope}"
 table:
   measure: Treasury measure
   end: "End {date}"
@@ -46,7 +46,7 @@ interpretation:
   no_data: No tenor has both selected-date observations. Endpoint movements are unavailable; inspect the history and choose other dates if useful.
   upward: "Greatest upward yield movement among available tenors: {names} ({change})."
   downward: "Greatest downward yield movement among available tenors: {names} ({change})."
-  unchanged: Available tenor yields were unchanged.
+  unchanged: No tenor yield change exceeds the selected tolerance.
   partial: This comparison is partial because some endpoint observations are unavailable.
   segment: "{measure}: {movement}."
   qualification: These are net endpoint movements, not the full path or a forecast. ETF rate-price effects depend on duration and other product characteristics.
