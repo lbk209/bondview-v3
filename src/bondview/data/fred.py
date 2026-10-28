@@ -12,6 +12,8 @@ import json
 import os
 from pathlib import Path
 import re
+from tempfile import TemporaryDirectory
+import warnings
 from urllib.parse import urlencode
 from urllib.request import urlopen
 
@@ -22,6 +24,18 @@ import pandas as pd
 SERIES = ("DGS2", "DGS10", "DGS30")
 FORMAT = "bondview.fred_observations.csv.v1"
 API_BASE = "https://api.stlouisfed.org/fred/"
+
+
+def _series_ids(series_ids):
+    """Validate IDs before using them in API requests or filesystem paths."""
+    if isinstance(series_ids, str):
+        raise ValueError("Provide a collection of unique valid FRED series IDs.")
+    ids = tuple(series_ids)
+    if not ids or any(
+        not isinstance(s, str) or not re.fullmatch(r"[A-Za-z0-9_]+", s) for s in ids
+    ) or len(set(ids)) != len(ids):
+        raise ValueError("Provide unique valid FRED series IDs.")
+    return ids
 
 
 def exact_date(value) -> pd.Timestamp:
@@ -56,7 +70,7 @@ def validate_observations(data: pd.DataFrame, metadata=None) -> pd.DataFrame:
     if not series or set(data.columns) != set(series):
         raise ValueError("Series columns must match the metadata series IDs.")
     for series_id in data.columns:
-        if not isinstance(series_id, str) or not re.fullmatch(r"[A-Z0-9_]+", series_id):
+        if not isinstance(series_id, str) or not re.fullmatch(r"[A-Za-z0-9_]+", series_id):
             raise ValueError("Invalid series ID.")
         info = series[series_id]
         if not isinstance(info, dict) or any(
@@ -68,13 +82,18 @@ def validate_observations(data: pd.DataFrame, metadata=None) -> pd.DataFrame:
             raise ValueError(f"{series_id}: observations must be numeric or missing.")
         if np.isinf(data[series_id].to_numpy(dtype=float, na_value=np.nan)).any():
             raise ValueError("Infinite observations are invalid.")
+        provenance = info.get("provenance", metadata)
+        if (not isinstance(provenance, dict)
+                or not isinstance(provenance.get("source"), str)
+                or not provenance["source"].strip()):
+            raise ValueError(f"{series_id}: source metadata is required.")
+        if not isinstance(provenance.get("retrieved_at_utc"), str):
+            raise ValueError(f"{series_id}: retrieval timestamp metadata is required.")
+        timestamp = pd.Timestamp(provenance["retrieved_at_utc"])
+        if pd.isna(timestamp) or timestamp.tz is None:
+            raise ValueError("Retrieval timestamp must include its timezone.")
     if not isinstance(metadata.get("source"), str) or not metadata["source"].strip():
         raise ValueError("Source metadata is required.")
-    if not isinstance(metadata.get("retrieved_at_utc"), str):
-        raise ValueError("Retrieval timestamp metadata is required.")
-    timestamp = pd.Timestamp(metadata["retrieved_at_utc"])
-    if pd.isna(timestamp) or timestamp.tz is None:
-        raise ValueError("Retrieval timestamp must include its timezone.")
     result = data.sort_index().copy()
     result.index.name = "date"
     result.attrs["metadata"] = deepcopy(metadata)
@@ -129,11 +148,7 @@ def download_fred(
     if start is not None and end is not None and start > end:
         raise ValueError("Download start must be on or before end.")
 
-    ids = tuple(series_ids)
-    if not ids or len(set(ids)) != len(ids) or any(
-        not isinstance(s, str) or not re.fullmatch(r"[A-Z0-9_]+", s) for s in ids
-    ):
-        raise ValueError("Provide unique valid FRED series IDs.")
+    ids = _series_ids(series_ids)
 
     key = api_key or os.getenv("FRED_API_KEY")
     if not key and env_path is not None:
@@ -146,6 +161,8 @@ def download_fred(
 
         for series_id in ids:
             info = _api_json("series", key, series_id=series_id)["seriess"][0]
+            if info.get("id", series_id) != series_id:
+                raise ValueError(f"{series_id}: FRED returned a different series identity.")
 
             params = {
                 "series_id": series_id,
@@ -303,111 +320,171 @@ def load_observations(path) -> pd.DataFrame:
 
 
 class FredDataManager:
-    """Manage one local snapshot and independent provenance."""
+    """Download in memory and explicitly save/load independent ID snapshots.
+
+    ``path`` is a directory. The manager owns the ID_YYYYMMDD.csv convention;
+    dates are retrieval dates in UTC, not observation dates or vintage IDs.
+    """
 
     def __init__(self, path, *, env_path=None, series_ids=SERIES):
         self.path = Path(path).expanduser()
         self.env_path = env_path
-        self.series_ids = tuple(series_ids)
+        self.series_ids = _series_ids(series_ids)
         self.observations = None
         self._metadata = {}
         self._mode = None
+        self.snapshot_dates = {}
 
     @property
     def metadata(self):
         """Independent defensive copy, available even if DataFrame attrs are lost."""
         return deepcopy(self._metadata)
 
-    def _accept(self, data):
+    def _accept(self, data, mode, ids, snapshot_dates=None):
         data = validate_observations(data)
         self._metadata = deepcopy(data.attrs["metadata"])
         self.observations = data
+        self.series_ids = ids
+        self._mode = mode
+        self.snapshot_dates = dict(snapshot_dates or {})
         return data
 
     def validate(self):
         return validate_observations(self.observations, self._metadata)
 
-    def download(self, start=None, end=None, *, api_key=None):
+    def download(self, start=None, end=None, *, series_ids=None, api_key=None):
+        """Retrieve only the requested IDs; never write files."""
         self._mode = None
+        ids = self.series_ids if series_ids is None else _series_ids(series_ids)
+        return self._accept(download_fred(
+            start, end, api_key=api_key, env_path=self.env_path, series_ids=ids,
+        ), "download", ids)
 
-        data = self._accept(download_fred(
-            start, end, api_key=api_key, env_path=self.env_path,
-            series_ids=self.series_ids,
-        ))
+    def _latest_snapshot(self, series_id):
+        candidates = []
+        # Parse IDs greedily: underscores are valid inside a FRED ID.
+        for path in self.path.glob(f"{series_id}_*.csv"):
+            match = re.fullmatch(r"([A-Za-z0-9_]+)_([0-9]{8})\.csv", path.name)
+            if match is None:
+                raise ValueError(f"{series_id}: malformed snapshot filename: {path.name}")
+            if match[1] != series_id:
+                continue
+            try:
+                datetime.strptime(match[2], "%Y%m%d")
+            except ValueError:
+                raise ValueError(f"{series_id}: invalid snapshot date: {path.name}") from None
+            candidates.append((match[2], path))
+        if not candidates:
+            raise FileNotFoundError(f"{series_id}: no saved snapshots in {self.path}.")
+        return max(candidates)
 
-        self._mode = "download"
-        return data
+    def load(self, start=None, end=None, *, series_ids=None):
+        """Load the latest snapshot per ID offline; never fall back on corruption.
 
-    def load(self, start=None, end=None):
-        # Read the local snapshot without network access.
+        Outer alignment retains every date and missing value. Eligibility for
+        financial calculations remains the responsibility of each analysis.
+        """
         self._mode = None
-        data = load_observations(self.path)
-
+        ids = self.series_ids if series_ids is None else _series_ids(series_ids)
         start = exact_date(start) if start is not None else None
         end = exact_date(end) if end is not None else None
-
         if start is not None and end is not None and start > end:
             raise ValueError("Start must be on or before end.")
-
-        metadata = deepcopy(data.attrs["metadata"])
-
-        if start is not None:
-            data = data.loc[data.index >= start]
-        if end is not None:
-            data = data.loc[data.index <= end]
-
-        if data.empty:
+        columns, series_metadata, snapshot_dates = [], {}, {}
+        for series_id in ids:
+            snapshot_date, path = self._latest_snapshot(series_id)
+            try:
+                data = load_observations(path)
+                if list(data.columns) != [series_id]:
+                    raise ValueError("Snapshot must contain exactly its named series ID.")
+                provenance = deepcopy(data.attrs["metadata"])
+                info = provenance.pop("series")[series_id]
+                retrieved = pd.Timestamp(provenance["retrieved_at_utc"])
+                if retrieved.tz_convert("UTC").strftime("%Y%m%d") != snapshot_date:
+                    raise ValueError("Filename date differs from the UTC retrieval date.")
+            except (ValueError, KeyError, TypeError, OSError) as exc:
+                raise ValueError(f"{series_id}: invalid snapshot {path.name}: {exc}") from exc
+            columns.append(data[series_id])
+            series_metadata[series_id] = {**info, "provenance": provenance}
+            snapshot_dates[series_id] = snapshot_date
+        combined = pd.concat(columns, axis=1).sort_index().loc[start:end]
+        if combined.empty:
             raise ValueError("No observations within the requested date range.")
+        combined.attrs["metadata"] = {"source": "FRED snapshots", "series": series_metadata}
+        data = self._accept(combined, "file", ids, snapshot_dates)
+        if len(set(snapshot_dates.values())) > 1:
+            from bondview.labels import load_labels
 
-        data.attrs["metadata"] = metadata
-        data = self._accept(data)
-
-        self._mode = "file"
+            labels = load_labels()["data"]["fred"]
+            warnings.warn(labels["mismatch"].format(
+                dates="\n".join(f"{s}: {d}" for s, d in snapshot_dates.items()),
+            ), UserWarning, stacklevel=2)
         return data
 
     def save(self):
+        """Save the current download without replacing any existing snapshot.
+
+        Validate and serialize all files in a temporary staging directory first.
+        Hard links publish complete files exclusively; a failure removes only
+        files published by this call, leaving all existing snapshots untouched.
+        """
         if self._mode != "download":
-            raise RuntimeError(
-                "Saving is allowed only after downloading FRED data."
-            )
-
-        return save_observations(
-            self.observations, self.path, metadata=self._metadata,
-        )
-
-    def load_or_download(self, mode, start=None, end=None, *, api_key=None):
-        if mode == "file":
-            return self.load(start, end)
-
-        if mode == "download":
-            data = self.download(start, end, api_key=api_key)
-            self.save()
-            return data
-
-        raise ValueError('DATA_MODE must be "download" or "file".')
+            raise RuntimeError("Saving is allowed only after downloading FRED data.")
+        data = self.validate()
+        snapshot_date = pd.Timestamp(self._metadata["retrieved_at_utc"]).tz_convert("UTC").strftime("%Y%m%d")
+        paths = {s: self.path / f"{s}_{snapshot_date}.csv" for s in self.series_ids}
+        for path in paths.values():
+            if os.path.lexists(path):
+                raise FileExistsError(f"Snapshot already exists; refusing to overwrite: {path}")
+        self.path.mkdir(parents=True, exist_ok=True)
+        created = []
+        with TemporaryDirectory(prefix=".fred-", dir=self.path) as staging:
+            for series_id, path in paths.items():
+                metadata = deepcopy(self._metadata)
+                metadata["series"] = {series_id: metadata["series"][series_id]}
+                save_observations(data[[series_id]], Path(staging) / path.name, metadata=metadata)
+            try:
+                for path in paths.values():
+                    os.link(Path(staging) / path.name, path)
+                    created.append(path)
+            except OSError:
+                for path in created:
+                    path.unlink()
+                raise
+        return paths
 
     def report(self, *, labels_path=None):
-        """Print provenance, coverage and missing counts without exposing keys."""
+        """Print per-series provenance and complete shared coverage, never keys."""
         from bondview.labels import load_labels
 
         labels = load_labels(labels_path)["data"]["fred"]
         data = self.validate()
-
         print(labels["summary"].format(
-            source=self._metadata["source"],
-            retrieved=self._metadata["retrieved_at_utc"],
-            start=data.index.min().date(),
-            end=data.index.max().date(),
-            rows=len(data),
-            path=self.path,
+            series_ids=", ".join(self.series_ids), mode=self._mode,
+            start=data.index.min().date(), end=data.index.max().date(),
+            rows=len(data), path=self.path,
         ))
-
         for series_id, info in self._metadata["series"].items():
+            valid = data[series_id].dropna()
+            provenance = info.get("provenance", self._metadata)
             print(labels["series"].format(
-                series_id=series_id,
-                units=info["units"],
-                frequency=info["frequency"],
+                series_id=series_id, units=info["units"], frequency=info["frequency"],
+                start=valid.index.min().date() if not valid.empty else labels["no_observations"],
+                end=valid.index.max().date() if not valid.empty else labels["no_observations"],
                 missing=int(data[series_id].isna().sum()),
+                snapshot_date=self.snapshot_dates.get(series_id, labels["unsaved"]),
+                source=provenance["source"], retrieved=provenance["retrieved_at_utc"],
             ))
-
+            # All source fields are retained; report the relevant source context.
+            print(labels["provenance"].format(details=json.dumps({
+                **{k: v for k, v in provenance.items() if k not in ("series", "source", "retrieved_at_utc")},
+                **{k: v for k, v in info.items() if k not in ("provenance", "units", "frequency")},
+            }, ensure_ascii=False)))
+        complete = data.dropna()
+        if complete.empty:
+            print(labels["no_common"])
+        else:
+            print(labels["common"].format(
+                start=complete.index.min().date(), end=complete.index.max().date(), rows=len(complete),
+            ))
         print(labels["snapshot"])

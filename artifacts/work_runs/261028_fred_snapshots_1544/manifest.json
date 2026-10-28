@@ -1,0 +1,17 @@
+{
+  "baseline": "87bd522a277a1cbcd66d2ade7ff6ecb471ac7d22",
+  "session_branch": "codex/session/261028_1430",
+  "task_branch": "codex/task/261028_1430_fred_snapshots",
+  "automated_tests": 39,
+  "py_compile": "passed for all four modified Python files",
+  "analysis_cell_sources": "unchanged from baseline",
+  "financial_source_files": "unchanged from baseline",
+  "financial_presentation_labels": "unchanged from baseline",
+  "notebook_schema": "valid",
+  "credential_scan": "passed; key never printed",
+  "ignored_files": [
+    ".env",
+    "data/fred/DGS2_20261028.csv"
+  ],
+  "post_modification_review": "complete affected manager, validation, reporting and test units reviewed directly by Codex"
+}

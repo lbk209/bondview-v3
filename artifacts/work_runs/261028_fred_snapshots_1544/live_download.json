@@ -1,0 +1,101 @@
+{
+  "status": "success",
+  "start": null,
+  "end": null,
+  "series_ids": [
+    "DGS2",
+    "DGS10",
+    "DGS30",
+    "THREEFY2",
+    "THREEFYTP2",
+    "THREEFY10",
+    "THREEFYTP10"
+  ],
+  "offline_load_verified": true,
+  "repeat_save": "FileExistsError; original files preserved",
+  "fresh_comparison": "Fresh full-history API retrieval exactly matches saved values, dates, missing values and dtypes; only transient pandas index.freq is excluded.",
+  "snapshots": {
+    "DGS2": {
+      "path": "/home/lbk/works/bondview-v3/data/fred/DGS2_20261028.csv",
+      "retrieved_at_utc": "2026-10-28T06:46:44.207917+00:00",
+      "first_nonmissing": "1976-06-01",
+      "last_nonmissing": "2026-10-26",
+      "nonmissing": 12597,
+      "missing_on_aligned_index": 4313,
+      "units": "Percent",
+      "frequency": "D",
+      "sha256": "d5c2802ab0af025f0f578d7f792352be8c2bf975f74aedd96da6dedfb343a1ca"
+    },
+    "DGS10": {
+      "path": "/home/lbk/works/bondview-v3/data/fred/DGS10_20261028.csv",
+      "retrieved_at_utc": "2026-10-28T06:46:44.207917+00:00",
+      "first_nonmissing": "1962-01-02",
+      "last_nonmissing": "2026-10-26",
+      "nonmissing": 16189,
+      "missing_on_aligned_index": 721,
+      "units": "Percent",
+      "frequency": "D",
+      "sha256": "ec1ccc1ef1dd2ec182cd09869dbdf68514736a1d40d9f77b5f2c9db990c1f590"
+    },
+    "DGS30": {
+      "path": "/home/lbk/works/bondview-v3/data/fred/DGS30_20261028.csv",
+      "retrieved_at_utc": "2026-10-28T06:46:44.207917+00:00",
+      "first_nonmissing": "1977-02-15",
+      "last_nonmissing": "2026-10-26",
+      "nonmissing": 12419,
+      "missing_on_aligned_index": 4491,
+      "units": "Percent",
+      "frequency": "D",
+      "sha256": "720aa592c0b90f3198458649cf3e5db4b8007e73ae9cb679a1cb4184e0463d86"
+    },
+    "THREEFY2": {
+      "path": "/home/lbk/works/bondview-v3/data/fred/THREEFY2_20261028.csv",
+      "retrieved_at_utc": "2026-10-28T06:46:44.207917+00:00",
+      "first_nonmissing": "1990-01-02",
+      "last_nonmissing": "2026-10-23",
+      "nonmissing": 9189,
+      "missing_on_aligned_index": 7721,
+      "units": "Percent",
+      "frequency": "D",
+      "sha256": "0cb23bd08972fcf47fcc7bb3f8c9404e807964ac4716fbf5583be7fb7a772b0e"
+    },
+    "THREEFYTP2": {
+      "path": "/home/lbk/works/bondview-v3/data/fred/THREEFYTP2_20261028.csv",
+      "retrieved_at_utc": "2026-10-28T06:46:44.207917+00:00",
+      "first_nonmissing": "1990-01-02",
+      "last_nonmissing": "2026-10-23",
+      "nonmissing": 9189,
+      "missing_on_aligned_index": 7721,
+      "units": "Percent",
+      "frequency": "D",
+      "sha256": "45708fd51f273414ed4a62a2cce0d406e7b09e9ab011411ff6c728ceb64fe928"
+    },
+    "THREEFY10": {
+      "path": "/home/lbk/works/bondview-v3/data/fred/THREEFY10_20261028.csv",
+      "retrieved_at_utc": "2026-10-28T06:46:44.207917+00:00",
+      "first_nonmissing": "1990-01-02",
+      "last_nonmissing": "2026-10-23",
+      "nonmissing": 9189,
+      "missing_on_aligned_index": 7721,
+      "units": "Percent",
+      "frequency": "D",
+      "sha256": "3ec4022fca5fe7860a03e4832145d338377da24a652ee12b8d0a5982eb439348"
+    },
+    "THREEFYTP10": {
+      "path": "/home/lbk/works/bondview-v3/data/fred/THREEFYTP10_20261028.csv",
+      "retrieved_at_utc": "2026-10-28T06:46:44.207917+00:00",
+      "first_nonmissing": "1990-01-02",
+      "last_nonmissing": "2026-10-23",
+      "nonmissing": 9189,
+      "missing_on_aligned_index": 7721,
+      "units": "Percent",
+      "frequency": "D",
+      "sha256": "0968b1791666e32136142ceb900d27d73ce94696f7225987eab06b899c90c360"
+    }
+  },
+  "complete_observations": {
+    "first": "1990-01-02",
+    "last": "2026-10-23",
+    "count": 9189
+  }
+}

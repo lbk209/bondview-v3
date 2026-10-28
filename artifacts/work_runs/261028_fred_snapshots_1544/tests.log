@@ -1,0 +1,45 @@
+test_api_rejects_truncation_and_missing_measurement_metadata (test_fred.DownloadTests.test_api_rejects_truncation_and_missing_measurement_metadata) ... ok
+test_api_requests_native_units_and_frequency_without_transformation (test_fred.DownloadTests.test_api_requests_native_units_and_frequency_without_transformation) ... ok
+test_download_rejects_invalid_inputs_before_network (test_fred.DownloadTests.test_download_rejects_invalid_inputs_before_network) ... ok
+test_key_environment_precedence_and_dotenv (test_fred.DownloadTests.test_key_environment_precedence_and_dotenv) ... ok
+test_public_download_save_and_file_equivalence (test_fred.DownloadTests.test_public_download_save_and_file_equivalence) ... ok
+test_request_failures_do_not_leak_credentials (test_fred.DownloadTests.test_request_failures_do_not_leak_credentials) ... ok
+test_invalid_csv_and_metadata (test_fred.FileTests.test_invalid_csv_and_metadata) ... ok
+test_invalid_in_memory_data (test_fred.FileTests.test_invalid_in_memory_data) ... ok
+test_invalid_metadata_does_not_truncate_existing_snapshot (test_fred.FileTests.test_invalid_metadata_does_not_truncate_existing_snapshot) ... ok
+test_mixed_units_and_frequency_and_manager_independent_provenance (test_fred.FileTests.test_mixed_units_and_frequency_and_manager_independent_provenance) ... ok
+test_roundtrip_preserves_metadata_missing_values_and_calculations (test_fred.FileTests.test_roundtrip_preserves_metadata_missing_values_and_calculations) ... ok
+test_api_arbitrary_ids_full_history_subset_no_file_or_key_leak (test_fred.SnapshotTests.test_api_arbitrary_ids_full_history_subset_no_file_or_key_leak) ... ok
+test_business_day_index_frequency_is_not_a_csv_source_frequency (test_fred.SnapshotTests.test_business_day_index_frequency_is_not_a_csv_source_frequency) ... ok
+test_collision_preflight_protects_every_existing_file (test_fred.SnapshotTests.test_collision_preflight_protects_every_existing_file) ... ok
+test_download_is_memory_only_save_separate_and_provenance_roundtrip (test_fred.SnapshotTests.test_download_is_memory_only_save_separate_and_provenance_roundtrip) ... ok
+test_download_report_is_unsaved_and_uses_retrieval_metadata (test_fred.SnapshotTests.test_download_report_is_unsaved_and_uses_retrieval_metadata) ... ok
+test_failed_download_cannot_save_previous_state (test_fred.SnapshotTests.test_failed_download_cannot_save_previous_state) ... ok
+test_failed_serialization_and_publication_leave_no_partial_batch (test_fred.SnapshotTests.test_failed_serialization_and_publication_leave_no_partial_batch) ... ok
+test_latest_selected_independently_and_mismatch_warning (test_fred.SnapshotTests.test_latest_selected_independently_and_mismatch_warning) ... ok
+test_matching_dates_no_warning_common_coverage_with_holes (test_fred.SnapshotTests.test_matching_dates_no_warning_common_coverage_with_holes) ... ok
+test_missing_invalid_identity_dates_and_corrupt_latest_fail_clearly (test_fred.SnapshotTests.test_missing_invalid_identity_dates_and_corrupt_latest_fail_clearly) ... ok
+test_publication_race_does_not_replace_or_remove_competing_file (test_fred.SnapshotTests.test_publication_race_does_not_replace_or_remove_competing_file) ... ok
+test_report_no_common_and_all_missing_series (test_fred.SnapshotTests.test_report_no_common_and_all_missing_series) ... ok
+test_utc_filename_retains_previous_snapshots (test_fred.SnapshotTests.test_utc_filename_retains_previous_snapshots) ... ok
+test_explicit_acquisition_and_current_sections (test_notebook.NotebookTests.test_explicit_acquisition_and_current_sections) ... ok
+test_offline_execution_and_independent_widget_reruns (test_notebook.NotebookTests.test_offline_execution_and_independent_widget_reruns) ... [IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+ok
+test_classification_sign_grid (test_treasury_curve.CurveTests.test_classification_sign_grid) ... ok
+test_configuration_and_downward_interpretation (test_treasury_curve.CurveTests.test_configuration_and_downward_interpretation) ... ok
+test_design_example_and_display_units (test_treasury_curve.CurveTests.test_design_example_and_display_units) ... ok
+test_effective_endpoints_use_available_dates_in_interval (test_treasury_curve.CurveTests.test_effective_endpoints_use_available_dates_in_interval) ... ok
+test_exact_date_validation (test_treasury_curve.CurveTests.test_exact_date_validation) ... ok
+test_historical_plot_and_coverage_widget_defaults (test_treasury_curve.CurveTests.test_historical_plot_and_coverage_widget_defaults) ... ok
+test_partial_endpoints_preserve_independent_results (test_treasury_curve.CurveTests.test_partial_endpoints_preserve_independent_results) ... ok
+test_percent_and_basis_points (test_treasury_curve.CurveTests.test_percent_and_basis_points) ... ok
+test_regimes_preserve_display_conventions (test_treasury_curve.CurveTests.test_regimes_preserve_display_conventions) ... ok
+test_same_day_and_reversed_dates (test_treasury_curve.CurveTests.test_same_day_and_reversed_dates) ... ok
+test_slope_tolerance_is_separate_from_yield_direction (test_treasury_curve.CurveTests.test_slope_tolerance_is_separate_from_yield_direction) ... ok
+test_treasury_contract_and_explicit_provenance (test_treasury_curve.CurveTests.test_treasury_contract_and_explicit_provenance) ... ok
+test_yaml_changes_display_without_changing_financial_results (test_treasury_curve.CurveTests.test_yaml_changes_display_without_changing_financial_results) ... ok
+
+----------------------------------------------------------------------
+Ran 39 tests in 2.890s
+
+OK
