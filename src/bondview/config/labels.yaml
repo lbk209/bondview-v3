@@ -34,9 +34,11 @@ widgets:
 
 data:
   fred:
-    summary: "{source} | Retrieved: {retrieved}\nLoaded coverage: {start} to {end} | {rows} rows | {path}"
-    series: "{series_id}: {units}, {frequency}; missing: {missing}"
-    snapshot: Retrieval-time snapshot; historical data availability at the observation date is not reconstructed.
+    summary: "FRED observations ({mode})"
+    summary_columns: "Series ID             Nonmissing"
+    summary_row: "{series_id:<20} {count:>10,}"
+    common: "Complete shared observations: {count:,}"
+    mismatch: "FRED snapshot dates differ.\n{dates}\nLoading continues. Matching dates do not guarantee identical data vintages."
 
 analyses:
   treasury_curve:

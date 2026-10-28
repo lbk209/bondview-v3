@@ -1,0 +1,29 @@
+{
+  "kind": "Controlled fixture; no live market data",
+  "dates": [
+    "2024-01-01",
+    "2024-01-02",
+    "2024-01-03"
+  ],
+  "observations": {
+    "EXAMPLE_A": [
+      1,
+      null,
+      3
+    ],
+    "EXAMPLE_B": [
+      4,
+      5,
+      6
+    ]
+  },
+  "warnings": [
+    "FRED snapshot dates differ.\nEXAMPLE_A: 20261028\nEXAMPLE_B: 20261027\nLoading continues. Matching dates do not guarantee identical data vintages."
+  ],
+  "complete_count": 2,
+  "snapshot_dates": {
+    "EXAMPLE_A": "20261028",
+    "EXAMPLE_B": "20261027"
+  },
+  "report": "FRED series: EXAMPLE_A, EXAMPLE_B | Mode: file\nAligned dates: 2024-01-01 to 2024-01-03 | 3 rows | <temporary snapshot directory>\nEXAMPLE_A: Index, D; nonmissing coverage: 2024-01-01 to 2024-01-03; missing: 1\n  Snapshot: 20261028 | Source: Controlled fixture, not live data | Retrieved: 2026-10-28T00:00:00+00:00\n  Provenance: {}\nEXAMPLE_B: Index, D; nonmissing coverage: 2024-01-01 to 2024-01-03; missing: 0\n  Snapshot: 20261027 | Source: Controlled fixture, not live data | Retrieved: 2026-10-27T00:00:00+00:00\n  Provenance: {}\nCommon complete observations: 2024-01-01 to 2024-01-03 | 2 dates (intervening dates may be incomplete).\nRetrieval-time snapshot; historical data availability at the observation date is not reconstructed.\n"
+}
