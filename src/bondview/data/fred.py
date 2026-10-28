@@ -476,7 +476,7 @@ class FredDataManager:
         return paths
 
     def report(self, *, series_ids=None, labels_path=None):
-        """Summarize nonmissing counts, or print unmodified v2 metadata headers.
+        """Summarize nonmissing counts, or display v2 metadata without CSV comment prefixes.
 
         Headers are generated from the current per-ID metadata, including data
         retrieved but not yet saved. No CSV observation rows are printed.
@@ -492,7 +492,13 @@ class FredDataManager:
             for i, series_id in enumerate(ids):
                 if i:
                     print()
-                print("".join(_metadata_header(series_id, self._metadata[series_id])), end="")
+                print(
+                    "".join(
+                        line.removeprefix("# ")
+                        for line in _metadata_header(series_id, self._metadata[series_id])
+                    ),
+                    end="",
+                )
             return
 
         labels = load_labels(labels_path)["data"]["fred"]
