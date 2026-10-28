@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 
 SERIES = ("DGS2", "DGS10", "DGS30")
-FORMAT = "bondview.fred_observations.csv.v1"
+FORMAT = "bondview.fred_observations.csv.v2"
 API_BASE = "https://api.stlouisfed.org/fred/"
 
 
@@ -51,11 +51,10 @@ def exact_date(value) -> pd.Timestamp:
 
 
 def validate_observations(data: pd.DataFrame, metadata=None) -> pd.DataFrame:
-    """Validate dates/numbers/provenance without assuming common units/frequency.
+    """Validate observations and their per-ID provenance independently of units.
 
-    Explicit metadata takes precedence over the compatibility copy in attrs.
-    The shared outer date index may align different source frequencies; missing
-    entries stay missing and no frequency is inferred from that combined index.
+    Metadata is keyed directly by FRED ID; combined frames do not have shared
+    metadata fields. Missing observations remain missing and dates are not filled.
     """
     if not isinstance(data, pd.DataFrame) or not isinstance(data.index, pd.DatetimeIndex) or data.empty:
         raise ValueError("Observations need a nonempty DatetimeIndex.")
@@ -64,36 +63,24 @@ def validate_observations(data: pd.DataFrame, metadata=None) -> pd.DataFrame:
     for value in data.index:
         exact_date(value)
     metadata = data.attrs.get("metadata", {}) if metadata is None else metadata
-    if not isinstance(metadata, dict) or not isinstance(metadata.get("series"), dict):
-        raise ValueError("Series metadata is required.")
-    series = metadata["series"]
-    if not series or set(data.columns) != set(series):
-        raise ValueError("Series columns must match the metadata series IDs.")
+    if not isinstance(metadata, dict) or not metadata or set(data.columns) != set(metadata):
+        raise ValueError("Per-series metadata must match the observation columns.")
     for series_id in data.columns:
         if not isinstance(series_id, str) or not re.fullmatch(r"[A-Za-z0-9_]+", series_id):
             raise ValueError("Invalid series ID.")
-        info = series[series_id]
+        info = metadata[series_id]
         if not isinstance(info, dict) or any(
             not isinstance(info.get(field), str) or not info[field].strip()
-            for field in ("units", "frequency")
+            for field in ("units", "frequency", "source", "retrieved_at_utc")
         ):
-            raise ValueError(f"{series_id}: explicit units and frequency are required.")
+            raise ValueError(f"{series_id}: units, frequency, source and retrieval timestamp are required.")
+        timestamp = pd.Timestamp(info["retrieved_at_utc"])
+        if pd.isna(timestamp) or timestamp.tz is None:
+            raise ValueError(f"{series_id}: retrieval timestamp must include its timezone.")
         if not pd.api.types.is_numeric_dtype(data[series_id]) or pd.api.types.is_bool_dtype(data[series_id]):
             raise ValueError(f"{series_id}: observations must be numeric or missing.")
         if np.isinf(data[series_id].to_numpy(dtype=float, na_value=np.nan)).any():
-            raise ValueError("Infinite observations are invalid.")
-        provenance = info.get("provenance", metadata)
-        if (not isinstance(provenance, dict)
-                or not isinstance(provenance.get("source"), str)
-                or not provenance["source"].strip()):
-            raise ValueError(f"{series_id}: source metadata is required.")
-        if not isinstance(provenance.get("retrieved_at_utc"), str):
-            raise ValueError(f"{series_id}: retrieval timestamp metadata is required.")
-        timestamp = pd.Timestamp(provenance["retrieved_at_utc"])
-        if pd.isna(timestamp) or timestamp.tz is None:
-            raise ValueError("Retrieval timestamp must include its timezone.")
-    if not isinstance(metadata.get("source"), str) or not metadata["source"].strip():
-        raise ValueError("Source metadata is required.")
+            raise ValueError(f"{series_id}: infinite observations are invalid.")
     result = data.sort_index().copy()
     result.index.name = "date"
     result.attrs["metadata"] = deepcopy(metadata)
@@ -106,7 +93,7 @@ def validate_treasury_observations(data, metadata=None):
     if not set(SERIES).issubset(data.columns):
         raise ValueError("Treasury analysis requires DGS2, DGS10 and DGS30 columns; use NaN for missing observations.")
     for series_id in SERIES:
-        info = data.attrs["metadata"]["series"][series_id]
+        info = data.attrs["metadata"][series_id]
         if info["units"] != "Percent" or info["frequency"] != "D":
             raise ValueError(f"{series_id}: Treasury analysis requires daily Percent observations.")
     return data
@@ -248,34 +235,57 @@ def download_fred(
 
     data.index.name = "date"
 
-    data.attrs["metadata"] = {
+    # Each series carries complete, independent metadata, including retrieval
+    # information shared by the particular download operation.
+    common = {
         "source": "FRED / Federal Reserve H.15" if set(ids).issubset(SERIES) else "FRED",
         "transport": transport,
         "retrieved_at_utc": datetime.now(timezone.utc).isoformat(),
         "requested_start": str(start.date()) if start is not None else None,
         "requested_end": str(end.date()) if end is not None else None,
-        "series": series_metadata,
         "missing_policy": "No filling or date substitution; empty CSV fields mean unavailable.",
         "availability": "Known at retrieval; historical release availability is not reconstructed.",
         "vintage": "Retrieval-time snapshot; source observations may be revised.",
     }
+    data.attrs["metadata"] = {series_id: {**info, **common}
+                              for series_id, info in series_metadata.items()}
 
     return validate_observations(data)
 
 
-def save_observations(data: pd.DataFrame, path, *, metadata=None) -> Path:
-    """Write CSV rows and JSON-encoded comment header values in a single file.
+# Human-readable v2 file order. Additional validated metadata fields follow.
+HEADER_FIELDS = (
+    "title", "units", "frequency", "source", "source_url", "last_updated",
+    "retrieved_at_utc", "transport", "requested_start", "requested_end",
+    "realtime_start", "realtime_end", "missing_policy", "availability", "vintage",
+)
 
-    Encoding each header value preserves nested per-series provenance without a
-    sidecar. Observation values are CSV numbers, with empty fields for missing.
-    """
-    data = validate_observations(data, metadata)
-    # Validate/encode headers before opening a potentially existing snapshot.
-    headers = [f"# format: {json.dumps(FORMAT)}\n"]
-    for key, value in data.attrs["metadata"].items():
-        if not isinstance(key, str) or not re.fullmatch(r"[a-z_]+", key) or key == "format":
+
+def _metadata_header(series_id, info):
+    """Generate the exact flat CSV header, also used by detailed reports."""
+    fields = ["format", "title", "series_id"]
+    items = {"format": FORMAT, "series_id": series_id, **info}
+    if "format" in info or "series_id" in info:
+        raise ValueError("Reserved metadata header field.")
+    fields.extend(k for k in HEADER_FIELDS if k != "title")
+    fields.extend(k for k in info if k not in fields)
+    lines = []
+    for key in fields:
+        if key not in items:
+            continue
+        if not re.fullmatch(r"[a-z_]+", key):
             raise ValueError("Invalid metadata header key.")
-        headers.append(f"# {key}: {json.dumps(value, ensure_ascii=False, allow_nan=False)}\n")
+        lines.append(f"# {key}: {json.dumps(items[key], ensure_ascii=False, allow_nan=False)}\n")
+    return lines
+
+
+def save_observations(data: pd.DataFrame, path, *, metadata=None) -> Path:
+    """Persist one FRED ID with a readable flat v2 metadata header."""
+    data = validate_observations(data, metadata)
+    if len(data.columns) != 1:
+        raise ValueError("The v2 CSV format stores exactly one series ID per file.")
+    series_id = data.columns[0]
+    headers = _metadata_header(series_id, data.attrs["metadata"][series_id])
     path = Path(path).expanduser()
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as stream:
@@ -285,7 +295,7 @@ def save_observations(data: pd.DataFrame, path, *, metadata=None) -> Path:
 
 
 def load_observations(path) -> pd.DataFrame:
-    """Read the self-contained CSV strictly offline; reject malformed rows."""
+    """Read a v2 per-ID CSV offline; reject incompatible or malformed files."""
     metadata = {}
     with Path(path).expanduser().open(encoding="utf-8", newline="") as stream:
         for line in stream:
@@ -301,22 +311,26 @@ def load_observations(path) -> pd.DataFrame:
         else:
             raise ValueError("CSV observations are required.")
     if metadata.pop("format", None) != FORMAT:
-        raise ValueError("Unsupported observation file format; expected Bondview FRED CSV.")
+        raise ValueError("Unsupported observation file format; expected Bondview FRED CSV v2.")
+    series_id = metadata.pop("series_id", None)
+    if not isinstance(series_id, str) or not re.fullmatch(r"[A-Za-z0-9_]+", series_id):
+        raise ValueError("CSV requires a valid series_id header.")
+    if any(not re.fullmatch(r"[a-z_]+", k) for k in metadata):
+        raise ValueError("Invalid metadata header key.")
     rows = list(csv.reader(StringIO(body)))
-    if len(rows) < 2 or rows[0][0:1] != ["date"] or len(set(rows[0])) != len(rows[0]):
-        raise ValueError("CSV requires date and unique series columns, plus observations.")
-    if any(len(row) != len(rows[0]) for row in rows[1:]):
-        raise ValueError("Every CSV row must contain every declared column.")
+    if len(rows) < 2 or rows[0] != ["date", series_id]:
+        raise ValueError("CSV requires one date column and the declared series ID, plus observations.")
+    if any(len(row) != 2 for row in rows[1:]):
+        raise ValueError("Every CSV row must contain its date and observation.")
     dates = [exact_date(row[0]) for row in rows[1:]]
     for row in rows[1:]:
-        for value in row[1:]:
-            if value and (not re.fullmatch(r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?", value)
-                          or not np.isfinite(float(value))):
-                raise ValueError("CSV values must be finite numbers or empty fields.")
-    # round_trip preserves the original binary float through its decimal CSV form.
+        value = row[1]
+        if value and (not re.fullmatch(r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?", value)
+                      or not np.isfinite(float(value))):
+            raise ValueError("CSV values must be finite numbers or empty fields.")
     data = pd.read_csv(StringIO(body), index_col=0, float_precision="round_trip")
     data.index = pd.DatetimeIndex(dates, name="date")
-    return validate_observations(data, metadata)
+    return validate_observations(data, {series_id: metadata})
 
 
 class FredDataManager:
@@ -397,20 +411,19 @@ class FredDataManager:
                 data = load_observations(path)
                 if list(data.columns) != [series_id]:
                     raise ValueError("Snapshot must contain exactly its named series ID.")
-                provenance = deepcopy(data.attrs["metadata"])
-                info = provenance.pop("series")[series_id]
-                retrieved = pd.Timestamp(provenance["retrieved_at_utc"])
+                info = deepcopy(data.attrs["metadata"][series_id])
+                retrieved = pd.Timestamp(info["retrieved_at_utc"])
                 if retrieved.tz_convert("UTC").strftime("%Y%m%d") != snapshot_date:
                     raise ValueError("Filename date differs from the UTC retrieval date.")
             except (ValueError, KeyError, TypeError, OSError) as exc:
                 raise ValueError(f"{series_id}: invalid snapshot {path.name}: {exc}") from exc
             columns.append(data[series_id])
-            series_metadata[series_id] = {**info, "provenance": provenance}
+            series_metadata[series_id] = info
             snapshot_dates[series_id] = snapshot_date
         combined = pd.concat(columns, axis=1).sort_index().loc[start:end]
         if combined.empty:
             raise ValueError("No observations within the requested date range.")
-        combined.attrs["metadata"] = {"source": "FRED snapshots", "series": series_metadata}
+        combined.attrs["metadata"] = series_metadata
         data = self._accept(combined, "file", snapshot_dates)
         if len(set(snapshot_dates.values())) > 1:
             from bondview.labels import load_labels
@@ -432,8 +445,10 @@ class FredDataManager:
         if self._mode != "download":
             raise RuntimeError("Saving is allowed only after downloading FRED data.")
         data = self.validate()
-        snapshot_date = pd.Timestamp(self._metadata["retrieved_at_utc"]).tz_convert("UTC").strftime("%Y%m%d")
-        paths = {s: self.path / f"{s}_{snapshot_date}.csv" for s in data.columns}
+        paths = {
+            s: self.path / f"{s}_{pd.Timestamp(self._metadata[s]['retrieved_at_utc']).tz_convert('UTC').strftime('%Y%m%d')}.csv"
+            for s in data.columns
+        }
         for path in paths.values():
             if os.path.lexists(path):
                 raise FileExistsError(f"Snapshot already exists; refusing to overwrite: {path}")
@@ -441,8 +456,7 @@ class FredDataManager:
         created = []
         with TemporaryDirectory(prefix=".fred-", dir=self.path) as staging:
             for series_id, path in paths.items():
-                metadata = deepcopy(self._metadata)
-                metadata["series"] = {series_id: metadata["series"][series_id]}
+                metadata = {series_id: deepcopy(self._metadata[series_id])}
                 series_data = data[[series_id]]
                 valid = series_data[series_id].dropna()
                 if valid.empty:
@@ -461,38 +475,30 @@ class FredDataManager:
                 raise
         return paths
 
-    def report(self, *, labels_path=None):
-        """Print per-series provenance and complete shared coverage, never keys."""
+    def report(self, *, series_ids=None, labels_path=None):
+        """Summarize nonmissing counts, or print unmodified v2 metadata headers.
+
+        Headers are generated from the current per-ID metadata, including data
+        retrieved but not yet saved. No CSV observation rows are printed.
+        """
         from bondview.labels import load_labels
 
-        labels = load_labels(labels_path)["data"]["fred"]
         data = self.validate()
-        print(labels["summary"].format(
-            series_ids=", ".join(data.columns), mode=self._mode,
-            start=data.index.min().date(), end=data.index.max().date(),
-            rows=len(data), path=self.path,
-        ))
-        for series_id, info in self._metadata["series"].items():
-            valid = data[series_id].dropna()
-            provenance = info.get("provenance", self._metadata)
-            print(labels["series"].format(
-                series_id=series_id, units=info["units"], frequency=info["frequency"],
-                start=valid.index.min().date() if not valid.empty else labels["no_observations"],
-                end=valid.index.max().date() if not valid.empty else labels["no_observations"],
-                missing=int(data[series_id].isna().sum()),
-                snapshot_date=self.snapshot_dates.get(series_id, labels["unsaved"]),
-                source=provenance["source"], retrieved=provenance["retrieved_at_utc"],
-            ))
-            # All source fields are retained; report the relevant source context.
-            print(labels["provenance"].format(details=json.dumps({
-                **{k: v for k, v in provenance.items() if k not in ("series", "source", "retrieved_at_utc")},
-                **{k: v for k, v in info.items() if k not in ("provenance", "units", "frequency")},
-            }, ensure_ascii=False)))
-        complete = data.dropna()
-        if complete.empty:
-            print(labels["no_common"])
-        else:
-            print(labels["common"].format(
-                start=complete.index.min().date(), end=complete.index.max().date(), rows=len(complete),
-            ))
-        print(labels["snapshot"])
+        if series_ids is not None:
+            ids = _series_ids([series_ids] if isinstance(series_ids, str) else series_ids)
+            unavailable = set(ids) - set(data.columns)
+            if unavailable:
+                raise ValueError(f"Series IDs not present in current observations: {sorted(unavailable)}")
+            for i, series_id in enumerate(ids):
+                if i:
+                    print()
+                print("".join(_metadata_header(series_id, self._metadata[series_id])), end="")
+            return
+
+        labels = load_labels(labels_path)["data"]["fred"]
+        print(labels["summary"].format(mode=self._mode))
+        print(labels["summary_columns"])
+        for series_id, count in data.count().items():
+            print(labels["summary_row"].format(series_id=series_id, count=int(count)))
+        complete_count = int(data.notna().all(axis=1).sum())
+        print(labels["common"].format(count=complete_count))
