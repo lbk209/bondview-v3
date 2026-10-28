@@ -34,15 +34,11 @@ widgets:
 
 data:
   fred:
-    summary: "FRED series: {series_ids} | Mode: {mode}\nAligned dates: {start} to {end} | {rows} rows | {path}"
-    series: "{series_id}: {units}, {frequency}; nonmissing coverage: {start} to {end}; missing: {missing}\n  Snapshot: {snapshot_date} | Source: {source} | Retrieved: {retrieved}"
-    provenance: "  Provenance: {details}"
-    no_observations: No nonmissing observations
-    unsaved: Not loaded from a saved snapshot
-    common: "Common complete observations: {start} to {end} | {rows} dates (intervening dates may be incomplete)."
-    no_common: "No common complete observations across the requested series (0 dates)."
+    summary: "FRED observations ({mode})"
+    summary_columns: "Series ID             Nonmissing"
+    summary_row: "{series_id:<20} {count:>10,}"
+    common: "Complete shared observations: {count:,}"
     mismatch: "FRED snapshot dates differ.\n{dates}\nLoading continues. Matching dates do not guarantee identical data vintages."
-    snapshot: Retrieval-time snapshot; historical data availability at the observation date is not reconstructed.
 
 analyses:
   treasury_curve:
