@@ -1,0 +1,15 @@
+{
+  "status": "success",
+  "notebook": "notebooks/analysis1_treasury_market.ipynb",
+  "network_and_credential_lookup": "blocked by verification hooks",
+  "observation_rows": 16910,
+  "result_rows": 5,
+  "selected_start": "1962-01-02",
+  "selected_end": "2026-10-26",
+  "snapshot_dates": {
+    "DGS2": "20261028",
+    "DGS10": "20261028",
+    "DGS30": "20261028"
+  },
+  "note": "Default full-history range retains existing partial-endpoint behavior; choose dates in the widget for the desired comparison."
+}

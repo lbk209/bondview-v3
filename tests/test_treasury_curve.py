@@ -16,7 +16,8 @@ from bondview.analysis.treasury_curve import analyze_curve, classify_segment
 from bondview.data.fred import SERIES, exact_date
 from bondview.labels import DEFAULT_LABELS_PATH
 from bondview.plotting.treasury_curve import plot_yield_history
-from bondview.presentation.treasury_curve import display_table, interpret_curve, date_picker_defaults
+from bondview.presentation.treasury_curve import display_table, interpret_curve
+from bondview.presentation.widgets import date_picker_defaults
 
 
 def example_frame():
@@ -46,11 +47,11 @@ class CurveTests(unittest.TestCase):
         self.assertEqual(result.iloc[3].slope, "steepening")
         self.assertEqual(result.iloc[4].slope, "flattening")
         table = display_table(result)
-        self.assertEqual(table.iloc[:, 0].tolist(), ["3.56%", "3.63%", "3.94%", "+7.00 bp", "+31.00 bp"])
+        self.assertEqual(table.iloc[:, 0].tolist(), ["3.56%", "3.63%", "3.94%", "+7 bp", "+31 bp"])
         self.assertEqual(table.iloc[3, -1], "Bear steepening")
         self.assertEqual(table.iloc[4, -1], "Bear flattening")
         self.assertEqual(table.iloc[3, -2], "Upward-sloping → Upward-sloping")
-        self.assertIn("10Y (+116.00 bp)", interpret_curve(result))
+        self.assertIn("10Y (+116 bp)", interpret_curve(result))
 
     def test_percent_and_basis_points(self):
         data = example_frame()
@@ -66,13 +67,13 @@ class CurveTests(unittest.TestCase):
             (-20, -10, "bull", "Bull steepening"), (-10, -20, "bull", "Bull flattening"),
             (-10, 10, "twist", "Opposing-direction twist steepening"),
             (10, -10, "twist", "Opposing-direction twist flattening"),
-            (10, 10, "parallel_up", "Parallel upward shift"),
-            (-10, -10, "parallel_down", "Parallel downward shift"),
-            (0, 0, "unchanged", "Unchanged yields"),
-            (0, 10, "long_only", "Long yield rose, other unchanged; steepening"),
-            (0, -10, "long_only", "Long yield fell, other unchanged; flattening"),
-            (10, 0, "short_only", "Short yield rose, other unchanged; flattening"),
-            (-10, 0, "short_only", "Short yield fell, other unchanged; steepening"),
+            (10, 10, "parallel_up", "Yields rose; little slope change"),
+            (-10, -10, "parallel_down", "Yields fell; little slope change"),
+            (0, 0, "unchanged", "Little yield movement"),
+            (0, 10, "long_only", "Long yield rose, other little change; steepening"),
+            (0, -10, "long_only", "Long yield fell, other little change; flattening"),
+            (10, 0, "short_only", "Short yield rose, other little change; flattening"),
+            (-10, 0, "short_only", "Short yield fell, other little change; steepening"),
         ]
         for short, long, identifier, expected in cases:
             with self.subTest(short=short, long=long):
@@ -86,7 +87,7 @@ class CurveTests(unittest.TestCase):
         self.assertEqual(classify_segment(10, 11)["slope"], "steepening")
         result = classify_segment(10, 11, 1)
         self.assertEqual(result["slope"], "unchanged")
-        self.assertEqual(result["movement"], "bear")
+        self.assertEqual(result["movement"], "parallel_up")
         self.assertEqual(result["short_direction"], "rose")
         self.assertEqual(result["long_direction"], "rose")
         self.assertEqual(classify_segment(11, 10, 0.99)["slope"], "flattening")
@@ -131,29 +132,30 @@ class CurveTests(unittest.TestCase):
         self.assertEqual(display_table(result).iloc[2, 0], "N/A")
         self.assertIn("partial", interpret_curve(result))
 
-    def test_exact_weekends_holidays_and_outside_coverage(self):
+    def test_effective_endpoints_use_available_dates_in_interval(self):
+        # Preserve main's existing analyze_curve behavior, including empty rows.
         data = example_frame()
-        for missing_date in ("2024-09-15", "2024-12-25", "2023-01-01"):
-            with self.subTest(day=missing_date):
-                result = analyze_curve(data, missing_date, "2025-01-13")
-                self.assertTrue(result.start.isna().all())
-                self.assertTrue(result.change_bp.isna().all())
-                self.assertTrue(result.end.notna().all())
-                self.assertEqual(result.attrs["start"], missing_date)
-                self.assertIn("No tenor", interpret_curve(result))
+        for requested, effective in (("2024-09-15", "2024-09-16"),
+                                     ("2024-12-25", "2025-01-13"),
+                                     ("2023-01-01", "2024-09-16")):
+            with self.subTest(day=requested):
+                result = analyze_curve(data, requested, "2025-01-13")
+                self.assertTrue(result.start.notna().all())
+                self.assertEqual(result.attrs["start"], effective)
         holiday = data.reindex(pd.to_datetime(["2024-09-16", "2024-12-25", "2025-01-13"]))
-        self.assertTrue(analyze_curve(holiday, "2024-12-25", "2025-01-13").change_bp.isna().all())
+        result = analyze_curve(holiday, "2024-12-25", "2025-01-13")
+        self.assertEqual(result.change_bp.tolist(), [0] * 5)
         result = analyze_curve(data, "2024-09-16", "2025-01-12")
-        self.assertTrue(result.start.notna().all())
-        self.assertTrue(result.end.isna().all())
-        self.assertTrue(result.change_bp.isna().all())
+        self.assertEqual(result.attrs["end"], "2024-09-16")
+        with self.assertRaisesRegex(ValueError, "No Treasury observations"):
+            analyze_curve(data, "2024-12-24", "2024-12-26")
 
     def test_same_day_and_reversed_dates(self):
         data = example_frame()
         result = analyze_curve(data, "2024-09-16", "2024-09-16")
         self.assertEqual(result.change_bp.tolist(), [0] * 5)
         self.assertEqual(result.iloc[3].movement, "unchanged")
-        self.assertEqual(display_table(result).shape, (5, 5))
+        self.assertEqual(display_table(result).shape, (5, 4))
         figure = plot_yield_history(data, "2024-09-16", "2024-09-16")
         self.assertEqual(list(figure.layout.xaxis.range), ["2024-09-16"] * 2)
         for function in (analyze_curve, plot_yield_history):
@@ -169,8 +171,8 @@ class CurveTests(unittest.TestCase):
         self.assertEqual(result.iloc[4].configuration_start, "flat")
         self.assertEqual(display_table(result).iloc[3, -2], "Inverted → Inverted")
         self.assertEqual(display_table(result).iloc[4, -2], "Flat → Upward-sloping")
-        self.assertIn("10Y (-100.00 bp)", interpret_curve(result))
-        self.assertEqual(display_table(result).iloc[3, 0], "-100.00 bp")
+        self.assertIn("10Y (-100 bp)", interpret_curve(result))
+        self.assertEqual(display_table(result).iloc[3, 0], "-100 bp")
 
     def test_exact_date_validation(self):
         for value in (None, 0, "2024/09/16", "2024-09-16T00:00:00", "2024-02-30", pd.NaT,
@@ -198,12 +200,12 @@ class CurveTests(unittest.TestCase):
         self.assertIs(type(fig), go.Figure)
         self.assertEqual([trace.name for trace in fig.data], ["2Y (DGS2)", "10Y (DGS10)", "30Y (DGS30)"])
         for trace in fig.data:
-            self.assertEqual(len(trace.x), 3)
+            self.assertEqual(len(trace.x), 1)
             self.assertEqual(trace.mode, "lines")
             self.assertFalse(trace.connectgaps)
-            self.assertTrue(pd.isna(trace.y[1]))
+            self.assertTrue(pd.isna(trace.y[0]))
         self.assertEqual(list(fig.layout.xaxis.range), ["2024-10-01", "2025-01-01"])
-        self.assertTrue(fig.layout.xaxis.rangeslider.visible)
+        self.assertTrue(fig.layout.yaxis.autorange)
         start, end = date_picker_defaults(data)
         self.assertEqual(start["value"], data.index.min().date())
         self.assertEqual(end["value"], data.index.max().date())
@@ -213,10 +215,10 @@ class CurveTests(unittest.TestCase):
         data = example_frame()
         before = analyze_curve(data, *data.index)
         labels = yaml.safe_load(DEFAULT_LABELS_PATH.read_text())
-        labels["measures"]["DGS10_DGS2"] = "Custom segment"
-        labels["movement"]["bear"] = "Custom rising regime {slope}"
-        labels["slope"]["steepening"] = "Widening"
-        labels["plot"]["title"] = "Custom history"
+        labels["analyses"]["treasury_curve"]["measures"]["DGS10_DGS2"] = "Custom segment"
+        labels["analyses"]["treasury_curve"]["movement"]["bear"] = "Custom rising regime {slope}"
+        labels["analyses"]["treasury_curve"]["slope"]["steepening"] = "Widening"
+        labels["analyses"]["treasury_curve"]["plot"]["title"] = "Custom history"
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "labels.yaml"
             path.write_text(yaml.safe_dump(labels))
@@ -226,7 +228,7 @@ class CurveTests(unittest.TestCase):
             self.assertIn("Custom segment", interpret_curve(before, labels_path=path))
             self.assertEqual(plot_yield_history(data, *data.index, labels_path=path).layout.title.text, "Custom history")
             # No module reload needed; a second edit is read on the next call.
-            labels["measures"]["DGS2"] = "Custom 2Y"
+            labels["analyses"]["treasury_curve"]["measures"]["DGS2"] = "Custom 2Y"
             path.write_text(yaml.safe_dump(labels))
             self.assertEqual(display_table(before, labels_path=path).index[0], "Custom 2Y")
         with patch("bondview.labels.load_labels", side_effect=AssertionError("Financial logic must not read YAML")):
