@@ -324,6 +324,7 @@ class FredDataManager:
 
     ``path`` is a directory. The manager owns the ID_YYYYMMDD.csv convention;
     dates are retrieval dates in UTC, not observation dates or vintage IDs.
+    ``series_ids`` configures stable defaults for calls omitting explicit IDs.
     """
 
     def __init__(self, path, *, env_path=None, series_ids=SERIES):
@@ -340,11 +341,10 @@ class FredDataManager:
         """Independent defensive copy, available even if DataFrame attrs are lost."""
         return deepcopy(self._metadata)
 
-    def _accept(self, data, mode, ids, snapshot_dates=None):
+    def _accept(self, data, mode, snapshot_dates=None):
         data = validate_observations(data)
         self._metadata = deepcopy(data.attrs["metadata"])
         self.observations = data
-        self.series_ids = ids
         self._mode = mode
         self.snapshot_dates = dict(snapshot_dates or {})
         return data
@@ -358,7 +358,7 @@ class FredDataManager:
         ids = self.series_ids if series_ids is None else _series_ids(series_ids)
         return self._accept(download_fred(
             start, end, api_key=api_key, env_path=self.env_path, series_ids=ids,
-        ), "download", ids)
+        ), "download")
 
     def _latest_snapshot(self, series_id):
         candidates = []
@@ -411,7 +411,7 @@ class FredDataManager:
         if combined.empty:
             raise ValueError("No observations within the requested date range.")
         combined.attrs["metadata"] = {"source": "FRED snapshots", "series": series_metadata}
-        data = self._accept(combined, "file", ids, snapshot_dates)
+        data = self._accept(combined, "file", snapshot_dates)
         if len(set(snapshot_dates.values())) > 1:
             from bondview.labels import load_labels
 
@@ -427,12 +427,13 @@ class FredDataManager:
         Validate and serialize all files in a temporary staging directory first.
         Hard links publish complete files exclusively; a failure removes only
         files published by this call, leaving all existing snapshots untouched.
+        Per-series leading/trailing missing padding is trimmed; internal gaps remain.
         """
         if self._mode != "download":
             raise RuntimeError("Saving is allowed only after downloading FRED data.")
         data = self.validate()
         snapshot_date = pd.Timestamp(self._metadata["retrieved_at_utc"]).tz_convert("UTC").strftime("%Y%m%d")
-        paths = {s: self.path / f"{s}_{snapshot_date}.csv" for s in self.series_ids}
+        paths = {s: self.path / f"{s}_{snapshot_date}.csv" for s in data.columns}
         for path in paths.values():
             if os.path.lexists(path):
                 raise FileExistsError(f"Snapshot already exists; refusing to overwrite: {path}")
@@ -442,7 +443,14 @@ class FredDataManager:
             for series_id, path in paths.items():
                 metadata = deepcopy(self._metadata)
                 metadata["series"] = {series_id: metadata["series"][series_id]}
-                save_observations(data[[series_id]], Path(staging) / path.name, metadata=metadata)
+                series_data = data[[series_id]]
+                valid = series_data[series_id].dropna()
+                if valid.empty:
+                    raise ValueError(f"{series_id}: cannot save a snapshot with no nonmissing observations.")
+                # Exclude NaN padding introduced by aligning unrelated series,
+                # but keep missing observations within this series' valid range.
+                series_data = series_data.loc[valid.index[0]:valid.index[-1]]
+                save_observations(series_data, Path(staging) / path.name, metadata=metadata)
             try:
                 for path in paths.values():
                     os.link(Path(staging) / path.name, path)
@@ -460,7 +468,7 @@ class FredDataManager:
         labels = load_labels(labels_path)["data"]["fred"]
         data = self.validate()
         print(labels["summary"].format(
-            series_ids=", ".join(self.series_ids), mode=self._mode,
+            series_ids=", ".join(data.columns), mode=self._mode,
             start=data.index.min().date(), end=data.index.max().date(),
             rows=len(data), path=self.path,
         ))
