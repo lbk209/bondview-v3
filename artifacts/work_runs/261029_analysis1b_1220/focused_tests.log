@@ -1,0 +1,25 @@
+test_common_nonmissing_alignment_and_effective_endpoints (test_kw_decomposition.KWTests.test_common_nonmissing_alignment_and_effective_endpoints) ... ok
+test_empty_intervals_and_invalid_inputs (test_kw_decomposition.KWTests.test_empty_intervals_and_invalid_inputs) ... ok
+test_figure_values_single_axis_domains_units_and_hover (test_kw_decomposition.KWTests.test_figure_values_single_axis_domains_units_and_hover) ... ok
+test_one_observation_and_configurable_presentation (test_kw_decomposition.KWTests.test_one_observation_and_configurable_presentation) ... ok
+test_pairing_subtraction_bp_and_complete_reversing_paths (test_kw_decomposition.KWTests.test_pairing_subtraction_bp_and_complete_reversing_paths) ... ok
+test_classification_sign_grid (test_treasury_curve.CurveTests.test_classification_sign_grid) ... ok
+test_configuration_and_downward_interpretation (test_treasury_curve.CurveTests.test_configuration_and_downward_interpretation) ... ok
+test_design_example_and_display_units (test_treasury_curve.CurveTests.test_design_example_and_display_units) ... ok
+test_effective_endpoints_use_available_dates_in_interval (test_treasury_curve.CurveTests.test_effective_endpoints_use_available_dates_in_interval) ... ok
+test_exact_date_validation (test_treasury_curve.CurveTests.test_exact_date_validation) ... ok
+test_historical_plot_and_coverage_widget_defaults (test_treasury_curve.CurveTests.test_historical_plot_and_coverage_widget_defaults) ... ok
+test_partial_endpoints_preserve_independent_results (test_treasury_curve.CurveTests.test_partial_endpoints_preserve_independent_results) ... ok
+test_percent_and_basis_points (test_treasury_curve.CurveTests.test_percent_and_basis_points) ... ok
+test_regimes_preserve_display_conventions (test_treasury_curve.CurveTests.test_regimes_preserve_display_conventions) ... ok
+test_same_day_and_reversed_dates (test_treasury_curve.CurveTests.test_same_day_and_reversed_dates) ... ok
+test_slope_tolerance_is_separate_from_yield_direction (test_treasury_curve.CurveTests.test_slope_tolerance_is_separate_from_yield_direction) ... ok
+test_treasury_contract_and_explicit_provenance (test_treasury_curve.CurveTests.test_treasury_contract_and_explicit_provenance) ... ok
+test_yaml_changes_display_without_changing_financial_results (test_treasury_curve.CurveTests.test_yaml_changes_display_without_changing_financial_results) ... ok
+test_explicit_acquisition_and_current_sections (test_notebook.NotebookTests.test_explicit_acquisition_and_current_sections) ... ok
+test_offline_execution_and_independent_widget_reruns (test_notebook.NotebookTests.test_offline_execution_and_independent_widget_reruns) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 2.998s
+
+OK

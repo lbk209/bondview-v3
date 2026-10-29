@@ -1,0 +1,75 @@
+{
+  "run": 44,
+  "failures": [
+    {
+      "test": "test_api_arbitrary_ids_full_history_subset_no_file_or_key_leak (test_fred.SnapshotTests.test_api_arbitrary_ids_full_history_subset_no_file_or_key_leak)",
+      "reason": "AssertionError: False is not true"
+    },
+    {
+      "test": "test_download_report_is_unsaved_and_uses_retrieval_metadata (test_fred.SnapshotTests.test_download_report_is_unsaved_and_uses_retrieval_metadata)",
+      "reason": "AssertionError: 'Not loaded from a saved snapshot' not found in 'FRED observations (download)\\nSeries ID             Nonmissing\\nDGS2                          2\\nDGS10                         2\\nDGS30                         2\\nComplete shared observations: 2\\n'"
+    },
+    {
+      "test": "test_failed_serialization_and_publication_leave_no_partial_batch (test_fred.SnapshotTests.test_failed_serialization_and_publication_leave_no_partial_batch)",
+      "reason": "AssertionError: \"header\" does not match \"Per-series metadata must match the observation columns.\""
+    }
+  ],
+  "errors": [
+    {
+      "test": "test_api_requests_native_units_and_frequency_without_transformation (test_fred.DownloadTests.test_api_requests_native_units_and_frequency_without_transformation)",
+      "reason": "KeyError: 'series'"
+    },
+    {
+      "test": "test_public_download_save_and_file_equivalence (test_fred.DownloadTests.test_public_download_save_and_file_equivalence)",
+      "reason": "KeyError: 'transport'"
+    },
+    {
+      "test": "test_invalid_csv_and_metadata (test_fred.FileTests.test_invalid_csv_and_metadata)",
+      "reason": "ValueError: The v2 CSV format stores exactly one series ID per file."
+    },
+    {
+      "test": "test_invalid_metadata_does_not_truncate_existing_snapshot (test_fred.FileTests.test_invalid_metadata_does_not_truncate_existing_snapshot)",
+      "reason": "ValueError: The v2 CSV format stores exactly one series ID per file."
+    },
+    {
+      "test": "test_mixed_units_and_frequency_and_manager_independent_provenance (test_fred.FileTests.test_mixed_units_and_frequency_and_manager_independent_provenance)",
+      "reason": "ValueError: Per-series metadata must match the observation columns."
+    },
+    {
+      "test": "test_roundtrip_preserves_metadata_missing_values_and_calculations (test_fred.FileTests.test_roundtrip_preserves_metadata_missing_values_and_calculations)",
+      "reason": "ValueError: The v2 CSV format stores exactly one series ID per file."
+    },
+    {
+      "test": "test_business_day_index_frequency_is_not_a_csv_source_frequency (test_fred.SnapshotTests.test_business_day_index_frequency_is_not_a_csv_source_frequency)",
+      "reason": "KeyError: 'series'"
+    },
+    {
+      "test": "test_collision_preflight_protects_every_existing_file (test_fred.SnapshotTests.test_collision_preflight_protects_every_existing_file)",
+      "reason": "ValueError: Per-series metadata must match the observation columns."
+    },
+    {
+      "test": "test_download_is_memory_only_save_separate_and_provenance_roundtrip (test_fred.SnapshotTests.test_download_is_memory_only_save_separate_and_provenance_roundtrip)",
+      "reason": "KeyError: 'series'"
+    },
+    {
+      "test": "test_latest_selected_independently_and_mismatch_warning (test_fred.SnapshotTests.test_latest_selected_independently_and_mismatch_warning)",
+      "reason": "ValueError: Per-series metadata must match the observation columns."
+    },
+    {
+      "test": "test_matching_dates_no_warning_common_coverage_with_holes (test_fred.SnapshotTests.test_matching_dates_no_warning_common_coverage_with_holes)",
+      "reason": "ValueError: Per-series metadata must match the observation columns."
+    },
+    {
+      "test": "test_missing_invalid_identity_dates_and_corrupt_latest_fail_clearly (test_fred.SnapshotTests.test_missing_invalid_identity_dates_and_corrupt_latest_fail_clearly)",
+      "reason": "ValueError: Per-series metadata must match the observation columns."
+    },
+    {
+      "test": "test_report_no_common_and_all_missing_series (test_fred.SnapshotTests.test_report_no_common_and_all_missing_series)",
+      "reason": "ValueError: Per-series metadata must match the observation columns."
+    },
+    {
+      "test": "test_utc_filename_retains_previous_snapshots (test_fred.SnapshotTests.test_utc_filename_retains_previous_snapshots)",
+      "reason": "ValueError: Per-series metadata must match the observation columns."
+    }
+  ]
+}

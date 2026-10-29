@@ -7,12 +7,51 @@ import math
 
 import pandas as pd
 
-from bondview.data.fred import SERIES, validate_treasury_observations
+from bondview.data.fred import SERIES, validate_observations, validate_treasury_observations
 from bondview.utils import select_date_range
 
 # Round floating-point cancellation only, far below source quotation precision.
 NUMERICAL_DECIMALS = 10
 SEGMENTS = (("DGS2", "DGS10"), ("DGS10", "DGS30"))
+KW_SERIES = {
+    "2Y": ("THREEFY2", "THREEFYTP2"),
+    "10Y": ("THREEFY10", "THREEFYTP10"),
+}
+
+
+def analyze_kw_decomposition(data, start, end, *, metadata=None):
+    """Return a dated component path per maturity from daily Percent KW data.
+
+    Only dates with all four KW observations qualify. Each path contains
+    original levels (%) and cumulative changes (bp) from its first eligible
+    observation within the inclusive selection. No missing values are filled.
+    These model-fitted nominal zero-coupon quantities are not DGS forecasts.
+    """
+    data = validate_observations(data, metadata)
+    required = [series for pair in KW_SERIES.values() for series in pair]
+    if not set(required).issubset(data.columns):
+        raise ValueError("KW decomposition requires THREEFY2, THREEFYTP2, THREEFY10 and THREEFYTP10.")
+    for series in required:
+        info = data.attrs["metadata"][series]
+        if info["units"] != "Percent" or info["frequency"] != "D":
+            raise ValueError(f"{series}: KW decomposition requires daily Percent observations.")
+    selected = select_date_range(data, start, end).dropna(subset=required)
+    if selected.empty:
+        raise ValueError("No complete KW observations within the selected date range.")
+
+    results = {}
+    for maturity, (fitted, premium) in KW_SERIES.items():
+        result = pd.DataFrame({
+            "fitted_yield": selected[fitted],
+            "expected_rate": selected[fitted] - selected[premium],
+            "term_premium": selected[premium],
+        })
+        result["expected_change_bp"] = (result.expected_rate - result.expected_rate.iloc[0]) * 100
+        result["premium_change_bp"] = (result.term_premium - result.term_premium.iloc[0]) * 100
+        result["fitted_change_bp"] = result.expected_change_bp + result.premium_change_bp
+        result.attrs["metadata"] = {s: data.attrs["metadata"][s] for s in (fitted, premium)}
+        results[maturity] = result
+    return results
 
 
 def _bp(value):
