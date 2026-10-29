@@ -1,9 +1,162 @@
 """Ordinary Plotly historical lines; date selections are explicit call inputs."""
 
-import plotly.graph_objects as go
+from datetime import timedelta
 
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+from bondview.analysis.treasury_curve import analyze_kw_decomposition
 from bondview.data.fred import SERIES, exact_date, validate_treasury_observations
 from bondview.labels import load_labels
+
+
+_KW_COMPONENTS = (
+    ("fitted_yield", "#636EFA"),
+    ("expected_rate", "#EF553B"),
+    ("term_premium", "#00A080"),
+)
+_KW_CHANGES = (
+    ("expected_change_bp", "#EF553B", "expected_change"),
+    ("premium_change_bp", "#00A080", "premium_change"),
+)
+
+
+
+def _add_kw_traces(figure, result, plot, *, column, show_legend):
+    """Add original levels above cumulative changes in a subplot column."""
+    for field, color in _KW_COMPONENTS:
+        figure.add_trace(go.Scatter(
+            x=result.index, y=result[field],
+            name=plot["traces"][field],
+            mode="lines+markers" if len(result) == 1 else "lines",
+            line={"color": color}, connectgaps=False,
+            legendgroup=field, showlegend=show_legend,
+        ), row=1, col=column)
+
+    for field, color, _ in _KW_CHANGES:
+        figure.add_trace(go.Scatter(
+            x=result.index, y=result[field],
+            name=plot["traces"][field],
+            mode="lines+markers" if len(result) == 1 else "lines",
+            line={"color": color, "dash": "dashdot"}, connectgaps=False,
+            legendgroup=field, showlegend=show_legend,
+        ), row=2, col=column)
+
+    first, last = result.index[0], result.index[-1]
+    # Give a lone observation visible horizontal space as well as a marker.
+    date_range = ([str((first - timedelta(days=1)).date()),
+                   str((first + timedelta(days=1)).date())]
+                  if first == last else [str(first.date()), str(last.date())])
+
+    for row in (1, 2):
+        figure.update_xaxes(
+            type="date", matches=None, range=date_range,
+            showticklabels=True, hoverformat="%Y-%m-%d",
+            title_text=plot["xaxis"] if row == 2 else None,
+            row=row, col=column,
+        )
+
+    figure.update_yaxes(title_text=plot["level_axis"], row=1, col=column)
+    figure.update_yaxes(title_text=plot["change_axis"], row=2, col=column)
+
+
+
+
+def plot_kw_comparison(results, *, labels_path=None, width=1200, height=600):
+    """Compare 2Y/10Y KW components with synchronized vertical hover."""
+    maturities = ("2Y", "10Y")
+    if any(m not in results or results[m].empty for m in maturities):
+        raise ValueError(
+            "KW comparison requires eligible observations for 2Y and 10Y."
+        )
+
+    labels = load_labels(labels_path)
+    plot = labels["analyses"]["kw_decomposition"]["plot"]
+    units = labels["common"]["units"]
+    percent_fmt = units["percent_2dp"]
+    bp_fmt = units["bp_signed_0dp"]
+
+    figure = make_subplots(
+        rows=2, cols=2,
+        row_heights=[0.7, 0.3], vertical_spacing=0.05,
+        horizontal_spacing=0.05,
+        subplot_titles=[plot["titles"][m] for m in maturities],
+    )
+
+    for col, maturity in enumerate(maturities, start=1):
+        path = results[maturity]
+
+        _add_kw_traces(
+            figure, path, plot,
+            column=col, show_legend=col == 1,
+        )
+
+        # Each visible line contributes its own unified-hover entry.
+        for row, fields, fmt in (
+            (1, ("fitted_yield", "expected_rate", "term_premium"), percent_fmt),
+            (2, ("expected_change_bp", "premium_change_bp"), bp_fmt),
+        ):
+            for field in fields:
+                customdata = [
+                    [fmt.format(value=value)]
+                    for value in path[field]
+                ]
+                hovertemplate = (
+                    "%{fullData.name}: %{customdata[0]}<extra></extra>"
+                )
+
+                figure.update_traces(
+                    selector=dict(name=plot["traces"][field]),
+                    row=row, col=col,
+                    customdata=customdata,
+                    hovertemplate=hovertemplate,
+                )
+
+    # Hide lower-panel series from the legend.
+    #figure.update_traces(showlegend=False, row=2)
+
+    # Both panels of each maturity use the same x-axis.
+    figure.update_traces(xaxis="x", row=2, col=1)
+    figure.update_traces(xaxis="x2", row=2, col=2)
+
+    figure.update_xaxes(
+        showspikes=True, spikemode="across",
+        spikesnap="cursor", spikedash="dot",
+        row=1,
+    )
+    figure.update_xaxes(visible=False, row=2)
+
+    figure.update_layout(
+        template="plotly_white", width=width, height=height,
+        hovermode="x unified", hoversubplots="axis",
+        xaxis=dict(anchor="y3", showticklabels=True),
+        xaxis2=dict(anchor="y4", showticklabels=True),
+        yaxis3=dict(anchor="x"),
+        yaxis4=dict(anchor="x2"),
+    )
+
+    # Share y-axis scales within each row.
+    figure.update_yaxes(matches="y", row=1, col=2)
+    figure.update_yaxes(matches="y3", row=2, col=2)
+
+    # Display y-axis labels only on the left.
+    for row in (1, 2):
+        figure.update_yaxes(
+            title_text="",
+            showticklabels=False,
+            row=row, col=2,
+        )
+
+    return figure
+
+
+
+
+def show_kw_decomposition(data, start, end, width=1200, height=600):
+    """Calculate and display the 2Y/10Y KW decomposition in one figure."""
+    results = analyze_kw_decomposition(data, start, end)
+    figure = plot_kw_comparison(results, width=width, height=height)
+    figure.show()
 
 
 def plot_yield_history(data, start, end, *, labels_path=None, metadata=None):

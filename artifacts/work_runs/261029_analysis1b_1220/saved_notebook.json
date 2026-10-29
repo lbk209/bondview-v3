@@ -1,0 +1,53 @@
+{
+  "selected_dates": [
+    "1962-01-02",
+    "2026-10-26"
+  ],
+  "maturities": {
+    "2Y": {
+      "observations": 9189,
+      "first": "1990-01-02",
+      "last": "2026-10-23",
+      "final_changes_bp": {
+        "expected_change_bp": -285.3999999999999,
+        "premium_change_bp": -31.010000000000005,
+        "fitted_change_bp": -316.4099999999999
+      },
+      "figure_traces": 5
+    },
+    "10Y": {
+      "observations": 9189,
+      "first": "1990-01-02",
+      "last": "2026-10-23",
+      "final_changes_bp": {
+        "expected_change_bp": -209.87,
+        "premium_change_bp": -87.06,
+        "fitted_change_bp": -296.93
+      },
+      "figure_traces": 5
+    }
+  },
+  "snapshot_dates": {
+    "THREEFY2": "20261028",
+    "THREEFYTP2": "20261028",
+    "THREEFY10": "20261028",
+    "THREEFYTP10": "20261028"
+  },
+  "baseline": "75df5635f03875b054ac10d4b74fd42b0a555743",
+  "analysis1a_result_and_figure_match_baseline": true,
+  "all_preexisting_notebook_cells_unchanged": true,
+  "executed_code_cells": 11,
+  "download_cells_executed": false,
+  "fred_network_and_credentials_blocked": true,
+  "snapshots_unchanged": true,
+  "snapshot_sha256": {
+    "THREEFYTP2_20261028.csv": "910636cd3c9aeba735e42ee8660861e0704dd34076177088d9b1c7f620e0fbef",
+    "THREEFY2_20261028.csv": "cde06d07e314152e035d759049f02654b12a4425f10f6205b7068ea5825db774",
+    "THREEFYTP10_20261028.csv": "c2ed0e03e96993032ab7b226b9cd45a9bc9b1b0f73dde17827d98478ce028b49",
+    "DGS10_20261028.csv": "362eafe6edf043d6003f493eb7a3b7ad0563dc95bcd666023dbeb9013f249b97",
+    "DGS2_20261028.csv": "f781480e6821109b9c7bf7840431603d3c6c79f57a3726b397b64ab83ba173e8",
+    "THREEFY10_20261028.csv": "96bd4dcbacc1e1ae48d9cdca1ab79a681e08d9da09ac0922f10a1caef500b38d",
+    "DGS30_20261028.csv": "6fa8335e11a0e45caad623cc173897b88fcf8834547dde01410223f1667f19d3"
+  },
+  "interactive_hover_verified": false
+}

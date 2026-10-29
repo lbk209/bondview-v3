@@ -41,6 +41,33 @@ data:
     mismatch: "FRED snapshot dates differ.\n{dates}\nLoading continues. Matching dates do not guarantee identical data vintages."
 
 analyses:
+  kw_decomposition:
+    plot:
+      titles:
+        2Y: 2Y KW Decomposition
+        10Y: 10Y KW Decomposition
+      xaxis: Observation date
+      level_axis: Level (%)
+      change_axis: Change (bp)
+      traces:
+        fitted_yield: KW fitted yield
+        expected_rate: Expected-rate component
+        term_premium: Term premium
+        expected_change_bp: Expected-rate change
+        premium_change_bp: Term-premium change
+      hover:
+        levels_summary: >-
+          KW fitted yield: %{y:.2f}%<br>
+          Expected-rate component: %{customdata[0]:.2f}%<br>
+          Term premium: %{customdata[1]:.2f}%
+          <extra></extra>
+
+        changes_summary: >-
+          <b>Total KW fitted-yield change: %{customdata[0]:.0f} bp</b><br>
+          Expected-rate change: %{y:.0f} bp<br>
+          Term-premium change: %{customdata[1]:.0f} bp
+          <extra></extra>
+
   treasury_curve:
     measures:
       DGS2: 2Y yield
