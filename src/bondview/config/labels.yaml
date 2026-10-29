@@ -56,9 +56,17 @@ analyses:
         expected_change_bp: Expected-rate change
         premium_change_bp: Term-premium change
       hover:
-        level: "%{x|%Y-%m-%d}<br>%{y:.4f}%<extra>%{fullData.name}</extra>"
-        expected_change: "%{x|%Y-%m-%d}<br>Expected-rate change: %{y:+.2f} bp<br>Total KW fitted-yield change: %{customdata[0]:+.2f} bp<extra></extra>"
-        premium_change: "%{x|%Y-%m-%d}<br>Term-premium change: %{y:+.2f} bp<extra></extra>"
+        levels_summary: >-
+          KW fitted yield: %{y:.2f}%<br>
+          Expected-rate component: %{customdata[0]:.2f}%<br>
+          Term premium: %{customdata[1]:.2f}%
+          <extra></extra>
+
+        changes_summary: >-
+          <b>Total KW fitted-yield change: %{customdata[0]:+.0f} bp</b><br>
+          Expected-rate change: %{y:+.2f} bp<br>
+          Term-premium change: %{customdata[1]:+.0f} bp
+          <extra></extra>
 
   treasury_curve:
     measures:
