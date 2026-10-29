@@ -1,0 +1,10 @@
+{
+  "result": "{\"start\":{\"DGS2\":3.56,\"DGS10\":3.63,\"DGS30\":3.94,\"DGS10_DGS2\":7.0,\"DGS30_DGS10\":31.0},\"end\":{\"DGS2\":4.4,\"DGS10\":4.79,\"DGS30\":4.97,\"DGS10_DGS2\":39.0,\"DGS30_DGS10\":18.0},\"level_unit\":{\"DGS2\":\"%\",\"DGS10\":\"%\",\"DGS30\":\"%\",\"DGS10_DGS2\":\"bp\",\"DGS30_DGS10\":\"bp\"},\"change_bp\":{\"DGS2\":84.0,\"DGS10\":116.0,\"DGS30\":103.0,\"DGS10_DGS2\":32.0,\"DGS30_DGS10\":-13.0},\"configuration_start\":{\"DGS2\":\"not_applicable\",\"DGS10\":\"not_applicable\",\"DGS30\":\"not_applicable\",\"DGS10_DGS2\":\"upward\",\"DGS30_DGS10\":\"upward\"},\"configuration_end\":{\"DGS2\":\"not_applicable\",\"DGS10\":\"not_applicable\",\"DGS30\":\"not_applicable\",\"DGS10_DGS2\":\"upward\",\"DGS30_DGS10\":\"upward\"},\"movement\":{\"DGS2\":\"rose\",\"DGS10\":\"rose\",\"DGS30\":\"rose\",\"DGS10_DGS2\":\"bear\",\"DGS30_DGS10\":\"bear\"},\"slope\":{\"DGS2\":\"not_applicable\",\"DGS10\":\"not_applicable\",\"DGS30\":\"not_applicable\",\"DGS10_DGS2\":\"steepening\",\"DGS30_DGS10\":\"flattening\"},\"short_direction\":{\"DGS2\":\"not_applicable\",\"DGS10\":\"not_applicable\",\"DGS30\":\"not_applicable\",\"DGS10_DGS2\":\"rose\",\"DGS30_DGS10\":\"rose\"},\"long_direction\":{\"DGS2\":\"not_applicable\",\"DGS10\":\"not_applicable\",\"DGS30\":\"not_applicable\",\"DGS10_DGS2\":\"rose\",\"DGS30_DGS10\":\"rose\"}}",
+  "attrs": {
+    "start": "2024-09-16",
+    "end": "2025-01-13",
+    "slope_tolerance_bp": 5,
+    "yield_change_tolerance_bp": 5
+  },
+  "figure_sha256": "cad7dab2c2db4e0fdef7585d62f5f333703953119037e155b82544a40b4c0ad4"
+}

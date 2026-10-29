@@ -28,9 +28,10 @@ def example_frame():
     )
     data.index.name = "date"
     data.attrs["metadata"] = {
-        "source": "Design example fixture, not a download",
-        "retrieved_at_utc": "2026-10-26T00:00:00+00:00",
-        "series": {s: {"units": "Percent", "frequency": "D"} for s in SERIES},
+        s: {"units": "Percent", "frequency": "D",
+            "source": "Design example fixture, not a download",
+            "retrieved_at_utc": "2026-10-26T00:00:00+00:00"}
+        for s in SERIES
     }
     return data
 
@@ -188,7 +189,7 @@ class CurveTests(unittest.TestCase):
         plot_yield_history(data, *data.index, metadata=metadata)
         for field, value in (("units", "Index"), ("frequency", "M")):
             bad = deepcopy(metadata)
-            bad["series"]["DGS2"][field] = value
+            bad["DGS2"][field] = value
             with self.assertRaises(ValueError):
                 analyze_curve(data, *data.index, metadata=bad)
         with self.assertRaises(ValueError):

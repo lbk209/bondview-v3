@@ -1,0 +1,24 @@
+{
+  "run_id": "261029_analysis1b_1220",
+  "baseline": "75df5635f03875b054ac10d4b74fd42b0a555743",
+  "session_branch": "codex/session/261029_1220",
+  "task_branch": "codex/task/261029_1220_analysis1b",
+  "report": "reports/261029_analysis1b_kw_1220_report.md",
+  "focused_tests": {
+    "run": 20,
+    "failures": 0,
+    "errors": 0
+  },
+  "full_suite": {
+    "run": 44,
+    "failures": 3,
+    "errors": 14,
+    "all_remaining_failing_methods_already_failed_at_baseline": true
+  },
+  "py_compile": "passed for both changed source files, three affected test files and verification script",
+  "diff_check": "passed",
+  "offline_notebook": "passed with fixtures and existing snapshots; acquisition section skipped in execution copies",
+  "analysis1a_baseline_comparison": "exact result, attrs and serialized figure hash match; all original notebook cells unchanged",
+  "interactive_hover": "not tested; awaiting user inspection",
+  "post_modification_review": "complete affected logical units reviewed directly by Codex; no independent subagent review claimed"
+}
