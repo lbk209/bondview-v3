@@ -1,3 +1,4 @@
+
 # AGENTS.md
 
 ## 1. Purpose and execution model
@@ -40,7 +41,8 @@ The current research direction is to apply established fixed-income methods to o
 - `workflow/`: User/Archie-owned operational instructions. Do not silently edit these documents or save generated work here. Bernie-specific workflow contracts apply only to assignments explicitly using the Bernie-supervised execution mode.
 - `reports/`: Unique, durable detailed technical reports for GitHub-backed assignments, using `YYMMDD_<scope>_<topic>_<runid>_report.md` or a consistent unique variant.
 - `artifacts/work_runs/<run_id>/`: Concise manifests and verifiable evidence/examples, with unique run IDs. Avoid committing unnecessary large logs, market-data caches, or disposable probe code.
-- `src/` and `tests/`: Actual code and reproducible tests when needed.
+- `src/`: Implementation code.
+- `tests/`: Reproducible tests and their purpose documentation. Keep `tests/README.md` alongside the test modules.
 
 Repository outputs follow authorized task/session branches and verifiable PRs. Do not claim PRs, files, tests, or usage counts unless observed. Never overwrite earlier run deliverables.
 
@@ -64,6 +66,8 @@ For explicitly chat-only or local-only assignments, follow the requested output 
 
 - Run `python -m py_compile` for modified Python files, plus focused tests for affected behavior when applicable.
 - For numerical methods, test signs, units, simple hand-checkable cases, missing values, and relevant assumptions.
+- Maintain concise test-purpose documentation in `tests/README.md`, alongside `tests/test_*.py`. For each test module, describe the intended behavior or requirement being verified and its scope. Refer to applicable accepted requirements where useful; do not reproduce historical prompts or document every assertion.
+- When creating, materially revising, or removing tests, update the corresponding purpose documentation. Tests and their documentation support verification of the current design; neither independently establishes design authority. Do not retain obsolete tests or documentation merely because they originated in an earlier assignment.
 - For analytical or financial reviews, distinguish verified evidence from assumptions, judgments, and unresolved questions.
 - Report checks performed, results, behavior changes, and checks that could not be run. Never claim validation that was not performed.
 - For GitHub-backed assignments, publish one detailed, inspectable technical report under `reports/`, with supporting evidence under `artifacts/work_runs/<run_id>/`. Give the user a short, human-readable completion summary in the final session-to-`main` PR description and final response when GitHub publication succeeds.
@@ -87,7 +91,9 @@ Retain the established session-branch review workflow for v3 unless the user dir
 
 4. For each task, create `codex/task/YYMMDD_HHMM_<short_task_name>` from the session branch. Commit and push the task, then open a PR **into the session branch**.
 
-5. In **every task PR description**, explain the specific behavior or capability added, representative **verified** test/calculation results where useful, material limitations and links to technical evidence. Task PRs may contain more relevant detail than the final session PR, but not full logs or unsupported conclusions. **Every PR comment must remain concise and human-readable**; put detailed reasoning and supporting reviews in linked files. When checks pass and the PR record is complete, merge the task PR into the session branch unless directed otherwise. After confirming the merge, delete both the remote task branch and the corresponding local task branch (when a local checkout is used), provided deletion is safe. Switch away from the task branch before local deletion; never force-delete a branch containing unmerged work. Before declaring the assignment complete, verify that merged task branches have been removed from the remote and the local checkout, as applicable. If a branch must be retained or cleanup is unavailable, identify the branch and reason explicitly in the completion report. Session branch deletion, whether local or remote, is exclusively the user's responsibility. Codex must not delete session branches, regardless of whether their final review PRs exist or are open, merged, or closed. Creating or selecting a new session branch does not authorize deletion of an existing session branch.
+5. In **every task PR description**, explain the specific behavior or capability added, representative **verified** test/calculation results where useful, material limitations and links to technical evidence. Task PRs may contain more relevant detail than the final session PR, but not full logs or unsupported conclusions. **Every PR comment must remain concise and human-readable**; put detailed reasoning and supporting reviews in linked files. When checks pass and the PR record is complete, merge the task PR into the session branch unless directed otherwise. After confirming the merge, delete both the remote task branch and the corresponding local task branch (when a local checkout is used), provided deletion is safe. Switch away from the task branch before local deletion; never force-delete a branch containing unmerged work. Before declaring the assignment complete, verify that merged task branches have been removed from the remote and the local checkout, as applicable. If a branch must be retained or cleanup is unavailable, identify the branch and reason explicitly in the completion report.
+
+   Session branch deletion, whether local or remote, remains exclusively the user's responsibility, with one narrow exception: **Codex may delete an incorrectly created session branch during the same assignment only after verifying that it contains no unique commits relative to the intended baseline, is not referenced by any PR, and is not being used by another assignment.** Report such cleanup. All other session branches remain protected from deletion by Codex, regardless of whether their final review PRs exist or are open, merged, or closed. Creating or selecting a new session branch alone does not authorize deletion of an existing session branch.
 
 6. For ordinary GitHub-backed assignments, commit the detailed technical report under `reports/` and run-specific evidence under `artifacts/work_runs/`. Keep substantial research/audit conclusions in durable files rather than long PR discussions. Do not require such a report for an explicitly chat-only/local-only task, and do not invent a GitHub deliverable when access or permission is missing.
 
