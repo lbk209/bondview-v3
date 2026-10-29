@@ -63,9 +63,9 @@ analyses:
           <extra></extra>
 
         changes_summary: >-
-          <b>Total KW fitted-yield change: %{customdata[0]:+.0f} bp</b><br>
-          Expected-rate change: %{y:+.2f} bp<br>
-          Term-premium change: %{customdata[1]:+.0f} bp
+          <b>Total KW fitted-yield change: %{customdata[0]:.0f} bp</b><br>
+          Expected-rate change: %{y:.0f} bp<br>
+          Term-premium change: %{customdata[1]:.0f} bp
           <extra></extra>
 
   treasury_curve:

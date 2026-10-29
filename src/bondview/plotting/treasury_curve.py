@@ -38,7 +38,7 @@ def _add_kw_traces(figure, result, plot, *, column, show_legend):
             x=result.index, y=result[field],
             name=plot["traces"][field],
             mode="lines+markers" if len(result) == 1 else "lines",
-            line={"color": color}, connectgaps=False,
+            line={"color": color, "dash": "dashdot"}, connectgaps=False,
             legendgroup=field, showlegend=show_legend,
         ), row=2, col=column)
 
@@ -61,6 +61,7 @@ def _add_kw_traces(figure, result, plot, *, column, show_legend):
 
 
 
+
 def plot_kw_comparison(results, *, labels_path=None, width=1200, height=600):
     """Compare 2Y/10Y KW components with synchronized vertical hover."""
     maturities = ("2Y", "10Y")
@@ -69,50 +70,52 @@ def plot_kw_comparison(results, *, labels_path=None, width=1200, height=600):
             "KW comparison requires eligible observations for 2Y and 10Y."
         )
 
-    plot = load_labels(labels_path)["analyses"]["kw_decomposition"]["plot"]
+    labels = load_labels(labels_path)
+    plot = labels["analyses"]["kw_decomposition"]["plot"]
+    units = labels["common"]["units"]
+    percent_fmt = units["percent_2dp"]
+    bp_fmt = units["bp_signed_0dp"]
 
     figure = make_subplots(
         rows=2, cols=2,
-        row_heights=[0.7, 0.3], vertical_spacing=0.13,
-        horizontal_spacing=0.02,
+        row_heights=[0.7, 0.3], vertical_spacing=0.05,
+        horizontal_spacing=0.05,
         subplot_titles=[plot["titles"][m] for m in maturities],
     )
 
     for col, maturity in enumerate(maturities, start=1):
+        path = results[maturity]
+
         _add_kw_traces(
-            figure, results[maturity], plot,
+            figure, path, plot,
             column=col, show_legend=col == 1,
         )
 
-    # Hide change-series legends and old per-line hover entries.
-    figure.update_traces(showlegend=False, row=2)
-    figure.update_traces(hovertemplate=None, hoverinfo="skip")
+        # Each visible line contributes its own unified-hover entry.
+        for row, fields, fmt in (
+            (1, ("fitted_yield", "expected_rate", "term_premium"), percent_fmt),
+            (2, ("expected_change_bp", "premium_change_bp"), bp_fmt),
+        ):
+            for field in fields:
+                customdata = [
+                    [fmt.format(value=value)]
+                    for value in path[field]
+                ]
+                hovertemplate = (
+                    "%{fullData.name}: %{customdata[0]}<extra></extra>"
+                )
 
-    # One hover entry for levels and one for changes per maturity.
-    for col, maturity in enumerate(maturities, start=1):
-        path = results[maturity]
+                figure.update_traces(
+                    selector=dict(name=plot["traces"][field]),
+                    row=row, col=col,
+                    customdata=customdata,
+                    hovertemplate=hovertemplate,
+                )
 
-        figure.update_traces(
-            selector=dict(name=plot["traces"]["fitted_yield"]),
-            row=1, col=col,
-            customdata=path[
-                ["expected_rate", "term_premium"]
-            ].to_numpy(),
-            hovertemplate=plot["hover"]["levels_summary"],
-            hoverinfo="all",
-        )
+    # Hide lower-panel series from the legend.
+    #figure.update_traces(showlegend=False, row=2)
 
-        figure.update_traces(
-            selector=dict(name=plot["traces"]["expected_change_bp"]),
-            row=2, col=col,
-            customdata=path[
-                ["fitted_change_bp", "premium_change_bp"]
-            ].to_numpy(),
-            hovertemplate=plot["hover"]["changes_summary"],
-            hoverinfo="all",
-        )
-
-    # Preserve the working synchronized x-axis arrangement.
+    # Both panels of each maturity use the same x-axis.
     figure.update_traces(xaxis="x", row=2, col=1)
     figure.update_traces(xaxis="x2", row=2, col=2)
 
@@ -145,6 +148,7 @@ def plot_kw_comparison(results, *, labels_path=None, width=1200, height=600):
         )
 
     return figure
+
 
 
 
