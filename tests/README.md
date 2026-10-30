@@ -19,3 +19,12 @@ mocked or blocked; synthetic fixtures are not presented as market observations.
 - `test_market.py`: Facade/direct-function numerical and chart equivalence,
   stored result independence, display without financial recomputation, explicit
   selections, and decomposition without running 1A.
+- `test_scenarios.py`: Analysis 1C inclusive conditioning, complete same-interval
+  percent-to-bp vectors, calendar-month/leap-year endpoints, monthly/daily
+  sampling, missing-month exclusions, actual elapsed days, reference bounds,
+  stable IDs, provenance, empty/singleton sets, hand-calculated quantiles, both
+  scatter mappings, calculation-free display, and use without plotting imports.
+  An independent endpoint-enumeration oracle checks the selected vectors.
+
+The notebook module also executes 1C in a fresh kernel using only Treasury
+setup, without A, B or KW snapshots, including both conditioning tenors.

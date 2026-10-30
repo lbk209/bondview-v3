@@ -20,7 +20,7 @@ def offline_notebook(directory):
     """Omit optional acquisition; retain setup and all analysis cells."""
     notebook = nbformat.read(NOTEBOOK, as_version=4)
     first = next(i for i, c in enumerate(notebook.cells) if c.source.startswith("### Donwload"))
-    last = next(i for i, c in enumerate(notebook.cells) if c.source.startswith("## A."))
+    last = next(i for i, c in enumerate(notebook.cells) if c.source.startswith("### Load Treasury"))
     del notebook.cells[first:last]
     config = next(c for c in notebook.cells if c.cell_type == "code" and "SNAPSHOT_DIR =" in c.source)
     config.source = config.source.replace('SNAPSHOT_DIR = PROJECT_ROOT / "data/fred"', f'SNAPSHOT_DIR = Path({str(directory)!r})')
@@ -68,7 +68,7 @@ class NotebookTests(unittest.TestCase):
         c = next(i for i,c in enumerate(notebook.cells) if c.source.startswith('## C.'))
         b_code = '\n'.join(cell.source for cell in notebook.cells[b:c] if cell.cell_type == 'code')
         self.assertIn('kw_observations = fred.load(', b_code)
-        self.assertIn('market.decomposition(kw_observations, *date_range.get_dates()', b_code)
+        self.assertIn('market.decomposition(kw_observations, *kw_date_range.get_dates()', b_code)
         self.assertEqual(code.count('DateRangePicker('), 2)
 
     def test_offline_execution_and_independent_widget_reruns(self):
@@ -115,9 +115,44 @@ assert list(history_figure.layout.xaxis.range) == ["2024-10-01", "2025-01-01"]
             add('''
 assert pd.isna(curve.data.loc['DGS30', 'change_bp'])
 assert 'anywidget' not in sys.modules
+assert joint_scenarios.empty
+assert scenarios.metadata['counts']['selected_scenarios'] == 0
+assert scenario_summary.shape == (3, 5)
 ''')
             NotebookClient(notebook, timeout=90, kernel_name='python3').execute(cwd=temp)
             self.assertEqual(before, {p.name:p.read_bytes() for p in directory.iterdir()})
+
+    def test_scenarios_execute_from_setup_without_a_or_b(self):
+        from test_scenarios import scenario_frame
+        with tempfile.TemporaryDirectory() as temp:
+            directory = Path(temp) / 'fred'
+            fixture = scenario_frame()
+            for series in fixture.columns:
+                info = fixture.attrs['metadata'][series]
+                day = info['retrieved_at_utc'][:10].replace('-', '')
+                save_observations(fixture[[series]], directory / f'{series}_{day}.csv', metadata={series:info})
+            notebook = offline_notebook(directory)
+            a = next(i for i,c in enumerate(notebook.cells) if c.source.startswith('## A.'))
+            c = next(i for i,c in enumerate(notebook.cells) if c.source.startswith('## C.'))
+            notebook.cells = [network_guard(), *notebook.cells[:a], *notebook.cells[c:]]
+            notebook.cells.append(nbformat.v4.new_code_cell('''
+from bondview.analysis.scenarios import ScenarioSet
+assert isinstance(scenarios, ScenarioSet)
+assert len(joint_scenarios) == 3
+assert scenarios.metadata['counts']['eligible_windows'] == 3
+assert joint_scenarios.iloc[0].scenario_id == 'UST_20240131_20240731'
+assert 'decomposition' not in globals()
+assert 'kw_observations' not in globals()
+assert 'curve' not in globals()
+assert scenario_summary.shape == (3,5)
+assert len(scenario_figure.data) == 1
+# Both conditioning axes can be selected on a rerun without other analyses.
+condition_tenor = 'DGS2'
+'''))
+            config = next(cell for cell in notebook.cells if cell.source.startswith('scenarios ='))
+            notebook.cells.append(nbformat.v4.new_code_cell(config.source))
+            notebook.cells.append(nbformat.v4.new_code_cell("assert scenarios.metadata['condition']['tenor'] == 'DGS2'"))
+            NotebookClient(notebook, timeout=90, kernel_name='python3').execute(cwd=temp)
 
 
 if __name__ == '__main__':

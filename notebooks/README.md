@@ -44,3 +44,58 @@ Run `poetry run python -m unittest discover -s tests -v`; see
 [`tests/README.md`](../tests/README.md) for coverage. Tests use deterministic
 synthetic inputs and block normal notebook network/credential access.
 Fresh Jupyter kernels require local socket access.
+
+## Analysis 1C — conditional historical scenarios
+
+After the shared Treasury load/setup, C runs independently of A and B. It needs
+only DGS2/DGS10/DGS30 daily Percent observations and their per-ID metadata.
+
+```python
+scenarios = market.scenarios(
+    condition_tenor="DGS10", lower_bp=-25, upper_bp=25,
+    horizon_months=6, sampling="monthly",
+    reference_start=None, reference_end=None,
+)
+joint_scenarios = scenarios.scenarios
+metadata = scenarios.metadata
+statistics_bp = scenarios.summary()
+scenarios.show_summary()
+scenarios.show_plot()
+```
+
+For independent numerical use, import
+`ScenarioSet, build_conditional_scenarios` from `bondview.analysis.scenarios`.
+`build_conditional_scenarios(observations, ...)` takes the same configuration
+and returns the same `ScenarioSet` without the facade or visualization imports.
+Future analyses can iterate each row's `scenario_id`, `start_date`, `end_date`,
+`elapsed_days`, `DGS2_change_bp`, `DGS10_change_bp`, `DGS30_change_bp`, keeping
+whole vectors paired across compared exposures. Metadata retains conditions,
+units, source/retrieval provenance, counts, coverage and construction rules.
+This assignment does not calculate returns or risk.
+
+Monthly sampling starts at each calendar month's last **complete** common
+observation (including partial reference months); daily sampling starts at every
+complete date. Add the configured number of calendar months to the actual start,
+clipping the day at month end. Require the target to lie within complete
+reference coverage, then use the last complete observation on/before that target
+in the target month. Skip a window if that month has no qualifying observation.
+Missing rows are excluded explicitly; there is no filling, interpolation,
+averaging or substitution from another month. Long gaps can materially shorten
+an interval within its target month. `target_end_date`, actual dates and
+`elapsed_days` make the difference visible; horizon months are a selection
+convention, not an exact year fraction for future return calculations.
+
+Optional reference bounds are inclusive. Their defaults are the first/last
+complete common dates. Metadata distinguishes requested and effective coverage,
+incomplete rows, immature targets, unmatched months, eligible windows and
+condition-matching scenarios. Stable IDs encode actual endpoints. Bp conversion
+rounds floating cancellation to 10 decimals, consistently with 1A. Conditioning
+bounds are inclusive; DGS2 and DGS10 are supported conditioning tenors.
+
+The primary result is the complete `ScenarioSet`; minimum/P10/median/P90/maximum
+are secondary marginal descriptive summaries using linear quantiles. The scatter
+shows Δ2Y vs Δ30Y colored by Δ10Y, or Δ10Y vs Δ30Y colored by Δ2Y. Hover retains
+actual historical dates and elapsed days. Overlapping observations are dependent;
+counts and quantiles are not independent-event frequencies or forecasts. Empty
+selections retain a usable typed schema, NaN summaries and an empty chart.
+No complete reference observations instead raises a clear input error.

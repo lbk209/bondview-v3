@@ -1,0 +1,59 @@
+{
+  "stage": 3,
+  "status": "PASS",
+  "focused_tests": {
+    "command": "poetry run python -m unittest discover -s tests -p test_scenarios.py -v",
+    "run": 11,
+    "failures": 0,
+    "errors": 0
+  },
+  "regression_tests": {
+    "command": "poetry run python -m unittest discover -s tests -v",
+    "run": 59,
+    "failures": 0,
+    "errors": 0
+  },
+  "notebook_execution": [
+    "Full offline synthetic fixtures with independent widget reruns and empty short-history scenarios",
+    "Setup plus C only in a fresh kernel, no A/B/KW, both conditioning tenors",
+    "Full current notebook offline against existing cached Treasury and KW snapshots"
+  ],
+  "compile": "Modified Python modules and tests pass python -m py_compile",
+  "diff_check": "PASS",
+  "independent_numeric_consumer": "Fresh Python import does not load facade, plotting or presentation modules",
+  "hand_check": {
+    "source": "Synthetic deterministic fixture, not market data",
+    "start": "2024-01-31",
+    "end": "2024-07-31",
+    "elapsed_days": 182,
+    "joint_changes_bp": {
+      "DGS2": 20,
+      "DGS10": -25,
+      "DGS30": 50
+    },
+    "condition": {
+      "tenor": "DGS10",
+      "lower_bp": -25,
+      "upper_bp": -25
+    }
+  },
+  "cached_integration_evidence": "cached_history_check.json",
+  "limitations": [
+    "Intervals may overlap; counts and quantiles are descriptive",
+    "Targets must mature within complete coverage; matching stays within target month",
+    "Actual elapsed days can differ from nominal calendar horizon",
+    "No point-in-time vintage reconstruction, return or risk implementation"
+  ],
+  "usage": {
+    "input": "Not available",
+    "output": "Not available",
+    "cached_input": "Not available",
+    "reasoning_output": "Not available",
+    "total": "Not available",
+    "stage_tokens": "Not available",
+    "stage_share": "Not available",
+    "context_used_capacity_percent": "Not available",
+    "account_allowances_begin_end": "Not available",
+    "reason": "No reliable session token, context or account usage counters exposed"
+  }
+}
