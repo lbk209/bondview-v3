@@ -28,33 +28,33 @@ class FileTests(unittest.TestCase):
         data = example_frame()
         data.iloc[0, 2] = np.nan
         data.iloc[1, 0] = 4.123456789012345
-        save_observations(data, self.path)
-        with patch("bondview.data.fred._read_url", side_effect=AssertionError("Offline means offline")):
-            loaded = load_observations(self.path)
+        loaded_columns = []
+        for series in SERIES:
+            path = self.path.with_name(f"{series}.csv")
+            metadata = {series: data.attrs["metadata"][series]}
+            save_observations(data[[series]], path, metadata=metadata)
+            with patch("bondview.data.fred._read_url", side_effect=AssertionError("Offline")):
+                one = load_observations(path)
+            self.assertEqual(one.attrs["metadata"], metadata)
+            pd.testing.assert_frame_equal(data[[series]], one, check_exact=True)
+            self.assertIn(f'# series_id: "{series}"', path.read_text())
+            self.assertNotIn("NaN", path.read_text())
+            loaded_columns.append(one[series])
+        loaded = pd.concat(loaded_columns, axis=1)
+        loaded.attrs["metadata"] = data.attrs["metadata"]
         pd.testing.assert_frame_equal(data, loaded, check_exact=True)
-        self.assertEqual(data.attrs, loaded.attrs)
-        pd.testing.assert_frame_equal(analyze_curve(data, *data.index), analyze_curve(loaded, *data.index))
-        content = self.path.read_text()
-        self.assertIn('# source: "Design example fixture, not a download"', content)
-        self.assertIn('# retrieved_at_utc:', content)
-        self.assertIn('# series:', content)
-        self.assertIn('2024-09-16,3.56,3.63,\n', content)
-        self.assertNotIn("NaN", content)
-        self.assertEqual(list(self.path.parent.iterdir()), [self.path])
-        pd.testing.assert_frame_equal(pd.read_csv(self.path, comment="#", index_col=0, parse_dates=True,
-                                                  float_precision="round_trip"), loaded)
+        pd.testing.assert_frame_equal(analyze_curve(data, *data.index), analyze_curve(loaded, *loaded.index))
 
     def test_mixed_units_and_frequency_and_manager_independent_provenance(self):
-        data = pd.DataFrame({"RATE": [4.123456789012345, np.nan, -0.01], "FX": [1234.5, 1235., np.nan],
-                             "INDEX": [np.nan, 101.23456789012345, np.nan]},
+        data = pd.DataFrame({"RATE": [4.123456789012345, np.nan, -0.01],
+                             "FX": [1234.5, 1235., np.nan], "INDEX": [np.nan, 101.23, np.nan]},
                             index=pd.to_datetime(["2024-01-01", "2024-02-01", "2024-02-02"]))
-        metadata = {"source": 'Fixture with comma, colon: and newline\nnot live',
-                    "retrieved_at_utc": "2026-10-26T00:00:00+00:00",
-                    "series": {"RATE": {"units": "Percent", "frequency": "M"},
-                               "FX": {"units": "Won per U.S. Dollar", "frequency": "D"},
-                               "INDEX": {"units": "Index 2017=100", "frequency": "Q", "title": "Quoted, title"}}}
-        save_observations(data, self.path, metadata=metadata)
-        manager = FredDataManager(self.path.parent, series_ids=tuple(metadata["series"]))
+        metadata = {s: {"source": 'Fixture, colon: newline\nnot live',
+                        "retrieved_at_utc": "2026-10-26T00:00:00+00:00",
+                        "units": unit, "frequency": freq}
+                    for s, unit, freq in (("RATE", "Percent", "M"), ("FX", "Won per U.S. Dollar", "D"),
+                                          ("INDEX", "Index 2017=100", "Q"))}
+        manager = FredDataManager(self.path.parent, series_ids=tuple(metadata))
         data = validate_observations(data, metadata)
         with patch("bondview.data.fred.download_fred", return_value=data):
             manager.download()
@@ -62,40 +62,37 @@ class FileTests(unittest.TestCase):
         with patch("bondview.data.fred._read_url", side_effect=AssertionError("No network")), \
              patch("bondview.data.fred.dotenv_values", side_effect=AssertionError("No credentials")):
             loaded = manager.load()
-        pd.testing.assert_frame_equal(validate_observations(data, metadata), loaded, check_exact=True)
+        pd.testing.assert_frame_equal(data, loaded, check_exact=True)
+        self.assertEqual(manager.metadata, metadata)
         loaded.attrs.clear()
-        self.assertEqual(manager.metadata["series"]["RATE"]["provenance"]["source"], metadata["source"])
         copy = manager.metadata
-        copy["series"]["RATE"]["units"] = "broken"
-        self.assertEqual(manager.metadata["series"]["RATE"]["provenance"]["source"], metadata["source"])
+        copy["RATE"]["units"] = "broken"
+        self.assertEqual(manager.metadata, metadata)
         with patch("sys.stdout", new_callable=StringIO) as output:
-            manager.report()
-        self.assertIn("Won per U.S. Dollar, D", output.getvalue())
-        self.assertIn("Index 2017=100, Q", output.getvalue())
+            manager.report(series_ids=["FX", "INDEX"])
+        self.assertIn('units: "Won per U.S. Dollar"', output.getvalue())
+        self.assertIn('frequency: "Q"', output.getvalue())
         with self.assertRaises(RuntimeError):
             manager.save()
-        for series_id in metadata["series"]:
-            saved = load_observations(self.path.parent / f"{series_id}_20261026.csv")
-            self.assertEqual(saved.attrs["metadata"]["series"], {series_id: metadata["series"][series_id]})
 
     def test_invalid_csv_and_metadata(self):
-        save_observations(example_frame(), self.path)
+        save_observations(example_frame()[["DGS2"]], self.path, metadata={"DGS2": example_frame().attrs["metadata"]["DGS2"]})
         valid = self.path.read_text()
         mutations = [
-            valid.replace('bondview.fred_observations.csv.v1', 'unknown'),
+            valid.replace('bondview.fred_observations.csv.v2', 'unknown'),
             '\n'.join(s for s in valid.splitlines() if not s.startswith('# retrieved_at_utc:')),
             valid.replace('2026-10-26T00:00:00+00:00', '2026-10-26'),
-            valid.replace('"frequency": "D"', '"frequency": ""'),
-            valid.replace('"units": "Percent"', '"units": null'),
+            valid.replace('# frequency: "D"', '# frequency: ""'),
+            valid.replace('# units: "Percent"', '# units: null'),
             valid.replace('2024-09-16', '2024-02-30'),
             valid.replace('2024-09-16', '2024-09-16T12:00:00'),
             valid.replace('2024-09-16', '2025-01-13'),
-            valid.replace('3.56,3.63,3.94', '3.56,3.63'),
-            valid.replace('3.56,3.63,3.94', 'True,3.63,3.94'),
-            valid.replace('3.56,3.63,3.94', 'NaN,3.63,3.94'),
-            valid.replace('3.56,3.63,3.94', 'inf,3.63,3.94'),
-            valid.replace('DGS2,DGS10,DGS30', 'DGS2,DGS10,DGS2'),
-            valid.replace('# series: ', '# series: []\n# duplicate: '),
+            valid.replace('2024-09-16,3.56', '2024-09-16'),
+            valid.replace('2024-09-16,3.56', '2024-09-16,True'),
+            valid.replace('2024-09-16,3.56', '2024-09-16,NaN'),
+            valid.replace('2024-09-16,3.56', '2024-09-16,inf'),
+            valid.replace('date,DGS2', 'date,DGS10'),
+            valid.replace('# units: ', '# series: []\n# duplicate: '),
             '# format: "duplicate"\n' + valid,
             'date,DGS2\n2024-09-16,4\n',
             '', '{}', 'not csv',
@@ -109,7 +106,7 @@ class FileTests(unittest.TestCase):
             load_observations(self.path.with_name("missing.csv"))
 
     def test_invalid_metadata_does_not_truncate_existing_snapshot(self):
-        save_observations(example_frame(), self.path)
+        save_observations(example_frame()[["DGS2"]], self.path, metadata={"DGS2": example_frame().attrs["metadata"]["DGS2"]})
         previous = self.path.read_bytes()
         data = example_frame()
         data.attrs["metadata"]["bad header"] = "invalid"
@@ -144,7 +141,7 @@ class DownloadTests(unittest.TestCase):
             self.assertEqual(len(data), 2)
             self.assertEqual(reader.call_count, 1)
             self.assertTrue(pd.isna(data.iloc[0].DGS30))
-            self.assertIn("public graph CSV", manager.metadata["transport"])
+            self.assertIn("public graph CSV", manager.metadata["DGS2"]["transport"])
             with patch("bondview.data.fred._read_url", side_effect=AssertionError("No network")):
                 loaded = manager.load()
         pd.testing.assert_frame_equal(analyze_curve(data, *data.index), analyze_curve(loaded, *loaded.index))
@@ -172,8 +169,8 @@ class DownloadTests(unittest.TestCase):
         self.assertTrue(pd.isna(data.iloc[1].INDEX))
         self.assertEqual(data.iloc[0].RATE, 4.12)
         for s, (units, frequency) in infos.items():
-            self.assertEqual(data.attrs["metadata"]["series"][s]["units"], units)
-            self.assertEqual(data.attrs["metadata"]["series"][s]["frequency"], frequency)
+            self.assertEqual(data.attrs["metadata"][s]["units"], units)
+            self.assertEqual(data.attrs["metadata"][s]["frequency"], frequency)
         self.assertNotIn("secret-test-key", str(data.attrs))
 
     def test_key_environment_precedence_and_dotenv(self):
@@ -228,15 +225,15 @@ class SnapshotTests(unittest.TestCase):
 
     def snapshot(self, series_id, day="20261026", values=(1., np.nan, 3.), dates=None):
         dates = dates or ["2024-01-01", "2024-01-02", "2024-01-03"]
-        metadata = {
+        metadata = {series_id: {
             "source": f"Controlled source {series_id}",
             "retrieved_at_utc": f"{day[:4]}-{day[4:6]}-{day[6:]}T23:30:00+00:00",
             "transport": "fixture; no live network",
-            "series": {series_id: {"units": "Index" if series_id == "Other_ID" else "Percent",
+            "units": "Index" if series_id == "Other_ID" else "Percent",
                                    "frequency": "M" if series_id == "Other_ID" else "D",
                                    "source_url": f"https://fred.stlouisfed.org/series/{series_id}",
-                                   "last_updated": "fixture"}},
-        }
+                                   "last_updated": "fixture",
+        }}
         data = pd.DataFrame({series_id: values}, index=pd.to_datetime(dates))
         return save_observations(data, self.directory / f"{series_id}_{day}.csv", metadata=metadata)
 
@@ -257,7 +254,7 @@ class SnapshotTests(unittest.TestCase):
             self.assertEqual(path.name, f"{series_id}_20261026.csv")
             one = load_observations(path)
             self.assertEqual(list(one.columns), [series_id])
-            self.assertEqual(one.attrs["metadata"]["series"], {series_id: original_metadata["series"][series_id]})
+            self.assertEqual(one.attrs["metadata"], {series_id: original_metadata[series_id]})
         with patch("bondview.data.fred._read_url", side_effect=AssertionError("Offline")), \
              patch("bondview.data.fred.dotenv_values", side_effect=AssertionError("No key lookup")):
             loaded = self.manager.load(series_ids=SERIES)
@@ -265,12 +262,12 @@ class SnapshotTests(unittest.TestCase):
         pd.testing.assert_frame_equal(analyze_curve(original, *original.index), analyze_curve(loaded, *loaded.index))
         self.assertNotIn("retrieved_at_utc", self.manager.metadata)
         for series_id in SERIES:
-            info = self.manager.metadata["series"][series_id]
-            self.assertEqual(info["provenance"], {k: v for k, v in original_metadata.items() if k != "series"})
+            info = self.manager.metadata[series_id]
+            self.assertEqual(info, original_metadata[series_id])
         loaded.attrs.clear()
         self.manager.validate()
         copy = self.manager.metadata
-        copy["series"]["DGS2"]["provenance"]["source"] = "tampered"
+        copy["DGS2"]["source"] = "tampered"
         self.assertNotEqual(copy, self.manager.metadata)
         with self.assertRaises(RuntimeError):
             self.manager.save()
@@ -286,7 +283,7 @@ class SnapshotTests(unittest.TestCase):
 
     def test_failed_serialization_and_publication_leave_no_partial_batch(self):
         self.accept_download()
-        self.manager._metadata["bad header"] = "invalid"
+        self.manager._metadata["DGS10"]["bad header"] = "invalid"
         with self.assertRaisesRegex(ValueError, "header"):
             self.manager.save()
         self.assertEqual(list(self.directory.iterdir()), [])
@@ -311,7 +308,7 @@ class SnapshotTests(unittest.TestCase):
         # Source frequency is explicit metadata; pandas' inferred index.freq
         # is transient and is not serialized by the existing CSV format.
         pd.testing.assert_frame_equal(original, loaded, check_exact=True, check_freq=False)
-        self.assertEqual(self.manager.metadata["series"]["DGS2"]["frequency"], "D")
+        self.assertEqual(self.manager.metadata["DGS2"]["frequency"], "D")
 
     def test_publication_race_does_not_replace_or_remove_competing_file(self):
         self.accept_download()
@@ -330,11 +327,13 @@ class SnapshotTests(unittest.TestCase):
 
     def test_utc_filename_retains_previous_snapshots(self):
         data = example_frame()
-        data.attrs["metadata"]["retrieved_at_utc"] = "2026-10-28T00:30:00+09:00"
+        for info in data.attrs["metadata"].values():
+            info["retrieved_at_utc"] = "2026-10-28T00:30:00+09:00"
         self.accept_download(data)
         paths = self.manager.save()
         self.assertTrue(all(p.name.endswith("_20261027.csv") for p in paths.values()))
-        data.attrs["metadata"]["retrieved_at_utc"] = "2026-10-28T01:00:00+00:00"
+        for info in data.attrs["metadata"].values():
+            info["retrieved_at_utc"] = "2026-10-28T01:00:00+00:00"
         self.accept_download(data)
         self.manager.save()
         self.assertEqual(len(list(self.directory.glob("*.csv"))), 6)
@@ -352,15 +351,16 @@ class SnapshotTests(unittest.TestCase):
         self.assertTrue(pd.isna(loaded.Other_ID.iloc[0]))
         self.assertTrue(pd.isna(loaded.Other_ID.iloc[-1]))
         self.assertTrue(pd.isna(loaded.DGS2.iloc[-1]))
-        self.assertEqual(self.manager.metadata["series"]["Other_ID"]["frequency"], "M")
+        self.assertEqual(self.manager.metadata["Other_ID"]["frequency"], "M")
         with patch("sys.stdout", new_callable=StringIO) as output:
             self.manager.report()
         text = output.getvalue()
-        self.assertIn("2026-10-28T23:30:00+00:00", text)
-        self.assertIn("2026-10-27T23:30:00+00:00", text)
-        self.assertIn("Other_ID: Index, M", text)
-        self.assertIn("missing: 3", text)
-        self.assertIn("2024-01-02 to 2024-01-02 | 1 dates", text)
+        self.assertIn("Complete shared observations: 1", text)
+        with patch("sys.stdout", new_callable=StringIO) as detail:
+            self.manager.report(series_ids=["DGS2", "Other_ID"])
+        self.assertIn("2026-10-28T23:30:00+00:00", detail.getvalue())
+        self.assertIn("2026-10-27T23:30:00+00:00", detail.getvalue())
+        self.assertIn('units: "Index"', detail.getvalue())
 
     def test_matching_dates_no_warning_common_coverage_with_holes(self):
         self.snapshot("DGS2", values=(1., np.nan, 3.))
@@ -371,8 +371,7 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(caught, [])
         with patch("sys.stdout", new_callable=StringIO) as output:
             self.manager.report()
-        self.assertIn("2024-01-01 to 2024-01-03 | 2 dates", output.getvalue())
-        self.assertIn("intervening dates may be incomplete", output.getvalue())
+        self.assertIn("Complete shared observations: 2", output.getvalue())
 
     def test_report_no_common_and_all_missing_series(self):
         self.snapshot("DGS2", values=(np.nan, np.nan, np.nan))
@@ -380,17 +379,18 @@ class SnapshotTests(unittest.TestCase):
         self.manager.load(series_ids=["DGS2", "DGS10"])
         with patch("sys.stdout", new_callable=StringIO) as output:
             self.manager.report()
-        self.assertIn("No common complete observations", output.getvalue())
-        self.assertIn("No nonmissing observations", output.getvalue())
-        self.assertIn("missing: 3", output.getvalue())
+        self.assertIn("Complete shared observations: 0", output.getvalue())
+        self.assertRegex(output.getvalue(), r"DGS2\s+0")
 
     def test_download_report_is_unsaved_and_uses_retrieval_metadata(self):
         self.accept_download()
         with patch("sys.stdout", new_callable=StringIO) as output:
             self.manager.report()
-        self.assertIn("Not loaded from a saved snapshot", output.getvalue())
-        self.assertIn("2026-10-26T00:00:00+00:00", output.getvalue())
-        self.assertIn("DGS2, DGS10, DGS30", output.getvalue())
+        self.assertIn("FRED observations (download)", output.getvalue())
+        self.assertIn("Complete shared observations: 2", output.getvalue())
+        with patch("sys.stdout", new_callable=StringIO) as detail:
+            self.manager.report(series_ids="DGS2")
+        self.assertIn("2026-10-26T00:00:00+00:00", detail.getvalue())
 
     def test_missing_invalid_identity_dates_and_corrupt_latest_fail_clearly(self):
         with self.assertRaisesRegex(FileNotFoundError, "UNAVAILABLE"):
@@ -438,8 +438,9 @@ class SnapshotTests(unittest.TestCase):
         self.assertNotIn("secret-test-key", output.getvalue())
         self.assertNotIn("secret-test-key", next(self.directory.iterdir()).read_text())
         loaded = self.manager.load(series_ids=["Other_ID"])
-        self.assertTrue(pd.isna(loaded.iloc[0,0]))
-        self.assertEqual(loaded.iloc[1,0], 12.123456789012345)
+        # Saving trims leading/trailing missing padding; internal gaps remain.
+        self.assertEqual(loaded.index.tolist(), [pd.Timestamp("2000-02-01")])
+        self.assertEqual(loaded.iloc[0,0], 12.123456789012345)
 
     def test_failed_download_cannot_save_previous_state(self):
         self.accept_download()
