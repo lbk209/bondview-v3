@@ -27,21 +27,46 @@ with required local access passed. Modified Python test files compile, and
 `git diff --check` passes. No unresolved baseline failure blocks Stage 2.
 Evidence: [stage1.json](../artifacts/work_runs/261030_1309_analysis1/stage1.json).
 
+## Stage 2 — PASS
+
+Added `TreasuryMarketAnalysis` in `bondview.market`, exported from `bondview`.
+`show_history(start, end)` delegates existing history presentation.
+`curve(start, end, ..., yield_change_tolerance_bp=..., slope_tolerance_bp=...)`
+returns `CurveResult.data`, exactly the existing `analyze_curve` DataFrame.
+`CurveResult.show()` delegates the existing table/interpretation presenter.
+`decomposition(kw_observations, start, end)` returns `DecompositionResult.paths`,
+the existing `analyze_kw_decomposition` dictionary. Its `show()` plots and returns
+the existing combined KW Figure. Display calls use retained results, without
+financial recomputation. No common superclass or mutable current-result/date
+state exists. Source observations are read at calculation time; KW is explicit.
+Existing direct functions and calculations are unchanged.
+
+Updated the current notebook and its usage documentation; cleared stored outputs
+(including bulky historical Plotly payloads). Numerical equivalence, chart JSON
+equivalence, repeated display without recalculation and standalone 1B are tested.
+Focused facade tests: **3 PASS**; full suite: **47 PASS**, including offline
+notebook reruns. Modified Python files compile; whitespace checks pass.
+No unresolved introduced regressions. Results expose ordinary mutable pandas
+objects for notebook inspection; callers can edit them deliberately.
+Evidence: [stage2.json](../artifacts/work_runs/261030_1309_analysis1/stage2.json).
+Stage 1 publication: commit `8732c29`, [PR #51](https://github.com/lbk209/bondview-v3/pull/51),
+merged as `2f7ae6a`; remote/local task branches deleted and verified by Git.
+
 ## Token usage and account allowances
 
 No reliable session token counters, context occupancy/capacity, or account
 allowance counters are exposed in the tools available to this assignment.
 No estimates or inference from transcript length are used.
 
-| Metric | Stage 1 | Assignment total |
-|---|---|---|
-| Input tokens | Not available | Not available |
-| Output tokens | Not available | Not available |
-| Cached-input tokens | Not available | Not available |
-| Reasoning-output tokens | Not available | Not available |
-| Total tokens | Not available | Not available |
-| Attributable stage tokens / share | Not available | Not available |
-| Active context used / capacity / percent | Not available | Not available |
+| Metric | Stage 1 | Stage 2 | Assignment total |
+|---|---|---|---|
+| Input tokens | Not available | Not available | Not available |
+| Output tokens | Not available | Not available | Not available |
+| Cached-input tokens | Not available | Not available | Not available |
+| Reasoning-output tokens | Not available | Not available | Not available |
+| Total tokens | Not available | Not available | Not available |
+| Attributable stage tokens / share | Not available | Not available | Not available |
+| Active context used / capacity / percent | Not available | Not available | Not available |
 
 Beginning allowance measurement attempt: 2026-10-30 13:09:31 Asia/Seoul
 (04:09:31 UTC); five-hour, weekly and other allowance percentages: **Not available**.
