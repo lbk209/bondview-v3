@@ -11,7 +11,7 @@ import yaml
 
 from bondview.analysis.treasury_curve import analyze_kw_decomposition
 from bondview.labels import DEFAULT_LABELS_PATH
-from bondview.plotting.treasury_curve import plot_kw_comparison, plot_kw_decomposition
+from bondview.plotting.treasury_curve import plot_kw_comparison
 
 
 def kw_frame():
@@ -98,8 +98,7 @@ class KWTests(unittest.TestCase):
         self.assertEqual(figure.layout.hoversubplots, "axis")
         # make_subplots enumerates axes in row-major order:
         # (upper 2Y, upper 10Y, lower 2Y, lower 10Y).
-        self.assertEqual([t.xaxis for t in figure.data], ["x"] * 3 + ["x3"] * 2
-                         + ["x2"] * 3 + ["x4"] * 2)
+        self.assertEqual([t.xaxis for t in figure.data], ["x"] * 5 + ["x2"] * 5)
         self.assertEqual([t.yaxis for t in figure.data], ["y"] * 3 + ["y3"] * 2
                          + ["y2"] * 3 + ["y4"] * 2)
         for axis_name in ("xaxis", "xaxis2", "xaxis3", "xaxis4"):
@@ -108,15 +107,16 @@ class KWTests(unittest.TestCase):
             self.assertEqual(axis.type, "date")
             self.assertEqual(list(axis.range), ["2024-12-20", "2024-12-27"])
             self.assertTrue(axis.showticklabels)
+            self.assertEqual(axis.visible is False, axis_name in ("xaxis3", "xaxis4"))
         # Each maturity occupies a column; its levels are above its changes.
         self.assertEqual(figure.layout.xaxis.domain, figure.layout.xaxis3.domain)
         self.assertEqual(figure.layout.xaxis2.domain, figure.layout.xaxis4.domain)
         self.assertGreater(figure.layout.yaxis.domain[0], figure.layout.yaxis3.domain[1])
         self.assertGreater(figure.layout.yaxis2.domain[0], figure.layout.yaxis4.domain[1])
         self.assertEqual(figure.layout.yaxis.title.text, "Level (%)")
-        self.assertEqual(figure.layout.yaxis2.title.text, "Level (%)")
+        self.assertEqual(figure.layout.yaxis2.title.text, "")
         self.assertEqual(figure.layout.yaxis3.title.text, "Change (bp)")
-        self.assertEqual(figure.layout.yaxis4.title.text, "Change (bp)")
+        self.assertEqual(figure.layout.yaxis4.title.text, "")
         for i, maturity in enumerate(("2Y", "10Y")):
             path = results[maturity]
             group = list(figure.data[i*5:(i+1)*5])
@@ -126,41 +126,17 @@ class KWTests(unittest.TestCase):
                 self.assertEqual(trace.mode, "lines")
                 self.assertFalse(trace.connectgaps)
                 self.assertIsNone(trace.fill)
-                self.assertIn(".2f", trace.hovertemplate)
-            np.testing.assert_array_equal(group[3].customdata[:, 0], path.fitted_change_bp)
-            self.assertEqual(sum("Total KW fitted-yield change" in t.hovertemplate for t in group), 1)
+                self.assertIn("%{customdata[0]}", trace.hovertemplate)
+                fmt = "{:.2f}%" if column in path.columns[:3] else "{:+.0f} bp"
+                self.assertEqual([v[0] for v in trace.customdata], [fmt.format(v) for v in path[column]])
         self.assertEqual(len(figure.layout.annotations), 2)
         self.assertIn("2Y KW Decomposition", figure.layout.annotations[0].text)
         self.assertIn("10Y KW Decomposition", figure.layout.annotations[1].text)
         self.assertEqual(sum(bool(t.showlegend) for t in figure.data), 5)
 
-    def test_single_maturity_unlinked_date_axes_and_unified_hover(self):
-        results = analyze_kw_decomposition(kw_frame(), "2024-12-19", "2024-12-29")
-        for maturity in ("2Y", "10Y"):
-            with self.subTest(maturity=maturity):
-                figure = plot_kw_decomposition(results[maturity], maturity)
-                self.assertEqual(figure.layout.title.text, f"{maturity} KW Decomposition")
-                self.assertEqual(len(figure.data), 5)
-                self.assertEqual(figure.layout.hovermode, "x unified")
-                self.assertEqual(figure.layout.hoversubplots, "axis")
-                self.assertEqual([trace.xaxis for trace in figure.data], ["x"] * 3 + ["x2"] * 2)
-                self.assertEqual([trace.yaxis for trace in figure.data], ["y"] * 3 + ["y2"] * 2)
-                self.assertIsNone(figure.layout.xaxis.matches)
-                self.assertIsNone(figure.layout.xaxis2.matches)
-                for axis in (figure.layout.xaxis, figure.layout.xaxis2):
-                    self.assertTrue(axis.showticklabels)
-                    self.assertEqual(list(axis.range), ["2024-12-20", "2024-12-27"])
-                self.assertGreater(figure.layout.yaxis.domain[0], figure.layout.yaxis2.domain[1])
-                self.assertEqual(figure.layout.yaxis.title.text, "Level (%)")
-                self.assertEqual(figure.layout.yaxis2.title.text, "Change (bp)")
-                self.assertFalse(figure.layout.annotations)
-                self.assertEqual(sum("Total KW fitted-yield change" in t.hovertemplate
-                                     for t in figure.data), 1)
-                self.assertTrue(all(".2f" in t.hovertemplate for t in figure.data))
-
     def test_one_observation_and_configurable_presentation(self):
         results = analyze_kw_decomposition(kw_frame(), "2024-12-27", "2024-12-29")
-        figure = plot_kw_decomposition(results["2Y"], "2Y")
+        figure = plot_kw_comparison(results)
         self.assertEqual(list(figure.layout.xaxis.range), ["2024-12-26", "2024-12-28"])
         self.assertEqual(list(figure.layout.xaxis2.range), ["2024-12-26", "2024-12-28"])
         self.assertTrue(all(t.mode == "lines+markers" for t in figure.data))
@@ -172,15 +148,13 @@ class KWTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             config = Path(temp) / "labels.yaml"
             config.write_text(yaml.safe_dump(labels))
-            figure = plot_kw_decomposition(results["2Y"], "2Y", labels_path=config)
+            figure = plot_kw_comparison(results, labels_path=config)
             comparison = plot_kw_comparison(results, labels_path=config)
-        self.assertEqual(figure.layout.title.text, "Custom KW title")
+        self.assertEqual(figure.layout.annotations[0].text, "Custom KW title")
         self.assertEqual(figure.data[1].name, "Custom expectation label")
         self.assertEqual(figure.layout.yaxis.title.text, "Custom level (%)")
         self.assertEqual(comparison.layout.annotations[0].text, "Custom KW title")
         self.assertTrue(all(t.mode == "lines+markers" for t in comparison.data))
-        with self.assertRaisesRegex(ValueError, "eligible observations"):
-            plot_kw_decomposition(results["2Y"].iloc[:0], "2Y")
         with self.assertRaisesRegex(ValueError, "eligible observations"):
             plot_kw_comparison({"2Y": results["2Y"].iloc[:0], "10Y": results["10Y"]})
 

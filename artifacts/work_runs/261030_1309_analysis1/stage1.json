@@ -1,0 +1,10 @@
+{
+  "stage": 1,
+  "status": "PASS",
+  "baseline_sha": "ee79747b25ad0f45dffa7c040823560415159890",
+  "baseline_tests": {"discovered": 39, "failures": 3, "errors": 16, "note": "Two modules failed import"},
+  "aligned_tests": {"command": "poetry run python -m unittest discover -s tests -v", "run": 44, "failures": 0, "errors": 0},
+  "production_changes": false,
+  "environment": "Python 3.12.1; existing Poetry environment; Jupyter requires local socket access",
+  "usage": "Not available: no reliable token, context or account counters exposed"
+}
