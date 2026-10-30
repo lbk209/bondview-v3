@@ -138,9 +138,12 @@ assert scenario_summary.shape == (3, 5)
             notebook.cells.append(nbformat.v4.new_code_cell('''
 from bondview.analysis.scenarios import ScenarioSet
 assert isinstance(scenarios, ScenarioSet)
-assert len(joint_scenarios) == 3
-assert scenarios.metadata['counts']['eligible_windows'] == 3
-assert joint_scenarios.iloc[0].scenario_id == 'UST_20240131_20240731'
+assert len(joint_scenarios) == 6
+assert scenarios.metadata['counts']['eligible_windows'] == 6
+assert joint_scenarios.iloc[0].scenario_id == 'UST_20240701_20241231'
+assert joint_scenarios.iloc[0].target_start_date.strftime('%Y-%m-%d') == '2024-06-30'
+assert joint_scenarios.iloc[0].shortfall_days == 1
+assert scenarios.metadata['max_shortfall_days'] == 7
 assert 'decomposition' not in globals()
 assert 'kw_observations' not in globals()
 assert 'curve' not in globals()

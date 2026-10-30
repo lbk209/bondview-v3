@@ -52,7 +52,7 @@ Evidence: [stage2.json](../artifacts/work_runs/261030_1309_analysis1/stage2.json
 Stage 1 publication: commit `8732c29`, [PR #51](https://github.com/lbk209/bondview-v3/pull/51),
 merged as `2f7ae6a`; remote/local task branches deleted and verified by Git.
 
-## Stage 3 — PASS
+## Stage 3 — PASS (with window-construction correction below)
 
 Implemented `build_conditional_scenarios()` and independent `ScenarioSet` in
 `bondview.analysis.scenarios`. Added `market.scenarios(...)`, `summary()`,
@@ -64,32 +64,36 @@ Analysis 3 risk calculations were added. No new dependencies were needed.
 
 ### Construction and assumptions
 
-This is a deterministic historical selection convention chosen under the
-assignment's engineering discretion, not an investment-policy threshold:
+The original start-anchored construction in `c973def` is superseded by the
+user's explicit correction assignment. The current method is:
 
-1. Validate existing daily Percent Treasury inputs and per-ID metadata. Require
-   DGS2, DGS10 and DGS30 at each eligible observation date. Never fill yields.
-2. Reference bounds are inclusive; defaults are the first/last complete common
-   observation dates. Preserve requested and effective coverage separately.
-3. Monthly starts are each calendar month's last complete common observation;
-   daily starts are every complete common observation. Partial reference months
-   are included. An incomplete last row does not supply a start.
-4. Target = actual start + configured calendar months, with day clipped at month
-   end. Exclude targets later than the last complete reference observation.
-5. Use the last complete observation on/before the target **within its calendar
-   month**. Exclude a window if no such observation exists; never reach into a
-   different month to compensate for a gap.
-6. Subtract the same actual start/end yields for all three tenors and multiply
-   percent-point differences by 100 to obtain bp. Round floating cancellation
-   to 10 decimals in bp, consistent with 1A; no display rounding sets membership.
-7. Apply inclusive finite numeric bounds to DGS2 or DGS10 and retain the entire
-   matching vector. Overlapping windows remain dependent historical evidence.
+1. Validate daily Percent Treasury inputs and retain dates complete for DGS2,
+   DGS10 and DGS30 within inclusive reference bounds. Defaults are the first/last
+   complete common dates. Never fill, interpolate or average yields.
+2. For monthly sampling, anchor the newest intended end at the latest complete
+   observation. Each older end is the **original anchor minus an integer number
+   of calendar months**; do not recursively shift clipped dates or use month-end
+   observations as independent anchors. For daily sampling, use every complete
+   observation date as an intended end, in reverse chronological order.
+3. Intended start = intended end minus the calendar-month horizon, clipping at
+   month ends. Stop before intended starts precede complete reference history.
+4. Slice `common.loc[target_start:target_end]` inclusively. Skip fewer than two
+   complete observations; otherwise use the slice's first/last actual dates.
+   Never search outside the intended interval. Interior gaps are acceptable.
+5. Combined shortfall = intended elapsed days minus actual elapsed days. Accept
+   shortfalls of seven days or less; reject greater shortfalls. This safeguards
+   both boundaries without interpolation or horizon normalization.
+6. Subtract those same actual start/end yields for all three tenors and multiply
+   percent-point differences by 100 to obtain bp. Round floating cancellation to
+   10 decimals in bp, consistently with 1A. Keep original actual-date IDs.
+7. Apply the unchanged inclusive bounds to DGS2 or DGS10 and keep entire matching
+   joint vectors. All outputs follow newest intended end first.
 
-For example, the synthetic leap-year fixture's 2024-01-31 → 2024-07-31 vector
-is `(20, -25, 50)` bp with 182 actual elapsed days; the exact condition
-`DGS10 ∈ [-25, -25]` retains it. A one-month target from 2024-01-31 clips to
-2024-02-29. A 2024-03-29 target uses the available 2024-03-28 endpoint.
-These are test constructions, not market observations.
+The hand-checkable synthetic January 31 → July 31, 2024 vector remains
+`(20, -25, 50)` bp with 182 elapsed days and exact 10Y condition [-25, -25].
+Separate fixtures verify six-month leap-year clipping (August 31 → February 29
+in 2024, February 28 in 2025) and combined shortfalls of exactly 7 vs 8 days.
+These fixtures are not market observations.
 
 ### Data and reuse contract
 
@@ -99,16 +103,19 @@ These are test constructions, not market observations.
 |---|---|
 | `scenario_id` | Stable `UST_YYYYMMDD_YYYYMMDD` actual-endpoint identity |
 | `start_date`, `end_date` | Actual common historical endpoints |
-| `target_end_date` | Calendar-month target before observation matching |
+| `target_end_date` | Intended end-date anchor |
+| `target_start_date`, `shortfall_days` | Appended audit fields: intended start and combined endpoint shortfall |
 | `elapsed_days` | Actual endpoint difference in calendar days |
 | `DGS2_change_bp`, `DGS10_change_bp`, `DGS30_change_bp` | Complete same-interval numerical changes |
 
 `ScenarioSet.metadata` holds schema/type, factor identity, input/output units,
-condition and inclusive bounds, horizon, sampling/start/target/endpoint rules,
-requested/effective reference dates, missing-data rule, per-ID source/retrieval
-provenance, overlap/interpretation and quantile convention. Counts distinguish
-reference rows, complete dates, excluded incomplete rows, sampled starts,
-immature targets, unmatched target months, eligible windows and selected rows.
+condition and inclusive bounds, horizon, end-anchor/target/endpoint rules,
+latest anchor, seven-day maximum shortfall, requested/effective reference dates,
+missing-data rule, per-ID source/retrieval provenance, overlap/interpretation and
+quantile convention. Counts distinguish reference rows, complete dates, excluded
+incomplete rows, intended windows, insufficient-observation exclusions,
+shortfall exclusions, eligible windows and selected rows. The obsolete
+start-anchor and unmatched-month metadata fields are intentionally replaced.
 Provenance is copied defensively from input; no point-in-time data is invented.
 IDs deliberately stay stable across filters/sampling/source revisions for the
 same interval; use accompanying provenance to distinguish retrieval snapshots.
@@ -146,7 +153,7 @@ B uses its own `kw_date_range` selector and explicit KW inputs. Removed
 unimplemented KW-conditioned scenario placeholders: KW is not a scenario input.
 Notebook code outputs are cleared; no large saved display payload is committed.
 
-### Verified evidence and limitations
+### Initial implementation evidence (before correction)
 
 - Focused scenario suite: **11 PASS**. Tests check independent endpoint
   enumeration, signs/units, inclusive boundaries, calendar/leap handling,
@@ -165,7 +172,7 @@ Notebook code outputs are cleared; no large saved display payload is committed.
   hand enumeration identified three. Corrected that test expectation before
   the passing regression run. No unresolved introduced failure remains.
 
-**Observed cached-data integration:** existing DGS snapshots dated 2026-10-28
+**Before-correction cached-data integration (`c973def`):** existing DGS snapshots dated 2026-10-28
 provide complete common coverage 1977-02-15 to 2026-10-26 (12,419 complete dates,
 546 incomplete rows within default bounds). For a six-calendar-month inclusive
 10Y condition of [-25, +25] bp, monthly sampling gives **153 selected / 590
@@ -177,18 +184,105 @@ per sampling mode are in
 This validates integration with the existing retrieval snapshots; it is not an
 independent source audit or a claim about information available historically.
 
-Missing observations can shorten intervals within their target month or exclude
-them altogether. The conservative maturity rule can omit the last potential
-window when its calendar target lies after final observed coverage, even if a
-nearby earlier business-day endpoint exists. Actual periods are visible.
-Sampling and historical reference choices change descriptive samples. Overlap,
-source revisions, historical availability and limited counts prevent interpreting
-these quantiles/counts as independent frequencies or forecast probabilities.
-No additional probability model or economic policy was inferred.
+Those initial counts and tests describe the former construction only. Current
+verification, corrected statistics and limitations follow below. Original evidence
+files remain unchanged as inspectable before-correction records.
 
 Evidence: [stage3.json](../artifacts/work_runs/261030_1309_analysis1/stage3.json).
 Stage 2 publication: commit `2a06247`, [PR #52](https://github.com/lbk209/bondview-v3/pull/52),
 merged as `b57ddaf`; remote/local task branches deleted and verified by Git.
+
+## Historical-window correction — PASS
+
+Continued PR #54 in the same session branch after fetching/pruning remote refs
+and verifying its open state and head `c973def553e6b89c3adbe56bba10e75c1f70e4ba`.
+The checkout was clean. Task branch: `codex/task/261030_1400_window_correction`.
+This is a targeted correction to window construction, not a new Analysis 1C.
+The original main baseline remains recorded above; correction implementation
+is based on the verified session revision, not restarted from main.
+
+The revised algorithm is specified under Construction above. `ScenarioSet`,
+`TreasuryMarketAnalysis.scenarios()` and `build_conditional_scenarios()` public
+signatures are unchanged, as are actual-date ID formatting, actual dates,
+elapsed days, joint bp columns, quantiles and scatter mappings. Existing columns
+keep their order; `target_start_date` and `shortfall_days` are appended, including
+for empty results. Rows now follow reverse intended-end order. Construction and
+rejection metadata intentionally change to match the new rules. Labels,
+notebook explanation, usage documentation and test-purpose documentation are
+updated. Facade, 1A/1B, plotting/presentation Python and FRED code are unchanged.
+No architecture/workflow document was modified, and no dependencies were added.
+
+### Verification
+
+- **17 focused scenario tests PASS**: hand-specified monthly end sequences,
+  inclusive actual endpoints, no outside searching, missing boundary and interior
+  observations, insufficient slices, seven-day acceptance/eight-day rejection
+  for monthly and daily sampling, month-end/leap-year arithmetic without drift,
+  conditioning, IDs, schema, summaries and independent result consumption.
+- **65 full regression tests PASS**, including a fresh notebook kernel executing
+  C with only Treasury setup, no A/B/KW. Another notebook run checks A/B reruns,
+  empty scenario output and unchanged snapshot files. Tests are deterministic
+  synthetic fixtures and do not assert obsolete historical counts.
+- Modified Python files compile with `poetry run python -m py_compile`;
+  `git diff --check` passes. No unresolved introduced, pre-existing or
+  environmental failure was encountered in the correction verification.
+- Cached integration re-executed both the old implementation from `c973def` and
+  corrected implementation on the same existing snapshots. SHA-256 hashes match
+  the prior evidence. Every **eligible** corrected vector (not only selected
+  ones) was checked against independent boolean date filtering, actual first/last
+  endpoints, bp subtraction, nominal/actual days, shortfall and horizon. The
+  conditional result exactly matches inclusive filtering of the eligible set.
+- Complete affected calculation and tests were reviewed directly by Codex;
+  no independent reviewer or subagent is claimed.
+
+### Observed cached-history changes
+
+Configuration is unchanged: 10Y condition [-25, +25] bp, six calendar months,
+complete reference coverage 1977-02-15 through 2026-10-26. Counts reflect the
+explicitly changed method:
+
+| Sampling | Before: selected / eligible | Corrected: selected / eligible |
+|---|---|---|
+| monthly | 153 / 590 | 162 / 591 |
+| daily | 3,230 / 12,142 | 3,282 / 12,295 |
+
+Descriptive statistics in bp, shown as **before → corrected**. Each statistic
+is marginal; no row of quantiles is converted into a historical joint vector.
+
+| Sampling / tenor | Minimum | P10 | Median | P90 | Maximum |
+|---|---|---|---|---|---|
+| monthly / DGS2 | -226 → -155 | -58.8 → -51.9 | 2 → -0.5 | 53.8 → 53.6 | 118 → 117 |
+| monthly / DGS10 | -25 → -25 | -19.8 → -21 | -1 → -4 | 21 → 19 | 25 → 24 |
+| monthly / DGS30 | -52 → -49 | -27.4 → -28.8 | 0 → -4 | 27.8 → 25.9 | 70 → 56 |
+| daily / DGS2 | -226 → -259 | -59 → -59 | 1 → 1 | 61.1 → 60 | 135 → 135 |
+| daily / DGS10 | -25 → -25 | -21 → -21 | -2 → -2 | 20 → 20 | 25 → 25 |
+| daily / DGS30 | -67 → -76 | -31 → -31 | -2 → -2 | 26 → 26 | 93 → 93 |
+
+The latest three eligible monthly windows demonstrate the intended/actual
+boundaries below. They are **eligible-window examples**, not members of the
+[-25, +25] bp conditional set: their 10Y changes are +65, +75 and +64 bp.
+
+| Intended start | Intended end | Actual start | Actual end | Elapsed days | Shortfall days |
+|---|---|---|---|---|---|
+| 2026-04-26 | 2026-10-26 | 2026-04-27 | 2026-10-26 | 182 | 1 |
+| 2026-03-26 | 2026-09-26 | 2026-03-26 | 2026-09-25 | 183 | 1 |
+| 2026-02-26 | 2026-08-26 | 2026-02-26 | 2026-08-26 | 181 | 0 |
+
+Full numerical comparison, rejection counts, copied provenance, snapshot hashes,
+latest eligible and latest condition-selected examples are in
+[window_correction_1400.json](../artifacts/work_runs/261030_1309_analysis1/window_correction_1400.json).
+The original `cached_history_check.json` and `stage3.json` remain historical
+records of the earlier construction; they are not the current expected results.
+
+### Remaining limitations
+
+Windows overlap, so counts and quantiles remain descriptive, not independent
+frequencies or forecast probabilities. Up to seven days of actual shortening
+is allowed; no yield/horizon normalization is performed. Incomplete or sparse
+history can exclude windows, while interior gaps alone do not invalidate them.
+Reference end changes deliberately change the monthly original anchor and can
+change the selected sample. Snapshots are retrieval-time data, not reconstructed
+historical availability/vintages. No returns or risk calculations are included.
 
 ## Publication and completion
 
@@ -197,10 +291,11 @@ merged as `b57ddaf`; remote/local task branches deleted and verified by Git.
 | Baseline alignment | PASS | `8732c29` | [#51](https://github.com/lbk209/bondview-v3/pull/51), merged into session |
 | Facade/results | PASS | `2a06247` | [#52](https://github.com/lbk209/bondview-v3/pull/52), merged into session |
 | Conditional scenarios | PASS | `d876a80` | [#53](https://github.com/lbk209/bondview-v3/pull/53), verified and published into session review workflow |
+| Window correction | PASS | `a0356c7` | [#55](https://github.com/lbk209/bondview-v3/pull/55), published into the same session |
 
-All three output contracts are satisfied. Source baseline remains fixed at
-`ee79747b25ad0f45dffa7c040823560415159890`. The final session-to-main PR is
-opened for user review and must remain unmerged. Its description and the final
+All three output contracts and the targeted correction are satisfied. Source baseline remains fixed at
+`ee79747b25ad0f45dffa7c040823560415159890`. The final session-to-main [PR #54](https://github.com/lbk209/bondview-v3/pull/54)
+is open for user review and must remain unmerged. Its description and the final
 response record the verified final PR and task-branch cleanup outcome after
 publication. Session branch deletion remains exclusively the user's decision.
 This report's PASS is implementation verification, not user acceptance or an
@@ -215,15 +310,15 @@ No reliable session token counters, context occupancy/capacity, or account
 allowance counters are exposed in the tools available to this assignment.
 No estimates or inference from transcript length are used.
 
-| Metric | Stage 1 | Stage 2 | Stage 3 | Assignment total |
-|---|---|---|---|---|
-| Input tokens | Not available | Not available | Not available | Not available |
-| Output tokens | Not available | Not available | Not available | Not available |
-| Cached-input tokens | Not available | Not available | Not available | Not available |
-| Reasoning-output tokens | Not available | Not available | Not available | Not available |
-| Total tokens | Not available | Not available | Not available | Not available |
-| Attributable stage tokens / share | Not available | Not available | Not available | Not available |
-| Active context used / capacity / percent | Not available | Not available | Not available | Not available |
+| Metric | Stage 1 | Stage 2 | Stage 3 | Correction | Assignment total |
+|---|---|---|---|---|---|
+| Input tokens | Not available | Not available | Not available | Not available | Not available |
+| Output tokens | Not available | Not available | Not available | Not available | Not available |
+| Cached-input tokens | Not available | Not available | Not available | Not available | Not available |
+| Reasoning-output tokens | Not available | Not available | Not available | Not available | Not available |
+| Total tokens | Not available | Not available | Not available | Not available | Not available |
+| Attributable stage tokens / share | Not available | Not available | Not available | Not available | Not available |
+| Active context used / capacity / percent | Not available | Not available | Not available | Not available | Not available |
 
 Beginning allowance measurement attempt: 2026-10-30 13:09:31 Asia/Seoul
 (04:09:31 UTC); five-hour, weekly and other allowance percentages: **Not available**.
@@ -238,3 +333,16 @@ session/account usage counter and was not used to fabricate statistics.
 End-of-assignment allowance reporting checkpoint: 2026-10-30 13:21:18 Asia/Seoul
 (04:21:18 UTC). Five-hour, weekly and other allowance percentages: **Not available**.
 This timestamp records an availability check, not a successful measurement.
+
+Correction beginning reporting checkpoint: 2026-10-30 14:00:41 Asia/Seoul
+(05:00:41 UTC). Correction input/output/cached-input/reasoning-output/total token
+counts, attributable consumption, stage percentage, context used/capacity/percent
+and five-hour/weekly/other allowance percentages: **Not available**. The exposed
+tool inventory again supplies no applicable reliable usage counters; no counter
+differences or account allowance measurements can be derived. Original stage
+usage remains unavailable. Correction end checkpoint is recorded in its evidence.
+
+Correction end reporting checkpoint: 2026-10-30 14:07:04 Asia/Seoul
+(05:07:04 UTC). Token/context figures and beginning/end account allowance
+percentages remain **Not available**; these checkpoints record availability
+checks, not successful measurements.

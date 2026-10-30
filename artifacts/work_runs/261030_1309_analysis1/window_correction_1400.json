@@ -1,0 +1,583 @@
+{
+  "correction_baseline": "c973def553e6b89c3adbe56bba10e75c1f70e4ba",
+  "status": "PASS",
+  "source": "Existing cached retrieval snapshots, unchanged hashes; not a new download or point-in-time audit",
+  "snapshot_files": [
+    {
+      "path": "data/fred/DGS10_20261028.csv",
+      "sha256": "362eafe6edf043d6003f493eb7a3b7ad0563dc95bcd666023dbeb9013f249b97"
+    },
+    {
+      "path": "data/fred/DGS2_20261028.csv",
+      "sha256": "f781480e6821109b9c7bf7840431603d3c6c79f57a3726b397b64ab83ba173e8"
+    },
+    {
+      "path": "data/fred/DGS30_20261028.csv",
+      "sha256": "6fa8335e11a0e45caad623cc173897b88fcf8834547dde01410223f1667f19d3"
+    }
+  ],
+  "configuration": {
+    "condition_tenor": "DGS10",
+    "lower_bp": -25,
+    "upper_bp": 25,
+    "horizon_months": 6
+  },
+  "historical_comparison": {
+    "monthly": {
+      "previous_counts": {
+        "reference_rows": 12965,
+        "complete_observations": 12419,
+        "incomplete_rows_excluded": 546,
+        "sampled_starts": 597,
+        "immature_targets_excluded": 7,
+        "unmatched_target_months_excluded": 0,
+        "eligible_windows": 590,
+        "selected_scenarios": 153
+      },
+      "corrected_metadata": {
+        "schema_version": "bondview.scenario_set.v1",
+        "scenario_type": "observed_historical_joint_yield_changes",
+        "factors": [
+          "DGS2",
+          "DGS10",
+          "DGS30"
+        ],
+        "input_units": "Percent",
+        "change_units": "bp",
+        "condition": {
+          "tenor": "DGS10",
+          "lower_bp": -25.0,
+          "upper_bp": 25.0,
+          "inclusive": true
+        },
+        "horizon_months": 6,
+        "sampling": "monthly",
+        "end_convention": "latest_complete_date_minus_integer_calendar_months",
+        "sampling_anchor": "2026-10-26",
+        "window_order": "reverse_chronological_intended_end",
+        "endpoint_convention": "first_and_last_complete_observations_inside_inclusive_window",
+        "target_convention": "intended_end_minus_calendar_month_horizon_clipped_at_month_end",
+        "max_shortfall_days": 7,
+        "reference": {
+          "requested_start": null,
+          "requested_end": null,
+          "effective_start": "1977-02-15",
+          "effective_end": "2026-10-26"
+        },
+        "counts": {
+          "reference_rows": 12965,
+          "complete_observations": 12419,
+          "incomplete_rows_excluded": 546,
+          "intended_windows": 591,
+          "insufficient_observations_excluded": 0,
+          "shortfall_excluded": 0,
+          "eligible_windows": 591,
+          "selected_scenarios": 162
+        },
+        "provenance": {
+          "DGS2": {
+            "title": "Market Yield on U.S. Treasury Securities at 2-Year Constant Maturity, Quoted on an Investment Basis",
+            "units": "Percent",
+            "frequency": "D",
+            "source": "FRED",
+            "source_url": "https://fred.stlouisfed.org/series/DGS2",
+            "last_updated": "2026-10-27 15:16:40-05",
+            "retrieved_at_utc": "2026-10-28T09:16:47.760560+00:00",
+            "transport": "FRED API; untransformed observations at source frequency",
+            "requested_start": null,
+            "requested_end": null,
+            "realtime_start": "2026-10-28",
+            "realtime_end": "2026-10-28",
+            "missing_policy": "No filling or date substitution; empty CSV fields mean unavailable.",
+            "availability": "Known at retrieval; historical release availability is not reconstructed.",
+            "vintage": "Retrieval-time snapshot; source observations may be revised."
+          },
+          "DGS10": {
+            "title": "Market Yield on U.S. Treasury Securities at 10-Year Constant Maturity, Quoted on an Investment Basis",
+            "units": "Percent",
+            "frequency": "D",
+            "source": "FRED",
+            "source_url": "https://fred.stlouisfed.org/series/DGS10",
+            "last_updated": "2026-10-27 15:16:37-05",
+            "retrieved_at_utc": "2026-10-28T09:16:47.760560+00:00",
+            "transport": "FRED API; untransformed observations at source frequency",
+            "requested_start": null,
+            "requested_end": null,
+            "realtime_start": "2026-10-28",
+            "realtime_end": "2026-10-28",
+            "missing_policy": "No filling or date substitution; empty CSV fields mean unavailable.",
+            "availability": "Known at retrieval; historical release availability is not reconstructed.",
+            "vintage": "Retrieval-time snapshot; source observations may be revised."
+          },
+          "DGS30": {
+            "title": "Market Yield on U.S. Treasury Securities at 30-Year Constant Maturity, Quoted on an Investment Basis",
+            "units": "Percent",
+            "frequency": "D",
+            "source": "FRED",
+            "source_url": "https://fred.stlouisfed.org/series/DGS30",
+            "last_updated": "2026-10-27 15:16:36-05",
+            "retrieved_at_utc": "2026-10-28T09:16:47.760560+00:00",
+            "transport": "FRED API; untransformed observations at source frequency",
+            "requested_start": null,
+            "requested_end": null,
+            "realtime_start": "2026-10-28",
+            "realtime_end": "2026-10-28",
+            "missing_policy": "No filling or date substitution; empty CSV fields mean unavailable.",
+            "availability": "Known at retrieval; historical release availability is not reconstructed.",
+            "vintage": "Retrieval-time snapshot; source observations may be revised."
+          }
+        },
+        "missing_policy": "Complete common observation dates only; no fill, interpolation or averaging.",
+        "overlapping_windows": true,
+        "interpretation": "Descriptive overlapping historical scenarios, not independent event frequencies or forecast probabilities.",
+        "quantile_method": "linear interpolation (pandas default); marginal summaries only"
+      },
+      "previous_summary_bp": {
+        "DGS2": {
+          "minimum": -226.0,
+          "P10": -58.8,
+          "median": 2.0,
+          "P90": 53.8,
+          "maximum": 118.0
+        },
+        "DGS10": {
+          "minimum": -25.0,
+          "P10": -19.8,
+          "median": -1.0,
+          "P90": 21.0,
+          "maximum": 25.0
+        },
+        "DGS30": {
+          "minimum": -52.0,
+          "P10": -27.4,
+          "median": 0.0,
+          "P90": 27.8,
+          "maximum": 70.0
+        }
+      },
+      "corrected_summary_bp": {
+        "DGS2": {
+          "minimum": -155.0,
+          "P10": -51.9,
+          "median": -0.5,
+          "P90": 53.6,
+          "maximum": 117.0
+        },
+        "DGS10": {
+          "minimum": -25.0,
+          "P10": -21.0,
+          "median": -4.0,
+          "P90": 19.0,
+          "maximum": 24.0
+        },
+        "DGS30": {
+          "minimum": -49.0,
+          "P10": -28.8,
+          "median": -4.0,
+          "P90": 25.9,
+          "maximum": 56.0
+        }
+      },
+      "summary_change_bp": {
+        "DGS2": {
+          "minimum": 71.0,
+          "P10": 6.9,
+          "median": -2.5,
+          "P90": -0.2,
+          "maximum": -1.0
+        },
+        "DGS10": {
+          "minimum": 0.0,
+          "P10": -1.2,
+          "median": -3.0,
+          "P90": -2.0,
+          "maximum": -1.0
+        },
+        "DGS30": {
+          "minimum": 3.0,
+          "P10": -1.4,
+          "median": -4.0,
+          "P90": -1.9,
+          "maximum": -14.0
+        }
+      },
+      "latest_eligible_examples": [
+        {
+          "scenario_id": "UST_20260427_20261026",
+          "start_date": "2026-04-27T00:00:00.000",
+          "target_end_date": "2026-10-26T00:00:00.000",
+          "end_date": "2026-10-26T00:00:00.000",
+          "elapsed_days": 182,
+          "DGS2_change_bp": 90.0,
+          "DGS10_change_bp": 65.0,
+          "DGS30_change_bp": 37.0,
+          "target_start_date": "2026-04-26T00:00:00.000",
+          "shortfall_days": 1
+        },
+        {
+          "scenario_id": "UST_20260326_20260925",
+          "start_date": "2026-03-26T00:00:00.000",
+          "target_end_date": "2026-09-26T00:00:00.000",
+          "end_date": "2026-09-25T00:00:00.000",
+          "elapsed_days": 183,
+          "DGS2_change_bp": 85.0,
+          "DGS10_change_bp": 75.0,
+          "DGS30_change_bp": 56.0,
+          "target_start_date": "2026-03-26T00:00:00.000",
+          "shortfall_days": 1
+        },
+        {
+          "scenario_id": "UST_20260226_20260826",
+          "start_date": "2026-02-26T00:00:00.000",
+          "target_end_date": "2026-08-26T00:00:00.000",
+          "end_date": "2026-08-26T00:00:00.000",
+          "elapsed_days": 181,
+          "DGS2_change_bp": 77.0,
+          "DGS10_change_bp": 64.0,
+          "DGS30_change_bp": 51.0,
+          "target_start_date": "2026-02-26T00:00:00.000",
+          "shortfall_days": 0
+        }
+      ],
+      "latest_selected_examples": [
+        {
+          "scenario_id": "UST_20251226_20260626",
+          "start_date": "2025-12-26T00:00:00.000",
+          "target_end_date": "2026-06-26T00:00:00.000",
+          "end_date": "2026-06-26T00:00:00.000",
+          "elapsed_days": 182,
+          "DGS2_change_bp": 61.0,
+          "DGS10_change_bp": 24.0,
+          "DGS30_change_bp": 6.0,
+          "target_start_date": "2025-12-26T00:00:00.000",
+          "shortfall_days": 0
+        },
+        {
+          "scenario_id": "UST_20250926_20260326",
+          "start_date": "2025-09-26T00:00:00.000",
+          "target_end_date": "2026-03-26T00:00:00.000",
+          "end_date": "2026-03-26T00:00:00.000",
+          "elapsed_days": 181,
+          "DGS2_change_bp": 33.0,
+          "DGS10_change_bp": 22.0,
+          "DGS30_change_bp": 16.0,
+          "target_start_date": "2025-09-26T00:00:00.000",
+          "shortfall_days": 0
+        },
+        {
+          "scenario_id": "UST_20250826_20260226",
+          "start_date": "2025-08-26T00:00:00.000",
+          "target_end_date": "2026-02-26T00:00:00.000",
+          "end_date": "2026-02-26T00:00:00.000",
+          "elapsed_days": 184,
+          "DGS2_change_bp": -19.0,
+          "DGS10_change_bp": -24.0,
+          "DGS30_change_bp": -23.0,
+          "target_start_date": "2025-08-26T00:00:00.000",
+          "shortfall_days": 0
+        }
+      ],
+      "validated_eligible_vectors": 591,
+      "validation": "Every eligible vector checked against first/last complete observations inside intended window; shortfall, horizon, units and exact conditioning subset checked"
+    },
+    "daily": {
+      "previous_counts": {
+        "reference_rows": 12965,
+        "complete_observations": 12419,
+        "incomplete_rows_excluded": 546,
+        "sampled_starts": 12419,
+        "immature_targets_excluded": 126,
+        "unmatched_target_months_excluded": 151,
+        "eligible_windows": 12142,
+        "selected_scenarios": 3230
+      },
+      "corrected_metadata": {
+        "schema_version": "bondview.scenario_set.v1",
+        "scenario_type": "observed_historical_joint_yield_changes",
+        "factors": [
+          "DGS2",
+          "DGS10",
+          "DGS30"
+        ],
+        "input_units": "Percent",
+        "change_units": "bp",
+        "condition": {
+          "tenor": "DGS10",
+          "lower_bp": -25.0,
+          "upper_bp": 25.0,
+          "inclusive": true
+        },
+        "horizon_months": 6,
+        "sampling": "daily",
+        "end_convention": "every_complete_observation_reverse_chronological",
+        "sampling_anchor": "2026-10-26",
+        "window_order": "reverse_chronological_intended_end",
+        "endpoint_convention": "first_and_last_complete_observations_inside_inclusive_window",
+        "target_convention": "intended_end_minus_calendar_month_horizon_clipped_at_month_end",
+        "max_shortfall_days": 7,
+        "reference": {
+          "requested_start": null,
+          "requested_end": null,
+          "effective_start": "1977-02-15",
+          "effective_end": "2026-10-26"
+        },
+        "counts": {
+          "reference_rows": 12965,
+          "complete_observations": 12419,
+          "incomplete_rows_excluded": 546,
+          "intended_windows": 12295,
+          "insufficient_observations_excluded": 0,
+          "shortfall_excluded": 0,
+          "eligible_windows": 12295,
+          "selected_scenarios": 3282
+        },
+        "provenance": {
+          "DGS2": {
+            "title": "Market Yield on U.S. Treasury Securities at 2-Year Constant Maturity, Quoted on an Investment Basis",
+            "units": "Percent",
+            "frequency": "D",
+            "source": "FRED",
+            "source_url": "https://fred.stlouisfed.org/series/DGS2",
+            "last_updated": "2026-10-27 15:16:40-05",
+            "retrieved_at_utc": "2026-10-28T09:16:47.760560+00:00",
+            "transport": "FRED API; untransformed observations at source frequency",
+            "requested_start": null,
+            "requested_end": null,
+            "realtime_start": "2026-10-28",
+            "realtime_end": "2026-10-28",
+            "missing_policy": "No filling or date substitution; empty CSV fields mean unavailable.",
+            "availability": "Known at retrieval; historical release availability is not reconstructed.",
+            "vintage": "Retrieval-time snapshot; source observations may be revised."
+          },
+          "DGS10": {
+            "title": "Market Yield on U.S. Treasury Securities at 10-Year Constant Maturity, Quoted on an Investment Basis",
+            "units": "Percent",
+            "frequency": "D",
+            "source": "FRED",
+            "source_url": "https://fred.stlouisfed.org/series/DGS10",
+            "last_updated": "2026-10-27 15:16:37-05",
+            "retrieved_at_utc": "2026-10-28T09:16:47.760560+00:00",
+            "transport": "FRED API; untransformed observations at source frequency",
+            "requested_start": null,
+            "requested_end": null,
+            "realtime_start": "2026-10-28",
+            "realtime_end": "2026-10-28",
+            "missing_policy": "No filling or date substitution; empty CSV fields mean unavailable.",
+            "availability": "Known at retrieval; historical release availability is not reconstructed.",
+            "vintage": "Retrieval-time snapshot; source observations may be revised."
+          },
+          "DGS30": {
+            "title": "Market Yield on U.S. Treasury Securities at 30-Year Constant Maturity, Quoted on an Investment Basis",
+            "units": "Percent",
+            "frequency": "D",
+            "source": "FRED",
+            "source_url": "https://fred.stlouisfed.org/series/DGS30",
+            "last_updated": "2026-10-27 15:16:36-05",
+            "retrieved_at_utc": "2026-10-28T09:16:47.760560+00:00",
+            "transport": "FRED API; untransformed observations at source frequency",
+            "requested_start": null,
+            "requested_end": null,
+            "realtime_start": "2026-10-28",
+            "realtime_end": "2026-10-28",
+            "missing_policy": "No filling or date substitution; empty CSV fields mean unavailable.",
+            "availability": "Known at retrieval; historical release availability is not reconstructed.",
+            "vintage": "Retrieval-time snapshot; source observations may be revised."
+          }
+        },
+        "missing_policy": "Complete common observation dates only; no fill, interpolation or averaging.",
+        "overlapping_windows": true,
+        "interpretation": "Descriptive overlapping historical scenarios, not independent event frequencies or forecast probabilities.",
+        "quantile_method": "linear interpolation (pandas default); marginal summaries only"
+      },
+      "previous_summary_bp": {
+        "DGS2": {
+          "minimum": -226.0,
+          "P10": -59.0,
+          "median": 1.0,
+          "P90": 61.1,
+          "maximum": 135.0
+        },
+        "DGS10": {
+          "minimum": -25.0,
+          "P10": -21.0,
+          "median": -2.0,
+          "P90": 20.0,
+          "maximum": 25.0
+        },
+        "DGS30": {
+          "minimum": -67.0,
+          "P10": -31.0,
+          "median": -2.0,
+          "P90": 26.0,
+          "maximum": 93.0
+        }
+      },
+      "corrected_summary_bp": {
+        "DGS2": {
+          "minimum": -259.0,
+          "P10": -59.0,
+          "median": 1.0,
+          "P90": 60.0,
+          "maximum": 135.0
+        },
+        "DGS10": {
+          "minimum": -25.0,
+          "P10": -21.0,
+          "median": -2.0,
+          "P90": 20.0,
+          "maximum": 25.0
+        },
+        "DGS30": {
+          "minimum": -76.0,
+          "P10": -31.0,
+          "median": -2.0,
+          "P90": 26.0,
+          "maximum": 93.0
+        }
+      },
+      "summary_change_bp": {
+        "DGS2": {
+          "minimum": -33.0,
+          "P10": 0.0,
+          "median": 0.0,
+          "P90": -1.1,
+          "maximum": 0.0
+        },
+        "DGS10": {
+          "minimum": 0.0,
+          "P10": 0.0,
+          "median": 0.0,
+          "P90": 0.0,
+          "maximum": 0.0
+        },
+        "DGS30": {
+          "minimum": -9.0,
+          "P10": 0.0,
+          "median": 0.0,
+          "P90": 0.0,
+          "maximum": 0.0
+        }
+      },
+      "latest_eligible_examples": [
+        {
+          "scenario_id": "UST_20260427_20261026",
+          "start_date": "2026-04-27T00:00:00.000",
+          "target_end_date": "2026-10-26T00:00:00.000",
+          "end_date": "2026-10-26T00:00:00.000",
+          "elapsed_days": 182,
+          "DGS2_change_bp": 90.0,
+          "DGS10_change_bp": 65.0,
+          "DGS30_change_bp": 37.0,
+          "target_start_date": "2026-04-26T00:00:00.000",
+          "shortfall_days": 1
+        },
+        {
+          "scenario_id": "UST_20260423_20261023",
+          "start_date": "2026-04-23T00:00:00.000",
+          "target_end_date": "2026-10-23T00:00:00.000",
+          "end_date": "2026-10-23T00:00:00.000",
+          "elapsed_days": 183,
+          "DGS2_change_bp": 86.0,
+          "DGS10_change_bp": 66.0,
+          "DGS30_change_bp": 41.0,
+          "target_start_date": "2026-04-23T00:00:00.000",
+          "shortfall_days": 0
+        },
+        {
+          "scenario_id": "UST_20260422_20261022",
+          "start_date": "2026-04-22T00:00:00.000",
+          "target_end_date": "2026-10-22T00:00:00.000",
+          "end_date": "2026-10-22T00:00:00.000",
+          "elapsed_days": 183,
+          "DGS2_change_bp": 86.0,
+          "DGS10_change_bp": 66.0,
+          "DGS30_change_bp": 39.0,
+          "target_start_date": "2026-04-22T00:00:00.000",
+          "shortfall_days": 0
+        }
+      ],
+      "latest_selected_examples": [
+        {
+          "scenario_id": "UST_20260120_20260717",
+          "start_date": "2026-01-20T00:00:00.000",
+          "target_end_date": "2026-07-17T00:00:00.000",
+          "end_date": "2026-07-17T00:00:00.000",
+          "elapsed_days": 178,
+          "DGS2_change_bp": 58.0,
+          "DGS10_change_bp": 25.0,
+          "DGS30_change_bp": 15.0,
+          "target_start_date": "2026-01-17T00:00:00.000",
+          "shortfall_days": 3
+        },
+        {
+          "scenario_id": "UST_20251226_20260626",
+          "start_date": "2025-12-26T00:00:00.000",
+          "target_end_date": "2026-06-26T00:00:00.000",
+          "end_date": "2026-06-26T00:00:00.000",
+          "elapsed_days": 182,
+          "DGS2_change_bp": 61.0,
+          "DGS10_change_bp": 24.0,
+          "DGS30_change_bp": 6.0,
+          "target_start_date": "2025-12-26T00:00:00.000",
+          "shortfall_days": 0
+        },
+        {
+          "scenario_id": "UST_20251110_20260508",
+          "start_date": "2025-11-10T00:00:00.000",
+          "target_end_date": "2026-05-08T00:00:00.000",
+          "end_date": "2026-05-08T00:00:00.000",
+          "elapsed_days": 179,
+          "DGS2_change_bp": 32.0,
+          "DGS10_change_bp": 25.0,
+          "DGS30_change_bp": 24.0,
+          "target_start_date": "2025-11-08T00:00:00.000",
+          "shortfall_days": 2
+        }
+      ],
+      "validated_eligible_vectors": 12295,
+      "validation": "Every eligible vector checked against first/last complete observations inside intended window; shortfall, horizon, units and exact conditioning subset checked"
+    }
+  },
+  "usage": {
+    "input": "Not available",
+    "output": "Not available",
+    "cached_input": "Not available",
+    "reasoning_output": "Not available",
+    "total": "Not available",
+    "correction_tokens": "Not available",
+    "stage_share_percent": "Not available",
+    "context_used_capacity_percent": "Not available",
+    "begin_account_allowances": "Not available",
+    "end_account_allowances": "Not available",
+    "begin_checkpoint_utc": "2026-10-30T05:00:41Z",
+    "reason": "No reliable session token, context occupancy/capacity or account allowance counters exposed",
+    "end_checkpoint_utc": "2026-10-30T05:07:04Z"
+  },
+  "verification": {
+    "focused_scenarios": {
+      "command": "poetry run python -m unittest discover -s tests -p test_scenarios.py -v",
+      "run": 17,
+      "failures": 0,
+      "errors": 0
+    },
+    "regression": {
+      "command": "poetry run python -m unittest discover -s tests -v",
+      "run": 65,
+      "failures": 0,
+      "errors": 0
+    },
+    "compile": {
+      "command": "poetry run python -m py_compile src/bondview/analysis/scenarios.py tests/test_scenarios.py tests/test_notebook.py",
+      "status": "PASS"
+    },
+    "whitespace": "git diff --check PASS",
+    "notebook": "Fresh offline kernel executes 1C from Treasury setup only; no A/B/KW inputs"
+  },
+  "publication": {
+    "implementation_commit": "a0356c7",
+    "task_pr": "https://github.com/lbk209/bondview-v3/pull/55",
+    "session_branch": "codex/session/261030_1309",
+    "final_pr": "https://github.com/lbk209/bondview-v3/pull/54",
+    "final_pr_policy": "Leave open and unmerged for user review"
+  }
+}

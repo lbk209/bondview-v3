@@ -73,24 +73,30 @@ whole vectors paired across compared exposures. Metadata retains conditions,
 units, source/retrieval provenance, counts, coverage and construction rules.
 This assignment does not calculate returns or risk.
 
-Monthly sampling starts at each calendar month's last **complete** common
-observation (including partial reference months); daily sampling starts at every
-complete date. Add the configured number of calendar months to the actual start,
-clipping the day at month end. Require the target to lie within complete
-reference coverage, then use the last complete observation on/before that target
-in the target month. Skip a window if that month has no qualifying observation.
-Missing rows are excluded explicitly; there is no filling, interpolation,
-averaging or substitution from another month. Long gaps can materially shorten
-an interval within its target month. `target_end_date`, actual dates and
-`elapsed_days` make the difference visible; horizon months are a selection
-convention, not an exact year fraction for future return calculations.
+Monthly intended ends start at the latest complete common observation inside
+reference bounds. Each next end is that **original anchor** minus one additional
+calendar month, avoiding iterative month-end drift. Daily intended ends use
+every complete common date in reverse chronological order. Subtract the chosen
+calendar-month horizon from each intended end (clipping the day at month end).
+Stop when the intended start precedes the earliest complete reference date.
 
-Optional reference bounds are inclusive. Their defaults are the first/last
-complete common dates. Metadata distinguishes requested and effective coverage,
-incomplete rows, immature targets, unmatched months, eligible windows and
-condition-matching scenarios. Stable IDs encode actual endpoints. Bp conversion
-rounds floating cancellation to 10 decimals, consistently with 1A. Conditioning
-bounds are inclusive; DGS2 and DGS10 are supported conditioning tenors.
+For each inclusive `common.loc[target_start:target_end]` slice, use its first and
+last complete observations as actual endpoints. Skip slices with fewer than two
+observations. Also reject a slice when `(target_end - target_start).days -
+(end_date - start_date).days > 7`. This checks the combined shortfall at both
+boundaries. No outside-window search, filling, interpolation, averaging or
+horizon normalization occurs; interior gaps alone do not invalidate a window.
+
+Optional reference bounds remain inclusive and default to complete common
+coverage. Metadata records the end-anchor convention/date, endpoint rule,
+seven-day maximum shortfall, effective coverage and counts of intended windows,
+insufficient observations, rejected shortfalls, eligible and selected windows.
+Existing result fields are retained, with `target_start_date` and
+`shortfall_days` appended for auditing alongside `target_end_date`, actual dates
+and elapsed days. Scenario rows now follow reverse intended-end order. Stable
+IDs continue to encode actual endpoints. Bp conversion and inclusive DGS2/DGS10
+conditioning are unchanged. Actual elapsed days, rather than the nominal month
+horizon, remain available for later return calculations.
 
 The primary result is the complete `ScenarioSet`; minimum/P10/median/P90/maximum
 are secondary marginal descriptive summaries using linear quantiles. The scatter
