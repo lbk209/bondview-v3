@@ -572,5 +572,12 @@
     },
     "whitespace": "git diff --check PASS",
     "notebook": "Fresh offline kernel executes 1C from Treasury setup only; no A/B/KW inputs"
+  },
+  "publication": {
+    "implementation_commit": "a0356c7",
+    "task_pr": "https://github.com/lbk209/bondview-v3/pull/55",
+    "session_branch": "codex/session/261030_1309",
+    "final_pr": "https://github.com/lbk209/bondview-v3/pull/54",
+    "final_pr_policy": "Leave open and unmerged for user review"
   }
 }

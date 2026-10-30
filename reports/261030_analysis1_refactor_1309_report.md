@@ -291,10 +291,11 @@ historical availability/vintages. No returns or risk calculations are included.
 | Baseline alignment | PASS | `8732c29` | [#51](https://github.com/lbk209/bondview-v3/pull/51), merged into session |
 | Facade/results | PASS | `2a06247` | [#52](https://github.com/lbk209/bondview-v3/pull/52), merged into session |
 | Conditional scenarios | PASS | `d876a80` | [#53](https://github.com/lbk209/bondview-v3/pull/53), verified and published into session review workflow |
+| Window correction | PASS | `a0356c7` | [#55](https://github.com/lbk209/bondview-v3/pull/55), published into the same session |
 
 All three output contracts and the targeted correction are satisfied. Source baseline remains fixed at
-`ee79747b25ad0f45dffa7c040823560415159890`. The final session-to-main PR is
-opened for user review and must remain unmerged. Its description and the final
+`ee79747b25ad0f45dffa7c040823560415159890`. The final session-to-main [PR #54](https://github.com/lbk209/bondview-v3/pull/54)
+is open for user review and must remain unmerged. Its description and the final
 response record the verified final PR and task-branch cleanup outcome after
 publication. Session branch deletion remains exclusively the user's decision.
 This report's PASS is implementation verification, not user acceptance or an
