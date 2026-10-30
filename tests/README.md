@@ -16,3 +16,6 @@ mocked or blocked; synthetic fixtures are not presented as market observations.
   presentation, including shared hover axes and configurable labels.
 - `test_notebook.py`: Current Treasury notebook syntax, explicit acquisition,
   offline execution, widget reruns, missing endpoints, and A/B independence.
+- `test_market.py`: Facade/direct-function numerical and chart equivalence,
+  stored result independence, display without financial recomputation, explicit
+  selections, and decomposition without running 1A.

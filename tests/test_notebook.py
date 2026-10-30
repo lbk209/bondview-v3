@@ -68,7 +68,7 @@ class NotebookTests(unittest.TestCase):
         c = next(i for i,c in enumerate(notebook.cells) if c.source.startswith('## C.'))
         b_code = '\n'.join(cell.source for cell in notebook.cells[b:c] if cell.cell_type == 'code')
         self.assertIn('kw_observations = fred.load(', b_code)
-        self.assertIn('show_kw_decomposition(kw_observations, *date_range.get_dates()', b_code)
+        self.assertIn('market.decomposition(kw_observations, *date_range.get_dates()', b_code)
         self.assertEqual(code.count('DateRangePicker('), 2)
 
     def test_offline_execution_and_independent_widget_reruns(self):
@@ -85,35 +85,35 @@ class NotebookTests(unittest.TestCase):
             a_cells = notebook.cells[:b]
             b_cells = notebook.cells[b:]
             plot = next(c.source for c in a_cells if c.source.startswith('history_figure ='))
-            analysis = next(c.source for c in a_cells if c.source.startswith('result ='))
+            analysis = next(c.source for c in a_cells if c.source.startswith('curve ='))
             notebook.cells = [network_guard(), *a_cells]
             def add(source):
                 notebook.cells.append(nbformat.v4.new_code_cell(source))
             add('''
 import pandas as pd
-assert result.change_bp.tolist() == [84, 116, 103, 32, -13]
-assert result.iloc[3].movement == "bear"
-assert result.iloc[4].slope == "flattening"
+assert curve.data.change_bp.tolist() == [84, 116, 103, 32, -13]
+assert curve.data.iloc[3].movement == "bear"
+assert curve.data.iloc[4].slope == "flattening"
 date_range.start_picker.value = date(2024, 10, 1)
 date_range.end_picker.value = date(2025, 1, 1)
 ''')
             add(plot)
             add('''
 assert list(history_figure.layout.xaxis.range) == ["2024-10-01", "2025-01-01"]
-assert result.attrs['start'] == '2024-09-16'
+assert curve.data.attrs['start'] == '2024-09-16'
 date_range.start_picker.value = date(2024, 9, 15)
 date_range.end_picker.value = date(2025, 1, 13)
 observations.loc[pd.Timestamp('2024-09-16'), 'DGS30'] = float('nan')
 ''')
             add(analysis)
             add('''
-assert pd.isna(result.loc['DGS30', 'change_bp'])
-assert result.loc['DGS10_DGS2', 'change_bp'] == 32
+assert pd.isna(curve.data.loc['DGS30', 'change_bp'])
+assert curve.data.loc['DGS10_DGS2', 'change_bp'] == 32
 assert list(history_figure.layout.xaxis.range) == ["2024-10-01", "2025-01-01"]
 ''')
             notebook.cells.extend(b_cells)
             add('''
-assert pd.isna(result.loc['DGS30', 'change_bp'])
+assert pd.isna(curve.data.loc['DGS30', 'change_bp'])
 assert 'anywidget' not in sys.modules
 ''')
             NotebookClient(notebook, timeout=90, kernel_name='python3').execute(cwd=temp)
