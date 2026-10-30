@@ -1,111 +1,128 @@
-# Analysis 1.A
+# Treasury market notebook
 
-Run `poetry install` and `poetry run jupyter lab` from the repository root, then
-open `analysis1_curve.ipynb` with that Poetry environment's Python kernel.
-Execute configuration, **A. Data → B. Date selection → C. Plot → D. Analysis**.
-After changing the two DatePickers, rerun C and D independently as needed. Each
-reads the current widget values directly. Rerunning B resets dates to loaded
-coverage. Plot zoom, pan and the range slider do not change the selected dates.
-The chart retains all loaded observations, initially viewing the selected range.
+Use the Poetry Python kernel with `analysis1_treasury_market.ipynb`.
+The older `analysis1_curve.ipynb` is a historical notebook, not the current API.
 
-`DATA_MODE = "download"` retrieves and saves DGS2/DGS10/DGS30. Credential order
-is explicit `api_key` → `FRED_API_KEY` environment variable → root `.env`.
-Without a key, these known daily Percent series use FRED's public graph CSV.
-Other series use the keyed API with their native units and frequency; requests
-use `units="lin"` and never impose a common frequency. Network failures raise
-an error; there is no synthetic fallback. `DATA_MODE = "file"` loads `DATA_PATH`
-without network, credentials or `.env` access.
+The optional Download section retrieves observations in memory; `fred.save()`
+explicitly persists them. Skip that section when snapshots already exist.
+`FredDataManager` loads the latest `ID_YYYYMMDD.csv` per requested ID offline,
+with flat per-ID provenance and original units/frequency. Retrieval dates are
+UTC snapshot dates, not historical availability dates. No synthetic fallback,
+interpolation or missing-yield filling is performed. Save trims external missing
+padding, preserves internal gaps, and refuses to overwrite existing snapshots.
 
-The default `data/fred/treasury_yields.csv` is ignored by Git. Keep custom caches
-and credentials outside Git. No dependency changes or `anywidget` are required.
+## Analyses 1A and 1B
 
-## Self-contained CSV
+Import the `market` module directly. Each analysis receives its own observations;
+there is no `TreasuryMarketAnalysis` instance or shared observations state.
 
-`FredDataManager(path, env_path=..., series_ids=...)` manages `download`, `load`,
-`save`, `validate`, `report`, and the explicit `load_or_download(mode, ...)`
-workflow. `manager.metadata` is an independent defensive copy of provenance;
-it survives loss or alteration of `manager.observations.attrs`. Saving and
-reporting use that independent metadata. A compatibility metadata copy remains
-in returned DataFrames' attrs. The standalone `save_observations(frame, path,
-metadata=...)`, `load_observations(path)` and `download_fred(...)` also remain
-available. Financial and plotting functions accept explicit `metadata=` when
-DataFrame attrs have been lost.
+```python
+from bondview import market
 
-The CSV has comment headers (`# key: JSON-encoded value`) followed by `date` and
-series columns. Observation persistence is CSV, with no metadata sidecar. The
-header encoding supports nested per-series attributes and escaped punctuation
-without changing their content. Required metadata is source, a timezone-aware
-retrieval timestamp, and per-series units/frequency. Optional downloaded
-metadata includes source URLs, transport, request dates, API series title,
-last-updated and realtime bounds, and retrieval-vintage limitations.
+# 1A: inspect history, then select analysis dates.
+curve_analysis = market.curve(observations)
+curve_analysis.show_history()
+curve_analysis.analyze(start, end, yield_change_tolerance_bp=5,
+                       slope_tolerance_bp=5, formatted=True)
 
-Minimal **synthetic example**, not downloaded market data:
+# The underlying numerical DataFrame is retained without recalculation.
+numerical_curve = curve_analysis.result
 
-```csv
-# format: "bondview.fred_observations.csv.v1"
-# source: "Synthetic documentation example"
-# retrieved_at_utc: "2026-10-26T00:00:00+00:00"
-# series: {"DGS2": {"units": "Percent", "frequency": "D"}, "DGS10": {"units": "Percent", "frequency": "D"}, "DGS30": {"units": "Percent", "frequency": "D"}}
-date,DGS2,DGS10,DGS30
-2024-09-16,4.0,4.5,
+# Or obtain numerical data without the formatted display.
+numerical_curve = curve_analysis.analyze(start, end, formatted=False)
+
+# 1B: keep date selection at calculation time; cumulative changes start
+# at the first eligible observation within the selected interval.
+yield_decomposition = market.decomposition(kw_observations, start, end)
+yield_decomposition.show(width=1300, height=600)
+numerical_paths = yield_decomposition.paths
 ```
 
-An empty numeric field means missing, never zero. Dates must be unique calendar
-dates; values must be finite numbers or missing. Saving uses original numeric
-precision and loading uses a round-trip float parser. Bare CSVs, duplicate dates
-or series, malformed rows and absent measurement metadata are rejected. Shared
-storage can outer-align series with different source frequencies without filling
-or resampling; the per-series frequency is retained. Analysis 1.A separately
-requires daily Percent DGS2/DGS10/DGS30 observations.
+Date widgets supply explicit selections on each rerun. In 1A, `show_history()`
+initially plots the available history; optional start/end arguments restrict
+that plot. `analyze()` calculates the selected date interval and stores the
+numerical DataFrame in `curve_analysis.result`. With `formatted=True` (default),
+it displays the existing formatted movement table and interpretation; with
+`formatted=False`, it returns the numerical DataFrame without displaying it.
+A later successful call replaces the stored result; a failed calculation does
+not replace it. 1A does not require an additional `CurveResult` wrapper.
+1B keeps its existing `DecompositionResult`, selected-interval calculation and
+`.show()` presentation; it does not depend on 1A.
 
-The former JSON cache format is intentionally no longer accepted. Set download
-mode once to create a CSV. To preserve an existing historical snapshot without
-retrieval, explicitly extract its `observations` into a dated DataFrame, retain
-its `metadata`, and call `save_observations(frame, csv_path, metadata=metadata)`.
-Do not rename a JSON cache to `.csv`; generic old files without frequency need
-explicit source-frequency information. Existing committed historical evidence
-is retained unchanged.
+Direct functions remain available: `analyze_curve`, `analyze_kw_decomposition`,
+`plot_yield_history`, `show_yield_history`, `plot_kw_comparison`,
+`show_kw_decomposition`, `display_table`, `interpret_curve`, `show_curve_results`.
+Curve levels are percent, spread levels and changes are bp. KW fitted yields,
+expected-rate components and premiums are model estimates; changes are bp.
+Configurable presentation labels remain in `src/bondview/config/labels.yaml`.
 
-Retrieval snapshots do not reconstruct historical releases or vintages.
-Observation dates are not publication dates. No filling, interpolation, unit
-conversion or nearby-date substitution is applied to observations.
+Run `poetry run python -m unittest discover -s tests -v`; see
+[`tests/README.md`](../tests/README.md) for coverage. Existing tests may require
+API migration because the old facade and `CurveResult` were deliberately removed.
+Fresh Jupyter kernels require local socket access.
 
-## Structured calculations and configurable presentation
+## Analysis 1C — conditional historical scenarios
 
-`analyze_curve(observations, start, end, slope_tolerance_bp=0.0)` returns numeric
-columns `start`, `end`, `change_bp`, `level_unit` and stable identifiers. Row IDs
-are `DGS2`, `DGS10`, `DGS30`, `DGS10_DGS2`, `DGS30_DGS10`. `configuration_start`,
-`configuration_end`, `movement`, `slope`, `short_direction` and `long_direction`
-are categorical IDs (`unavailable` for missing classifications,
-`not_applicable` where appropriate). These replace the baseline's display-text
-row names and combined text fields intentionally. Selected dates and tolerance
-remain in result attrs. Source provenance is managed independently by `fred`.
+After the shared Treasury load/setup, C runs independently of A and B. It needs
+only DGS2/DGS10/DGS30 daily Percent observations and their per-ID metadata.
 
-`display_table`, `interpret_curve`, `show_curve_results` live in
-`bondview.presentation.treasury_curve`, separate from financial logic.
-`plot_yield_history(data, start, end)` returns an ordinary Plotly `Figure`;
-`show_yield_history` displays and returns it. Both dates are explicit, including
-same-day selections. No callback or shared mutable selection state exists.
+```python
+yield_scenarios = market.scenarios(
+    observations,
+    condition_tenor="DGS10", lower_bp=-25, upper_bp=25,
+    horizon_months=6, sampling_step_observations=1,
+    reference_start=None, reference_end=None,
+)
+joint_scenarios = yield_scenarios.scenarios
+metadata = yield_scenarios.metadata
+statistics_bp = yield_scenarios.summary()
+yield_scenarios.show_summary()
+yield_scenarios.show_plot()
+```
 
-User-facing measure names, classification terminology, headings, interpretation
-templates, plot labels, widget descriptions and provenance-report wording are
-in `config/labels.yaml`. Presentation functions read it on each call, so edits
-apply on cell reruns without reimporting or recalculating. Python callers may
-supply `labels_path=`. Slope tolerance is exclusively a Python argument, never
-YAML configuration. Use the source/editable Poetry installation for this
-repository-based notebook workflow.
+For independent numerical use, import
+`ScenarioSet, build_conditional_scenarios` from `bondview.analysis.scenarios`.
+`build_conditional_scenarios(observations, ...)` takes the same configuration
+and returns the same `ScenarioSet` without the facade or visualization imports.
+Future analyses can iterate each row's `scenario_id`, `start_date`, `end_date`,
+`elapsed_days`, `DGS2_change_bp`, `DGS10_change_bp`, `DGS30_change_bp`, keeping
+whole vectors paired across compared exposures. Metadata retains conditions,
+units, source/retrieval provenance, counts, coverage and construction rules.
+This assignment does not calculate returns or risk.
 
-Yield levels are %, spread levels and all changes bp (0.01 percentage point =
-1 bp). All five rows retain available endpoints even if changes are missing.
-The slope tolerance is inclusive and applies only to slope, never to underlying
-yield directions. Only equal tenor changes are parallel. Floating cancellation
-is rounded to 10 decimal places in bp; source observations retain their numeric
-precision. Default display conventions and numerical behavior match PR #36.
+Candidate endpoints are complete Treasury observation dates whose calendar-month
+horizon fits within the selected reference history. Sort them oldest to newest,
+then select positions 1, 1 + step, 1 + 2 × step, etc., before conditioning.
+`sampling_step_observations=1` is the default in both public entry points.
+Step 5 counts five complete observations, approximately a trading week; step 20
+is approximately a trading month. Neither means a fixed number of calendar days.
+The former `sampling` parameter is removed, with no compatibility alias.
 
-These are historical net endpoint movements, not the full path, macroeconomic
-causes, forecasts, or realized ETF returns. ETF price effects require compatible
-duration and other product characteristics.
+The chronological anchor is the earliest candidate supporting the horizon.
+Appending later complete observations preserves previously sampled endpoints
+and vectors if earlier history is unchanged. Changing the starting reference
+history or horizon can change the candidate sequence and sampling alignment.
+Results retain reverse chronological endpoint order for presentation.
 
-Run `poetry run python -m unittest discover -s tests -v`. Tests include two
-fresh notebook kernels with download transport fixtures or offline files and
-blocked `anywidget` imports. Jupyter kernels require local socket access.
+Subtract `horizon_months` calendar months from each sampled end, clipping at
+month end. Use the first/last complete observations inside the inclusive slice
+`common.loc[target_start:target_end]`. Skip fewer than two observations or a
+combined shortfall over seven days: `(target_end - target_start).days -
+(end_date - start_date).days > 7`. No outside searching, filling, interpolation,
+resampling or horizon normalization occurs. Interior gaps alone do not invalidate
+a window. One-, three- and six-month horizons are independent of observation step.
+
+Reference bounds remain inclusive and default to complete common coverage.
+Metadata records the positive integer step, earliest-candidate anchor/convention,
+candidate and sampled endpoint counts, intended windows, eligibility exclusions,
+selected scenarios and provenance. `target_start_date`, `target_end_date`,
+`shortfall_days`, actual dates and elapsed days retain their meanings. Actual-date
+IDs, rounding and inclusive DGS2/DGS10 conditioning are unchanged.
+
+The primary result is the complete `ScenarioSet`; minimum/P10/median/P90/maximum
+are secondary marginal descriptive summaries using linear quantiles. The scatter
+shows Δ2Y vs Δ30Y colored by Δ10Y, or Δ10Y vs Δ30Y colored by Δ2Y. Hover retains
+actual historical dates and elapsed days. Overlapping observations are dependent;
+counts and quantiles are not independent-event frequencies or forecasts. Empty
+selections retain a usable typed schema, NaN summaries and an empty chart.
+No complete reference observations instead raises a clear input error.

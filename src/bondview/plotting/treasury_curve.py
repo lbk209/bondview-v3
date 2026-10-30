@@ -194,4 +194,3 @@ def plot_yield_history(data, start, end, *, labels_path=None, metadata=None):
 def show_yield_history(data, start, end, *, labels_path=None, metadata=None):
     figure = plot_yield_history(data, start, end, labels_path=labels_path, metadata=metadata)
     figure.show()
-    return figure

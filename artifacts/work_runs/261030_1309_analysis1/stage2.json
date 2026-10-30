@@ -1,0 +1,9 @@
+{
+  "stage": 2,
+  "status": "PASS",
+  "focused_tests": {"command": "poetry run python -m unittest discover -s tests -p test_market.py -v", "run": 3, "failures": 0, "errors": 0},
+  "regression_tests": {"command": "poetry run python -m unittest discover -s tests -v", "run": 47, "failures": 0, "errors": 0},
+  "verified": ["Direct-function numerical equivalence", "History and combined KW chart JSON equivalence", "Display does not recalculate", "1B without 1A", "Offline notebook reruns", "Modified Python compilation", "Whitespace check"],
+  "financial_function_changes": false,
+  "usage": "Not available: no reliable token, context or account counters exposed"
+}
