@@ -190,6 +190,25 @@ Evidence: [stage3.json](../artifacts/work_runs/261030_1309_analysis1/stage3.json
 Stage 2 publication: commit `2a06247`, [PR #52](https://github.com/lbk209/bondview-v3/pull/52),
 merged as `b57ddaf`; remote/local task branches deleted and verified by Git.
 
+## Publication and completion
+
+| Stage | Status | Implementation/test commit | Task PR |
+|---|---|---|---|
+| Baseline alignment | PASS | `8732c29` | [#51](https://github.com/lbk209/bondview-v3/pull/51), merged into session |
+| Facade/results | PASS | `2a06247` | [#52](https://github.com/lbk209/bondview-v3/pull/52), merged into session |
+| Conditional scenarios | PASS | `d876a80` | [#53](https://github.com/lbk209/bondview-v3/pull/53), verified and published into session review workflow |
+
+All three output contracts are satisfied. Source baseline remains fixed at
+`ee79747b25ad0f45dffa7c040823560415159890`. The final session-to-main PR is
+opened for user review and must remain unmerged. Its description and the final
+response record the verified final PR and task-branch cleanup outcome after
+publication. Session branch deletion remains exclusively the user's decision.
+This report's PASS is implementation verification, not user acceptance or an
+independent financial review. Final notebook cleanup was followed by a focused
+rerun: **3 notebook tests PASS**; the focused scenario suite also passed after
+adding a default-reference row-count invariant. Existing 1A/1B numerical,
+presentation, plotting and FRED production modules remain unchanged from baseline.
+
 ## Token usage and account allowances
 
 No reliable session token counters, context occupancy/capacity, or account
@@ -216,6 +235,6 @@ Stage 1/2/3 consumption and each stage's percentage of assignment total:
 The available tool inventory was inspected for usage/context/account counters;
 no applicable measurement interface was exposed. Goal bookkeeping is not a
 session/account usage counter and was not used to fabricate statistics.
-End-of-assignment allowance reporting checkpoint: 2026-10-30 13:18:45 Asia/Seoul
-(04:18:45 UTC). Five-hour, weekly and other allowance percentages: **Not available**.
+End-of-assignment allowance reporting checkpoint: 2026-10-30 13:21:18 Asia/Seoul
+(04:21:18 UTC). Five-hour, weekly and other allowance percentages: **Not available**.
 This timestamp records an availability check, not a successful measurement.

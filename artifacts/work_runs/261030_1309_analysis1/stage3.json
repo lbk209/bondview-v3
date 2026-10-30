@@ -55,5 +55,15 @@
     "context_used_capacity_percent": "Not available",
     "account_allowances_begin_end": "Not available",
     "reason": "No reliable session token, context or account usage counters exposed"
+  },
+  "publication": {
+    "implementation_commit": "d876a80",
+    "task_pr": "https://github.com/lbk209/bondview-v3/pull/53"
+  },
+  "final_notebook_cleanup_check": {
+    "command": "poetry run python -m unittest discover -s tests -p test_notebook.py -v",
+    "run": 3,
+    "failures": 0,
+    "errors": 0
   }
 }
