@@ -53,7 +53,7 @@ only DGS2/DGS10/DGS30 daily Percent observations and their per-ID metadata.
 ```python
 scenarios = market.scenarios(
     condition_tenor="DGS10", lower_bp=-25, upper_bp=25,
-    horizon_months=6, sampling="monthly",
+    horizon_months=6, sampling_step_observations=1,
     reference_start=None, reference_end=None,
 )
 joint_scenarios = scenarios.scenarios
@@ -73,30 +73,34 @@ whole vectors paired across compared exposures. Metadata retains conditions,
 units, source/retrieval provenance, counts, coverage and construction rules.
 This assignment does not calculate returns or risk.
 
-Monthly intended ends start at the latest complete common observation inside
-reference bounds. Each next end is that **original anchor** minus one additional
-calendar month, avoiding iterative month-end drift. Daily intended ends use
-every complete common date in reverse chronological order. Subtract the chosen
-calendar-month horizon from each intended end (clipping the day at month end).
-Stop when the intended start precedes the earliest complete reference date.
+Candidate endpoints are complete Treasury observation dates whose calendar-month
+horizon fits within the selected reference history. Sort them oldest to newest,
+then select positions 1, 1 + step, 1 + 2 × step, etc., before conditioning.
+`sampling_step_observations=1` is the default in both public entry points.
+Step 5 counts five complete observations, approximately a trading week; step 20
+is approximately a trading month. Neither means a fixed number of calendar days.
+The former `sampling` parameter is removed, with no compatibility alias.
 
-For each inclusive `common.loc[target_start:target_end]` slice, use its first and
-last complete observations as actual endpoints. Skip slices with fewer than two
-observations. Also reject a slice when `(target_end - target_start).days -
-(end_date - start_date).days > 7`. This checks the combined shortfall at both
-boundaries. No outside-window search, filling, interpolation, averaging or
-horizon normalization occurs; interior gaps alone do not invalidate a window.
+The chronological anchor is the earliest candidate supporting the horizon.
+Appending later complete observations preserves previously sampled endpoints
+and vectors if earlier history is unchanged. Changing the starting reference
+history or horizon can change the candidate sequence and sampling alignment.
+Results retain reverse chronological endpoint order for presentation.
 
-Optional reference bounds remain inclusive and default to complete common
-coverage. Metadata records the end-anchor convention/date, endpoint rule,
-seven-day maximum shortfall, effective coverage and counts of intended windows,
-insufficient observations, rejected shortfalls, eligible and selected windows.
-Existing result fields are retained, with `target_start_date` and
-`shortfall_days` appended for auditing alongside `target_end_date`, actual dates
-and elapsed days. Scenario rows now follow reverse intended-end order. Stable
-IDs continue to encode actual endpoints. Bp conversion and inclusive DGS2/DGS10
-conditioning are unchanged. Actual elapsed days, rather than the nominal month
-horizon, remain available for later return calculations.
+Subtract `horizon_months` calendar months from each sampled end, clipping at
+month end. Use the first/last complete observations inside the inclusive slice
+`common.loc[target_start:target_end]`. Skip fewer than two observations or a
+combined shortfall over seven days: `(target_end - target_start).days -
+(end_date - start_date).days > 7`. No outside searching, filling, interpolation,
+resampling or horizon normalization occurs. Interior gaps alone do not invalidate
+a window. One-, three- and six-month horizons are independent of observation step.
+
+Reference bounds remain inclusive and default to complete common coverage.
+Metadata records the positive integer step, earliest-candidate anchor/convention,
+candidate and sampled endpoint counts, intended windows, eligibility exclusions,
+selected scenarios and provenance. `target_start_date`, `target_end_date`,
+`shortfall_days`, actual dates and elapsed days retain their meanings. Actual-date
+IDs, rounding and inclusive DGS2/DGS10 conditioning are unchanged.
 
 The primary result is the complete `ScenarioSet`; minimum/P10/median/P90/maximum
 are secondary marginal descriptive summaries using linear quantiles. The scatter

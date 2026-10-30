@@ -52,7 +52,7 @@ Evidence: [stage2.json](../artifacts/work_runs/261030_1309_analysis1/stage2.json
 Stage 1 publication: commit `8732c29`, [PR #51](https://github.com/lbk209/bondview-v3/pull/51),
 merged as `2f7ae6a`; remote/local task branches deleted and verified by Git.
 
-## Stage 3 — PASS (with window-construction correction below)
+## Stage 3 — PASS (with subsequent window and observation-step updates below)
 
 Implemented `build_conditional_scenarios()` and independent `ScenarioSet` in
 `bondview.analysis.scenarios`. Added `market.scenarios(...)`, `summary()`,
@@ -64,30 +64,31 @@ Analysis 3 risk calculations were added. No new dependencies were needed.
 
 ### Construction and assumptions
 
-The original start-anchored construction in `c973def` is superseded by the
-user's explicit correction assignment. The current method is:
+The current API uses `sampling_step_observations=1` in both public entry
+points. The former `sampling` argument and modes are removed without aliases.
+The horizon remains measured in calendar months. The current method is:
 
 1. Validate daily Percent Treasury inputs and retain dates complete for DGS2,
    DGS10 and DGS30 within inclusive reference bounds. Defaults are the first/last
-   complete common dates. Never fill, interpolate or average yields.
-2. For monthly sampling, anchor the newest intended end at the latest complete
-   observation. Each older end is the **original anchor minus an integer number
-   of calendar months**; do not recursively shift clipped dates or use month-end
-   observations as independent anchors. For daily sampling, use every complete
-   observation date as an intended end, in reverse chronological order.
-3. Intended start = intended end minus the calendar-month horizon, clipping at
-   month ends. Stop before intended starts precede complete reference history.
-4. Slice `common.loc[target_start:target_end]` inclusively. Skip fewer than two
-   complete observations; otherwise use the slice's first/last actual dates.
-   Never search outside the intended interval. Interior gaps are acceptable.
+   complete common dates. Never fill, interpolate, resample or average yields.
+2. Candidate ends are complete dates satisfying
+   `end - DateOffset(months=horizon_months) >= first_common_date`, in ascending
+   chronological order. The first candidate anchors sampling.
+3. Select every Nth candidate from that oldest candidate, before conditioning or
+   window eligibility exclusions. N is the positive integer observation step;
+   it counts complete observation dates, not calendar days. Appending later
+   observations preserves prior selections if earlier history is unchanged.
+4. For each sampled end, intended start = end minus the calendar-month horizon,
+   with month-end clipping. Slice `common.loc[target_start:target_end]`
+   inclusively; skip fewer than two complete observations and use the first/last
+   actual dates. Never search outside the window. Interior gaps are acceptable.
 5. Combined shortfall = intended elapsed days minus actual elapsed days. Accept
-   shortfalls of seven days or less; reject greater shortfalls. This safeguards
-   both boundaries without interpolation or horizon normalization.
-6. Subtract those same actual start/end yields for all three tenors and multiply
-   percent-point differences by 100 to obtain bp. Round floating cancellation to
-   10 decimals in bp, consistently with 1A. Keep original actual-date IDs.
-7. Apply the unchanged inclusive bounds to DGS2 or DGS10 and keep entire matching
-   joint vectors. All outputs follow newest intended end first.
+   seven days or less; reject greater shortfalls without horizon normalization.
+6. Subtract those same actual start/end yields for all three tenors, multiply
+   percent-point differences by 100 and round floating cancellation to 10 bp
+   decimals, as before. Keep actual-date IDs and all existing result columns.
+7. Apply unchanged inclusive DGS2/DGS10 bounds to complete joint vectors. Return
+   newest intended endpoints first for compatibility with result presentation.
 
 The hand-checkable synthetic January 31 → July 31, 2024 vector remains
 `(20, -25, 50)` bp with 182 elapsed days and exact 10Y condition [-25, -25].
@@ -110,11 +111,12 @@ These fixtures are not market observations.
 
 `ScenarioSet.metadata` holds schema/type, factor identity, input/output units,
 condition and inclusive bounds, horizon, end-anchor/target/endpoint rules,
-latest anchor, seven-day maximum shortfall, requested/effective reference dates,
+earliest-candidate anchor and positive integer step, seven-day maximum shortfall, requested/effective reference dates,
 missing-data rule, per-ID source/retrieval provenance, overlap/interpretation and
 quantile convention. Counts distinguish reference rows, complete dates, excluded
-incomplete rows, intended windows, insufficient-observation exclusions,
-shortfall exclusions, eligible windows and selected rows. The obsolete
+incomplete rows, candidate/sample endpoint counts, intended windows,
+insufficient-observation exclusions, shortfall exclusions, eligible windows and
+selected rows. The obsolete
 start-anchor and unmatched-month metadata fields are intentionally replaced.
 Provenance is copied defensively from input; no point-in-time data is invented.
 IDs deliberately stay stable across filters/sampling/source revisions for the
@@ -126,7 +128,7 @@ Independent downstream use needs no facade or plotting:
 from bondview.analysis.scenarios import build_conditional_scenarios
 scenario_set = build_conditional_scenarios(
     observations, condition_tenor="DGS10", lower_bp=-25, upper_bp=25,
-    horizon_months=6, sampling="monthly",
+    horizon_months=6, sampling_step_observations=1,
 )
 joint_vectors = scenario_set.scenarios
 construction_and_sources = scenario_set.metadata
@@ -151,7 +153,9 @@ empty chart. No complete reference data raises an explicit error.
 Moved Treasury loading into shared setup. C executes from that setup alone;
 B uses its own `kw_date_range` selector and explicit KW inputs. Removed
 unimplemented KW-conditioned scenario placeholders: KW is not a scenario input.
-Notebook code outputs are cleared; no large saved display payload is committed.
+The initial implementation cleared outputs. The user's subsequent notebook
+review commit `1cf74c8` retains A/B display outputs; those cells and outputs are
+preserved. Only affected C outputs are cleared for the new sampling default.
 
 ### Initial implementation evidence (before correction)
 
@@ -192,7 +196,7 @@ Evidence: [stage3.json](../artifacts/work_runs/261030_1309_analysis1/stage3.json
 Stage 2 publication: commit `2a06247`, [PR #52](https://github.com/lbk209/bondview-v3/pull/52),
 merged as `b57ddaf`; remote/local task branches deleted and verified by Git.
 
-## Historical-window correction — PASS
+## Historical-window correction — PASS (PR #55 checkpoint)
 
 Continued PR #54 in the same session branch after fetching/pruning remote refs
 and verifying its open state and head `c973def553e6b89c3adbe56bba10e75c1f70e4ba`.
@@ -201,7 +205,10 @@ This is a targeted correction to window construction, not a new Analysis 1C.
 The original main baseline remains recorded above; correction implementation
 is based on the verified session revision, not restarted from main.
 
-The revised algorithm is specified under Construction above. `ScenarioSet`,
+At this checkpoint, monthly ends moved backward from the latest complete date
+and daily ends used all complete dates, newest first. Both used inclusive slices
+and the seven-day shortfall rule. The observation-step update below replaces
+those sampling schedules while retaining the window logic. `ScenarioSet`,
 `TreasuryMarketAnalysis.scenarios()` and `build_conditional_scenarios()` public
 signatures are unchanged, as are actual-date ID formatting, actual dates,
 elapsed days, joint bp columns, quantiles and scatter mappings. Existing columns
@@ -280,9 +287,103 @@ Windows overlap, so counts and quantiles remain descriptive, not independent
 frequencies or forecast probabilities. Up to seven days of actual shortening
 is allowed; no yield/horizon normalization is performed. Incomplete or sparse
 history can exclude windows, while interior gaps alone do not invalidate them.
-Reference end changes deliberately change the monthly original anchor and can
-change the selected sample. Snapshots are retrieval-time data, not reconstructed
+At this checkpoint, reference end changes altered the monthly original anchor.
+The observation-step update below removes that latest-date sampling dependency. Snapshots are retrieval-time data, not reconstructed
 historical availability/vintages. No returns or risk calculations are included.
+
+## Numerical observation-step sampling — PASS
+
+Continued the clean current PR #54 session at
+`1cf74c85e95dcd7fb2284ff799bd237aa3b42a7d`, verified against live remote refs.
+That revision includes the user's committed notebook review. Task branch:
+`codex/task/261030_1626_observation_steps`.
+
+Both public entry points now default to `sampling_step_observations=1` and no
+longer accept the old `sampling` argument. Positive integers, including NumPy
+integer scalars, are accepted; zero/negative, fractional/integral floats,
+booleans, strings, missing/nonfinite values and invalid containers are rejected
+with a clear message. No aliases or additional sampling settings were added.
+
+The chronological rule is described under Construction above. Positional
+selection uses `take(range(0, count, step))`, equivalent to `[::step]`, avoiding
+pandas frequency-multiplication overflow for very large valid integer steps.
+Candidate count and sampled count are recorded before window rejection and
+conditioning. An empty candidate sequence has a null sampling anchor and the
+unchanged typed empty result schema.
+
+### Files and necessary presentation compatibility change
+
+| Files | Direct purpose |
+|---|---|
+| `src/bondview/analysis/scenarios.py`, `src/bondview/market.py` | New API, positive-integer validation, chronological positional sampling, metadata |
+| `src/bondview/presentation/scenarios.py` | One formatter argument changed to the new metadata key |
+| `src/bondview/config/labels.yaml` | Summary wording and observation-step explanation |
+| `tests/test_scenarios.py`, `tests/test_notebook.py`, `tests/README.md` | Sampling/window verification and current notebook expectations |
+| `notebooks/analysis1_treasury_market.ipynb`, `notebooks/README.md` | New parameter/default and usage guidance; C outputs cleared |
+| This report and `observation_steps_1626.json` | Durable verification/publication evidence |
+
+**Documented scope exception:** the old summary presenter accessed
+`info["sampling"]` directly. Removing that metadata key makes `show_summary()`
+fail unless the formatter reads `info["sampling_step_observations"]`. Only that
+argument is changed; formatting, summary calculations and scatter Python remain
+unchanged. No compatibility metadata alias is introduced.
+
+The notebook's reviewed A/B cells and outputs, shared setup and non-C code are
+preserved. C retains the user's DataFrame display and direct `show_summary()`
+style. Tests now inspect `scenarios.summary()` rather than require the removed
+notebook variable `scenario_summary`; the output/shape checks remain. No
+unrelated tests, financial calculations, FRED modules, architecture/workflow
+files or dependencies changed. Existing IDs, dates, elapsed/shortfall fields,
+all columns/order, bounds, rounding, source provenance and result methods remain.
+
+### Verification
+
+- **21 focused scenario tests PASS**. They verify both defaults, no old parameter,
+  complete step-1 endpoints, hand-checked previous daily vectors/order, positions
+  1/6/11/... for step 5, the same rule for step 20, gaps counted as observations,
+  append stability, sampling before conditioning/eligibility, independent 1/3/6
+  month horizons, leap/month ends, invalid steps, unchanged inclusive slices and
+  shortfall, schemas, units, ID/provenance, summaries and plot mappings.
+- **3 focused notebook tests PASS**, including a fresh C-only kernel with no
+  A/B/KW execution and rerun with step 5. Full notebook fixture execution checks
+  missing Treasury endpoints and empty scenarios without changing cache files.
+- **69 full regression tests PASS**. Modified Python modules/tests compile;
+  `git diff --check` passes. No unresolved relevant failures or blockers remain.
+- The new test for extremely large positive integer steps exposed a pandas
+  frequency overflow in direct slicing. Positional `take` fixed it without
+  restricting the accepted positive integer domain; focused/full suites passed
+  afterward. No financial behavior was changed to satisfy tests.
+
+### Exact equivalence and cached-history examples
+
+Both the previous implementation loaded from `1cf74c8` with its daily mode and
+the new default were executed against the same synthetic fixture and unchanged
+Treasury snapshots. **Exact DataFrame equality** verifies every result column,
+ID, actual/intended date, yield change, elapsed/shortfall value and row order.
+Marginal summary equality, source provenance and reference metadata also pass.
+Snapshot SHA-256 hashes match the PR #55 evidence. For six-month 10Y changes
+in [-25, +25] bp, step 1 reproduces **3,282 / 12,295** exactly.
+
+| Observation step | Candidate endpoints | Sampled endpoints / eligible windows | Condition-selected scenarios |
+|---|---|---|---|
+| 1 | 12,295 | 12,295 | 3,282 |
+| 5 | 12,295 | 2,459 | 649 |
+| 20 | 12,295 | 615 | 161 |
+
+All cached sampled windows meet the endpoint safeguard. For each step, the
+conditional output was verified as the exact step-1 subset at that step's
+candidate positions, not as every Nth qualifying scenario. The anchor is the
+first complete endpoint supporting the horizon; full metadata, first sampled
+candidate dates, summaries and representative selected rows are retained in
+[observation_steps_1626.json](../artifacts/work_runs/261030_1309_analysis1/observation_steps_1626.json).
+Earlier evidence files remain unchanged as historical checkpoints.
+
+Observation steps are approximate trading-week/month spacings, not calendar
+intervals or independence adjustments. Earlier reference-history revisions,
+start-bound changes or changed horizons can change alignment; appending later
+unchanged-prefix history cannot. Counts/quantiles remain descriptive, and the
+seven-day shortening allowance is unchanged. There are no unresolved deviations
+beyond the documented necessary summary formatter argument change.
 
 ## Publication and completion
 
@@ -292,8 +393,9 @@ historical availability/vintages. No returns or risk calculations are included.
 | Facade/results | PASS | `2a06247` | [#52](https://github.com/lbk209/bondview-v3/pull/52), merged into session |
 | Conditional scenarios | PASS | `d876a80` | [#53](https://github.com/lbk209/bondview-v3/pull/53), verified and published into session review workflow |
 | Window correction | PASS | `a0356c7` | [#55](https://github.com/lbk209/bondview-v3/pull/55), published into the same session |
+| Observation steps | PASS | `a0b963f` | [#56](https://github.com/lbk209/bondview-v3/pull/56), published into the same session |
 
-All three output contracts and the targeted correction are satisfied. Source baseline remains fixed at
+All three output contracts, the window correction and the observation-step update are satisfied. Source baseline remains fixed at
 `ee79747b25ad0f45dffa7c040823560415159890`. The final session-to-main [PR #54](https://github.com/lbk209/bondview-v3/pull/54)
 is open for user review and must remain unmerged. Its description and the final
 response record the verified final PR and task-branch cleanup outcome after
@@ -346,3 +448,9 @@ Correction end reporting checkpoint: 2026-10-30 14:07:04 Asia/Seoul
 (05:07:04 UTC). Token/context figures and beginning/end account allowance
 percentages remain **Not available**; these checkpoints record availability
 checks, not successful measurements.
+
+Observation-step assignment usage checkpoint: 2026-10-30 16:26:39–16:33:47
+Asia/Seoul (07:26:39–07:33:47 UTC). No reliable input/output/cached/reasoning/total
+or per-stage token counts, context occupancy/capacity or account allowance
+counters are exposed. These statistics and attribution percentages are
+**Not available**; no estimates or token-to-allowance inference were made.

@@ -13,7 +13,7 @@ def show_scenario_summary(result, *, labels_path=None):
     description = text["summary"].format(
         tenor=labels["common"]["tenors"][condition["tenor"]],
         lower=condition["lower_bp"], upper=condition["upper_bp"],
-        months=info["horizon_months"], sampling=info["sampling"],
+        months=info["horizon_months"], sampling_step_observations=info["sampling_step_observations"],
         start=info["reference"]["effective_start"], end=info["reference"]["effective_end"],
         selected=info["counts"]["selected_scenarios"], eligible=info["counts"]["eligible_windows"],
     )
