@@ -20,11 +20,14 @@ mocked or blocked; synthetic fixtures are not presented as market observations.
   stored result independence, display without financial recomputation, explicit
   selections, and decomposition without running 1A.
 - `test_scenarios.py`: Analysis 1C inclusive conditioning, complete same-interval
-  percent-to-bp vectors, calendar-month/leap-year endpoints, monthly/daily
-  sampling, missing-month exclusions, actual elapsed days, reference bounds,
+  percent-to-bp vectors, backward monthly anchors without month-end drift,
+  calendar/leap-year horizons, reverse daily sampling, inclusive in-window
+  endpoints, missing boundary/interior dates, seven-day combined shortfall
+  acceptance/rejection, insufficient observations, elapsed days and reference bounds,
   stable IDs, provenance, empty/singleton sets, hand-calculated quantiles, both
   scatter mappings, calculation-free display, and use without plotting imports.
-  An independent endpoint-enumeration oracle checks the selected vectors.
+  Hand-specified monthly target dates and independent in-window date enumeration
+  check the selected vectors.
 
 The notebook module also executes 1C in a fresh kernel using only Treasury
 setup, without A, B or KW snapshots, including both conditioning tenors.

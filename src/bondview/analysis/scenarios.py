@@ -1,12 +1,11 @@
 """Observed conditional joint Treasury changes, independent of KW and plotting.
 
-Monthly starts are the last complete observation in each calendar month;
-daily starts are every complete observation. Add calendar months to the actual
-start (day clipped by pandas at month end). A matured target must be within the
-effective reference history. Match the last complete date on/before that target
-in its calendar month, or skip the window if no such date exists. No values are
-filled. Partial/incomplete months and gaps can shorten or exclude intervals;
-actual endpoints, target dates, elapsed days and exclusions remain inspectable.
+Monthly intended ends move backward by integer calendar months from the latest
+complete observation; daily intended ends are all complete dates, newest first.
+Subtract the horizon from each intended end and take the first/last complete
+observations inside that inclusive slice. Skip slices with fewer than two rows
+or a combined endpoint shortfall greater than seven days. Never search outside
+the intended window or fill yields; retain actual and intended dates for audit.
 """
 
 from copy import deepcopy
@@ -19,9 +18,10 @@ import pandas as pd
 from bondview.data.fred import SERIES, exact_date, validate_treasury_observations
 
 CHANGE_COLUMNS = tuple(f"{s}_change_bp" for s in SERIES)
-ENDPOINT_CONVENTION = "last_complete_on_or_before_target_in_target_month"
-START_CONVENTIONS = {"monthly": "last_complete_observation_per_calendar_month",
-                     "daily": "every_complete_observation"}
+MAX_SHORTFALL_DAYS = 7
+ENDPOINT_CONVENTION = "first_and_last_complete_observations_inside_inclusive_window"
+END_CONVENTIONS = {"monthly": "latest_complete_date_minus_integer_calendar_months",
+                   "daily": "every_complete_observation_reverse_chronological"}
 
 
 @dataclass
@@ -65,6 +65,8 @@ def _empty_scenarios():
         "end_date": pd.Series(dtype="datetime64[ns]"),
         "elapsed_days": pd.Series(dtype="int64"),
         **{column: pd.Series(dtype="float64") for column in CHANGE_COLUMNS},
+        "target_start_date": pd.Series(dtype="datetime64[ns]"),
+        "shortfall_days": pd.Series(dtype="int64"),
     })
 
 
@@ -86,7 +88,7 @@ def build_conditional_scenarios(
         raise ValueError("Bounds must be finite numerical bp values with lower_bp <= upper_bp.")
     if isinstance(horizon_months, bool) or not isinstance(horizon_months, Integral) or horizon_months <= 0:
         raise ValueError("horizon_months must be a positive integer calendar-month horizon.")
-    if sampling not in START_CONVENTIONS:
+    if sampling not in END_CONVENTIONS:
         raise ValueError("sampling must be monthly or daily.")
     horizon_months = int(horizon_months)
     data = validate_treasury_observations(observations, metadata)
@@ -104,28 +106,36 @@ def build_conditional_scenarios(
     if complete.empty:
         raise ValueError("No complete DGS2/DGS10/DGS30 observations in the reference history.")
     dates = complete.index
-    starts = (dates if sampling == "daily" else
-              dates.to_series().groupby(dates.to_period("M")).last().array)
+    latest = dates[-1]
+    month_count = (latest.year - dates[0].year) * 12 + latest.month - dates[0].month + 1
+    ends = (dates[::-1] if sampling == "daily" else
+            (latest - pd.DateOffset(months=n) for n in range(month_count)))
     rows = []
-    immature = unmatched = 0
-    for start in starts:
-        target = start + pd.DateOffset(months=horizon_months)
-        if target > dates[-1]:
-            immature += 1
+    intended_windows = insufficient = shortened = 0
+    for target_end in ends:
+        target_start = target_end - pd.DateOffset(months=horizon_months)
+        if target_start < dates[0]:
+            break
+        intended_windows += 1
+        window = complete.loc[target_start:target_end]
+        if len(window) < 2:
+            insufficient += 1
             continue
-        position = dates.searchsorted(target, side="right") - 1
-        end = dates[position]
-        if end.to_period("M") != target.to_period("M"):
-            unmatched += 1
+        start, end = window.index[0], window.index[-1]
+        elapsed_days = (end - start).days
+        shortfall_days = (target_end - target_start).days - elapsed_days
+        if shortfall_days > MAX_SHORTFALL_DAYS:
+            shortened += 1
             continue
         # Round floating cancellation below source quotation precision only,
         # consistently with Analysis 1A; no display rounding enters conditioning.
-        changes = ((complete.loc[end] - complete.loc[start]) * 100).round(10)
+        changes = ((window.iloc[-1] - window.iloc[0]) * 100).round(10)
         rows.append({
             "scenario_id": f"UST_{start:%Y%m%d}_{end:%Y%m%d}",
-            "start_date": start, "target_end_date": target, "end_date": end,
-            "elapsed_days": (end - start).days,
+            "start_date": start, "target_end_date": target_end, "end_date": end,
+            "elapsed_days": elapsed_days,
             **{column: float(changes[s]) for s, column in zip(SERIES, CHANGE_COLUMNS)},
+            "target_start_date": target_start, "shortfall_days": shortfall_days,
         })
     eligible = pd.DataFrame(rows) if rows else _empty_scenarios()
     condition = eligible[f"{condition_tenor}_change_bp"]
@@ -137,9 +147,12 @@ def build_conditional_scenarios(
         "condition": {"tenor": condition_tenor, "lower_bp": float(lower_bp),
                       "upper_bp": float(upper_bp), "inclusive": True},
         "horizon_months": horizon_months, "sampling": sampling,
-        "start_convention": START_CONVENTIONS[sampling],
+        "end_convention": END_CONVENTIONS[sampling],
+        "sampling_anchor": str(latest.date()),
+        "window_order": "reverse_chronological_intended_end",
         "endpoint_convention": ENDPOINT_CONVENTION,
-        "target_convention": "actual_start_plus_calendar_months_clipped_at_month_end",
+        "target_convention": "intended_end_minus_calendar_month_horizon_clipped_at_month_end",
+        "max_shortfall_days": MAX_SHORTFALL_DAYS,
         "reference": {
             "requested_start": str(requested_start.date()) if requested_start is not None else None,
             "requested_end": str(requested_end.date()) if requested_end is not None else None,
@@ -148,8 +161,9 @@ def build_conditional_scenarios(
         "counts": {
             "reference_rows": len(selected), "complete_observations": len(complete),
             "incomplete_rows_excluded": len(selected) - len(complete),
-            "sampled_starts": len(starts), "immature_targets_excluded": immature,
-            "unmatched_target_months_excluded": unmatched,
+            "intended_windows": intended_windows,
+            "insufficient_observations_excluded": insufficient,
+            "shortfall_excluded": shortened,
             "eligible_windows": len(eligible), "selected_scenarios": len(scenarios),
         },
         "provenance": {s: deepcopy(data.attrs["metadata"][s]) for s in SERIES},
