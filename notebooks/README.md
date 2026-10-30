@@ -13,25 +13,41 @@ padding, preserves internal gaps, and refuses to overwrite existing snapshots.
 
 ## Analyses 1A and 1B
 
-```python
-from bondview import TreasuryMarketAnalysis
-market = TreasuryMarketAnalysis(observations)
-market.show_history(start, end)
-curve = market.curve(start, end, yield_change_tolerance_bp=5, slope_tolerance_bp=5)
-curve.show()
-numerical_curve = curve.data
+Import the `market` module directly. Each analysis receives its own observations;
+there is no `TreasuryMarketAnalysis` instance or shared observations state.
 
-decomposition = market.decomposition(kw_observations, start, end)
-decomposition.show(width=1300, height=600)
-numerical_paths = decomposition.paths
+```python
+from bondview import market
+
+# 1A: inspect history, then select analysis dates.
+curve_analysis = market.curve(observations)
+curve_analysis.show_history()
+curve_analysis.analyze(start, end, yield_change_tolerance_bp=5,
+                       slope_tolerance_bp=5, formatted=True)
+
+# The underlying numerical DataFrame is retained without recalculation.
+numerical_curve = curve_analysis.result
+
+# Or obtain numerical data without the formatted display.
+numerical_curve = curve_analysis.analyze(start, end, formatted=False)
+
+# 1B: keep date selection at calculation time; cumulative changes start
+# at the first eligible observation within the selected interval.
+yield_decomposition = market.decomposition(kw_observations, start, end)
+yield_decomposition.show(width=1300, height=600)
+numerical_paths = yield_decomposition.paths
 ```
 
-Date widgets supply explicit selections on each rerun. Results keep their own
-calculated outputs; changing widgets or source data does not change previous
-results. Display calls never recalculate financial results. No current-result
-or selection state is stored by the facade. 1B takes explicit KW observations
-and does not require a 1A computation. Its chart retains the baseline combined
-2Y/10Y layout and hover behavior.
+Date widgets supply explicit selections on each rerun. In 1A, `show_history()`
+initially plots the available history; optional start/end arguments restrict
+that plot. `analyze()` calculates the selected date interval and stores the
+numerical DataFrame in `curve_analysis.result`. With `formatted=True` (default),
+it displays the existing formatted movement table and interpretation; with
+`formatted=False`, it returns the numerical DataFrame without displaying it.
+A later successful call replaces the stored result; a failed calculation does
+not replace it. 1A does not require an additional `CurveResult` wrapper.
+1B keeps its existing `DecompositionResult`, selected-interval calculation and
+`.show()` presentation; it does not depend on 1A.
 
 Direct functions remain available: `analyze_curve`, `analyze_kw_decomposition`,
 `plot_yield_history`, `show_yield_history`, `plot_kw_comparison`,
@@ -41,8 +57,8 @@ expected-rate components and premiums are model estimates; changes are bp.
 Configurable presentation labels remain in `src/bondview/config/labels.yaml`.
 
 Run `poetry run python -m unittest discover -s tests -v`; see
-[`tests/README.md`](../tests/README.md) for coverage. Tests use deterministic
-synthetic inputs and block normal notebook network/credential access.
+[`tests/README.md`](../tests/README.md) for coverage. Existing tests may require
+API migration because the old facade and `CurveResult` were deliberately removed.
 Fresh Jupyter kernels require local socket access.
 
 ## Analysis 1C — conditional historical scenarios
@@ -51,16 +67,17 @@ After the shared Treasury load/setup, C runs independently of A and B. It needs
 only DGS2/DGS10/DGS30 daily Percent observations and their per-ID metadata.
 
 ```python
-scenarios = market.scenarios(
+yield_scenarios = market.scenarios(
+    observations,
     condition_tenor="DGS10", lower_bp=-25, upper_bp=25,
     horizon_months=6, sampling_step_observations=1,
     reference_start=None, reference_end=None,
 )
-joint_scenarios = scenarios.scenarios
-metadata = scenarios.metadata
-statistics_bp = scenarios.summary()
-scenarios.show_summary()
-scenarios.show_plot()
+joint_scenarios = yield_scenarios.scenarios
+metadata = yield_scenarios.metadata
+statistics_bp = yield_scenarios.summary()
+yield_scenarios.show_summary()
+yield_scenarios.show_plot()
 ```
 
 For independent numerical use, import

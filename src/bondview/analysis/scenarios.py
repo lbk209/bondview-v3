@@ -47,12 +47,11 @@ class ScenarioSet:
 
         return show_scenario_summary(self, labels_path=labels_path)
 
-    def show_plot(self, *, labels_path=None):
+    def show_plot(self, *, labels_path=None, width=600, height=600):
         from bondview.plotting.scenarios import plot_scenarios
 
-        figure = plot_scenarios(self, labels_path=labels_path)
+        figure = plot_scenarios(self, labels_path=labels_path, width=width, height=height)
         figure.show()
-        return figure
 
 
 def _empty_scenarios():
