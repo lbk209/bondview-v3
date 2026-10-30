@@ -1,11 +1,11 @@
 """Observed conditional joint Treasury changes, independent of KW and plotting.
 
-Monthly intended ends move backward by integer calendar months from the latest
-complete observation; daily intended ends are all complete dates, newest first.
-Subtract the horizon from each intended end and take the first/last complete
-observations inside that inclusive slice. Skip slices with fewer than two rows
-or a combined endpoint shortfall greater than seven days. Never search outside
-the intended window or fill yields; retain actual and intended dates for audit.
+Candidate ends are complete dates supporting the calendar-month horizon, in
+ascending order. Sample every Nth candidate from the first candidate before
+conditioning, then return newest endpoints first. The first/last complete
+observations inside each inclusive calendar window define the joint change.
+Skip slices with fewer than two rows or combined endpoint shortfall over seven
+days. Never search outside the intended window or fill yields.
 """
 
 from copy import deepcopy
@@ -20,8 +20,6 @@ from bondview.data.fred import SERIES, exact_date, validate_treasury_observation
 CHANGE_COLUMNS = tuple(f"{s}_change_bp" for s in SERIES)
 MAX_SHORTFALL_DAYS = 7
 ENDPOINT_CONVENTION = "first_and_last_complete_observations_inside_inclusive_window"
-END_CONVENTIONS = {"monthly": "latest_complete_date_minus_integer_calendar_months",
-                   "daily": "every_complete_observation_reverse_chronological"}
 
 
 @dataclass
@@ -72,7 +70,7 @@ def _empty_scenarios():
 
 def build_conditional_scenarios(
     observations, *, condition_tenor, lower_bp, upper_bp, horizon_months=6,
-    sampling="monthly", reference_start=None, reference_end=None, metadata=None,
+    sampling_step_observations=1, reference_start=None, reference_end=None, metadata=None,
 ) -> ScenarioSet:
     """Select complete same-interval vectors under inclusive bp bounds.
 
@@ -88,9 +86,12 @@ def build_conditional_scenarios(
         raise ValueError("Bounds must be finite numerical bp values with lower_bp <= upper_bp.")
     if isinstance(horizon_months, bool) or not isinstance(horizon_months, Integral) or horizon_months <= 0:
         raise ValueError("horizon_months must be a positive integer calendar-month horizon.")
-    if sampling not in END_CONVENTIONS:
-        raise ValueError("sampling must be monthly or daily.")
+    if (isinstance(sampling_step_observations, bool)
+            or not isinstance(sampling_step_observations, Integral)
+            or sampling_step_observations <= 0):
+        raise ValueError("sampling_step_observations must be a positive integer observation count.")
     horizon_months = int(horizon_months)
+    sampling_step_observations = int(sampling_step_observations)
     data = validate_treasury_observations(observations, metadata)
     requested_start = exact_date(reference_start) if reference_start is not None else None
     requested_end = exact_date(reference_end) if reference_end is not None else None
@@ -106,16 +107,13 @@ def build_conditional_scenarios(
     if complete.empty:
         raise ValueError("No complete DGS2/DGS10/DGS30 observations in the reference history.")
     dates = complete.index
-    latest = dates[-1]
-    month_count = (latest.year - dates[0].year) * 12 + latest.month - dates[0].month + 1
-    ends = (dates[::-1] if sampling == "daily" else
-            (latest - pd.DateOffset(months=n) for n in range(month_count)))
+    candidate_ends = dates[(dates - pd.DateOffset(months=horizon_months)) >= dates[0]]
+    # Positional selection also accepts steps beyond pandas frequency limits.
+    sampled_ends = candidate_ends.take(range(0, len(candidate_ends), sampling_step_observations))
     rows = []
     intended_windows = insufficient = shortened = 0
-    for target_end in ends:
+    for target_end in sampled_ends[::-1]:
         target_start = target_end - pd.DateOffset(months=horizon_months)
-        if target_start < dates[0]:
-            break
         intended_windows += 1
         window = complete.loc[target_start:target_end]
         if len(window) < 2:
@@ -146,9 +144,11 @@ def build_conditional_scenarios(
         "factors": list(SERIES), "input_units": "Percent", "change_units": "bp",
         "condition": {"tenor": condition_tenor, "lower_bp": float(lower_bp),
                       "upper_bp": float(upper_bp), "inclusive": True},
-        "horizon_months": horizon_months, "sampling": sampling,
-        "end_convention": END_CONVENTIONS[sampling],
-        "sampling_anchor": str(latest.date()),
+        "horizon_months": horizon_months,
+        "sampling_step_observations": sampling_step_observations,
+        "end_convention": "every_nth_candidate_complete_observation_from_oldest",
+        "sampling_anchor_convention": "earliest_complete_date_supporting_calendar_month_horizon",
+        "sampling_anchor": str(candidate_ends[0].date()) if len(candidate_ends) else None,
         "window_order": "reverse_chronological_intended_end",
         "endpoint_convention": ENDPOINT_CONVENTION,
         "target_convention": "intended_end_minus_calendar_month_horizon_clipped_at_month_end",
@@ -161,6 +161,7 @@ def build_conditional_scenarios(
         "counts": {
             "reference_rows": len(selected), "complete_observations": len(complete),
             "incomplete_rows_excluded": len(selected) - len(complete),
+            "candidate_endpoints": len(candidate_ends), "sampled_endpoints": len(sampled_ends),
             "intended_windows": intended_windows,
             "insufficient_observations_excluded": insufficient,
             "shortfall_excluded": shortened,

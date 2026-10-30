@@ -1,6 +1,7 @@
 """Analysis 1C calendar alignment, paired arithmetic, metadata and presentation."""
 
 from copy import deepcopy
+import inspect
 import json
 import subprocess
 import sys
@@ -60,76 +61,116 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual(row.elapsed_days, 182)
         np.testing.assert_allclose(row[list(CHANGE_COLUMNS)].astype(float), [20, -25, 50])
         self.assertEqual(result.metadata['horizon_months'], 6)
-        self.assertEqual(result.metadata['sampling'], 'monthly')
+        self.assertEqual(result.metadata['sampling_step_observations'], 1)
         self.assertEqual(result.metadata['max_shortfall_days'], 7)
         self.assertEqual(result.metadata['condition'], {'tenor':'DGS10', 'lower_bp':-25., 'upper_bp':-25., 'inclusive':True})
         pd.testing.assert_frame_equal(data, before)
         self.assertTrue(build(data, lower_bp=-24.999, upper_bp=-24.999).scenarios.empty)
         self.assertIn('not independent', result.metadata['interpretation'])
 
-    def test_monthly_sequence_uses_original_latest_anchor_not_month_ends(self):
-        data = dated_frame(pd.bdate_range('2026-01-01', '2026-10-26'))
-        result = build(data)
+    def test_public_defaults_and_removed_sampling_parameter(self):
+        for function in (build_conditional_scenarios, TreasuryMarketAnalysis.scenarios):
+            params = inspect.signature(function).parameters
+            self.assertEqual(params['sampling_step_observations'].default, 1)
+            self.assertNotIn('sampling', params)
+        direct = build()
+        explicit = build(sampling_step_observations=1)
+        facade = TreasuryMarketAnalysis(scenario_frame()).scenarios(
+            condition_tenor='DGS10', lower_bp=-1000, upper_bp=1000)
+        pd.testing.assert_frame_equal(direct.scenarios, explicit.scenarios)
+        pd.testing.assert_frame_equal(direct.scenarios, facade.scenarios)
+
+    def test_step_one_preserves_hand_checked_previous_daily_vectors_and_order(self):
+        data = dated_frame(['2024-01-31', '2024-02-29', '2024-07-31',
+                            '2024-08-29', '2024-08-30', '2024-09-30'],
+                           [[4.1,4.6,5.1], [4.2,4.7,5.2], [4.3,4.35,5.6],
+                            [4.4,4.8,5.1], [4.5,4.95,5.4], [4.6,4.9,5.3]])
+        result = build(data, lower_bp=-25, upper_bp=25)
         rows = result.scenarios
-        self.assertEqual(rows.target_end_date.tolist(), list(pd.to_datetime(
-            ['2026-10-26', '2026-09-26', '2026-08-26', '2026-07-26'])))
-        self.assertEqual(rows.target_start_date.tolist(), list(pd.to_datetime(
-            ['2026-04-26', '2026-03-26', '2026-02-26', '2026-01-26'])))
-        self.assertEqual(rows.start_date.tolist(), list(pd.to_datetime(
-            ['2026-04-27', '2026-03-26', '2026-02-26', '2026-01-26'])))
-        self.assertEqual(rows.end_date.tolist(), list(pd.to_datetime(
-            ['2026-10-26', '2026-09-25', '2026-08-26', '2026-07-24'])))
-        self.assertEqual(result.metadata['sampling_anchor'], '2026-10-26')
-        self.assertEqual(result.metadata['counts']['intended_windows'], 4)
-        self.assertEqual(result.metadata['end_convention'], 'latest_complete_date_minus_integer_calendar_months')
+        self.assertEqual(rows.scenario_id.tolist(), ['UST_20240229_20240830',
+                         'UST_20240229_20240829', 'UST_20240131_20240731'])
+        np.testing.assert_allclose(rows[list(CHANGE_COLUMNS)], [[30,25,20], [20,10,-10], [20,-25,50]])
+        self.assertEqual(rows.start_date.tolist(), list(pd.to_datetime(['2024-02-29', '2024-02-29', '2024-01-31'])))
+        self.assertEqual(rows.end_date.tolist(), list(pd.to_datetime(['2024-08-30', '2024-08-29', '2024-07-31'])))
+        self.assertEqual(rows.shortfall_days.tolist(), [0,0,0])
+        self.assertEqual(result.metadata['sampling_anchor'], '2024-07-31')
+        self.assertNotIn('sampling', result.metadata)
+        self.assertTrue(rows.end_date.is_monotonic_decreasing)
 
-    def test_six_calendar_months_clip_leap_years_without_anchor_drift(self):
+    def test_steps_five_twenty_count_complete_candidates_from_oldest(self):
+        data = scenario_frame()
+        data.loc['2024-07-03', 'DGS10'] = np.nan
+        data.loc['2024-07-04'] = np.nan
+        candidates = data.dropna().index[data.dropna().index >= pd.Timestamp('2024-07-01')]
+        for step, second in ((5, '2024-07-10'), (20, '2024-07-31')):
+            with self.subTest(step=step):
+                result = build(data, sampling_step_observations=step)
+                expected = candidates[::step][::-1]
+                self.assertEqual(result.scenarios.target_end_date.tolist(), list(expected))
+                oldest = result.scenarios.iloc[::-1]
+                self.assertEqual(oldest.iloc[0].target_end_date, pd.Timestamp('2024-07-01'))
+                self.assertEqual(oldest.iloc[1].target_end_date, pd.Timestamp(second))
+                self.assertEqual(result.metadata['sampling_anchor'], '2024-07-01')
+                counts = result.metadata['counts']
+                self.assertEqual(counts['candidate_endpoints'], len(candidates))
+                self.assertEqual(counts['sampled_endpoints'], len(expected))
+                self.assertEqual(counts['intended_windows'], len(expected))
+        self.assertNotEqual((pd.Timestamp('2024-07-10') - pd.Timestamp('2024-07-01')).days, 5)
+
+    def test_later_observations_preserve_previously_sampled_endpoints_and_vectors(self):
+        before_data = scenario_frame()
+        extended = dated_frame(pd.bdate_range('2024-01-01', '2025-01-31'))
+        for step in (1, 5, 20):
+            before = build(before_data, sampling_step_observations=step)
+            after = build(extended, sampling_step_observations=step)
+            previous = after.scenarios.loc[after.scenarios.target_end_date <= before_data.index[-1]].reset_index(drop=True)
+            pd.testing.assert_frame_equal(before.scenarios, previous)
+            self.assertEqual(before.metadata['sampling_anchor'], after.metadata['sampling_anchor'])
+
+    def test_sampling_precedes_conditioning(self):
+        data = dated_frame(pd.bdate_range('2024-01-01', '2024-04-30'))
+        data['DGS10'] = 4 + np.arange(len(data)) % 7 * .1
+        all_sampled = build(data, horizon_months=1, sampling_step_observations=5)
+        result = build(data, horizon_months=1, sampling_step_observations=5, lower_bp=-5, upper_bp=5)
+        expected = all_sampled.scenarios.loc[all_sampled.scenarios.DGS10_change_bp.between(-5,5)].reset_index(drop=True)
+        pd.testing.assert_frame_equal(result.scenarios, expected)
+        # This fixture distinguishes endpoint sampling from sampling qualifying rows.
+        qualifying = build(data, horizon_months=1, lower_bp=-5, upper_bp=5).scenarios
+        wrong = qualifying.iloc[::-1].iloc[::5].iloc[::-1].reset_index(drop=True)
+        self.assertNotEqual(result.scenarios.scenario_id.tolist(), wrong.scenario_id.tolist())
+
+    def test_horizons_one_three_six_are_independent_of_step(self):
+        data = scenario_frame()
+        for horizon, first in ((1, '2024-02-01'), (3, '2024-04-01'), (6, '2024-07-01')):
+            candidates = data.index[data.index >= pd.Timestamp(first)]
+            for step in (1, 5, 20):
+                with self.subTest(horizon=horizon, step=step):
+                    result = build(data, horizon_months=horizon, sampling_step_observations=step)
+                    self.assertEqual(result.scenarios.target_end_date.tolist(), list(candidates[::step][::-1]))
+                    for row in result.scenarios.itertuples():
+                        self.assertEqual(row.target_start_date, row.target_end_date - pd.DateOffset(months=horizon))
+
+    def test_six_calendar_months_handle_month_ends_and_leap_years(self):
         for year, feb_end in ((2024, '2024-02-29'), (2025, '2025-02-28')):
-            with self.subTest(year=year):
-                result = build(dated_frame(pd.bdate_range(f'{year}-01-01', f'{year}-12-31')))
-                rows = result.scenarios
-                # Each end is offset from December 31, so November's clipping
-                # must not cause October or August to drift to the 30th.
-                self.assertEqual(rows.target_end_date.dt.day.tolist(), [31, 30, 31, 30, 31, 31])
-                august = rows.loc[rows.target_end_date == pd.Timestamp(f'{year}-08-31')].iloc[0]
-                self.assertEqual(august.target_start_date, pd.Timestamp(feb_end))
-                self.assertEqual(august.start_date, pd.Timestamp(feb_end))
-                self.assertEqual(august.target_end_date - august.target_start_date,
-                                 pd.Timedelta(days=184))
-
-    def test_combined_shortfall_boundary_and_no_outside_search(self):
-        for start, accepted in (('2026-03-29', True), ('2026-03-30', False)):
-            with self.subTest(actual_start=start):
-                # Second intended window: March 26 to September 26.
-                # Nearby dates outside either boundary must remain excluded.
-                data = dated_frame(['2026-03-20', '2026-03-25', start,
-                                    '2026-09-22', '2026-09-27', '2026-10-26'])
-                result = build(data)
-                rows = result.scenarios
-                self.assertEqual(len(rows), int(accepted))
-                self.assertEqual(result.metadata['counts']['shortfall_excluded'], 1 if accepted else 2)
-                if accepted:
-                    row = rows.iloc[0]
-                    self.assertEqual((row.start_date, row.end_date),
-                                     (pd.Timestamp(start), pd.Timestamp('2026-09-22')))
-                    self.assertEqual(row.shortfall_days, 7)  # Three + four days.
-                    self.assertEqual(row.target_start_date, pd.Timestamp('2026-03-26'))
-                    self.assertEqual(row.target_end_date, pd.Timestamp('2026-09-26'))
-                    for sampling in ('daily', 'monthly'):
-                        other = build(data, sampling=sampling)
-                        self.assertTrue((other.scenarios.shortfall_days <= 7).all())
+            data = dated_frame(pd.date_range(f'{year}-01-01', f'{year}-12-31'))
+            result = build(data)
+            august = result.scenarios.loc[result.scenarios.target_end_date == pd.Timestamp(f'{year}-08-31')].iloc[0]
+            self.assertEqual(august.target_start_date, pd.Timestamp(feb_end))
+            self.assertEqual(august.start_date, pd.Timestamp(feb_end))
+            self.assertEqual(august.end_date, pd.Timestamp(f'{year}-08-31'))
+            self.assertEqual(august.elapsed_days, 184)
 
     def test_boundary_missing_yields_use_only_complete_inside_dates(self):
-        data = dated_frame(pd.bdate_range('2026-01-01', '2026-10-26'))
-        # For the second monthly window March 26 to September 26,
-        # reject incomplete March 26 and September 25 endpoints.
-        data.loc['2026-03-26', 'DGS2'] = np.nan
-        data.loc['2026-09-25', 'DGS30'] = np.nan
+        data = scenario_frame()
+        data.loc['2024-07-01', 'DGS2'] = np.nan
+        data.loc['2024-12-30', 'DGS30'] = np.nan
         result = build(data)
-        row = result.scenarios.iloc[1]
-        self.assertEqual(row.start_date, pd.Timestamp('2026-03-27'))
-        self.assertEqual(row.end_date, pd.Timestamp('2026-09-24'))
-        self.assertEqual(row.shortfall_days, 3)
+        row = result.scenarios.iloc[0]
+        self.assertEqual(row.target_start_date, pd.Timestamp('2024-06-30'))
+        self.assertEqual(row.start_date, pd.Timestamp('2024-07-02'))
+        self.assertEqual(row.end_date, pd.Timestamp('2024-12-31'))
+        self.assertEqual(row.shortfall_days, 2)
+        self.assertFalse((result.scenarios.target_end_date == pd.Timestamp('2024-12-30')).any())
         self.assertEqual(result.metadata['counts']['incomplete_rows_excluded'], 2)
         self.assertFalse(result.scenarios[list(CHANGE_COLUMNS)].isna().any().any())
 
@@ -142,45 +183,29 @@ class ScenarioTests(unittest.TestCase):
         pd.testing.assert_frame_equal(before.scenarios, result.scenarios)
         self.assertEqual(result.metadata['counts']['incomplete_rows_excluded'], 2)
 
-    def test_daily_uses_every_complete_end_newest_first_and_same_safeguard(self):
-        data = scenario_frame()
-        data.loc['2024-12-30', 'DGS2'] = np.nan
-        result = build(data, sampling='daily')
-        common_ends = data.dropna().index
-        expected_ends = [d for d in common_ends[::-1]
-                         if d - pd.DateOffset(months=6) >= common_ends[0]]
-        self.assertEqual(result.scenarios.target_end_date.tolist(), expected_ends)
-        self.assertEqual(result.scenarios.end_date.tolist(), expected_ends)
-        self.assertTrue((result.scenarios.shortfall_days <= 7).all())
-        self.assertTrue(result.scenarios.target_end_date.is_monotonic_decreasing)
-        self.assertGreater(len(result.scenarios), len(build(data).scenarios))
-        # A daily end remains excluded when its only in-window start is 19 days late.
-        sparse = dated_frame(['2026-01-01', '2026-05-15', '2026-10-26'])
-        self.assertTrue(build(sparse, sampling='daily').scenarios.empty)
-        self.assertGreater(build(sparse, sampling='daily').metadata['counts']['shortfall_excluded'], 0)
-
-    def test_daily_accepts_seven_day_start_shortfall_but_rejects_eight(self):
+    def test_seven_day_shortfall_accepted_eight_rejected_without_outside_search(self):
         for first_inside, expected in (('2026-05-03', 1), ('2026-05-04', 0)):
             with self.subTest(first_inside=first_inside):
                 data = dated_frame(['2026-01-01', '2026-04-25', first_inside, '2026-10-26'])
-                result = build(data, sampling='daily')
+                result = build(data)
                 self.assertEqual(len(result.scenarios), expected)
                 if expected:
-                    self.assertEqual(result.scenarios.iloc[0].shortfall_days, 7)
-                    self.assertEqual(result.scenarios.iloc[0].start_date, pd.Timestamp(first_inside))
+                    row = result.scenarios.iloc[0]
+                    self.assertEqual(row.shortfall_days, 7)
+                    self.assertEqual(row.start_date, pd.Timestamp(first_inside))
+                    self.assertEqual(row.target_start_date, pd.Timestamp('2026-04-26'))
+                    self.assertEqual(row.end_date, pd.Timestamp('2026-10-26'))
+                else:
+                    self.assertEqual(result.metadata['counts']['shortfall_excluded'], 1)
 
     def test_every_vector_matches_independent_inside_window_enumeration(self):
         data = scenario_frame()
-        monthly_ends = pd.to_datetime(['2024-12-31', '2024-11-30', '2024-10-31',
-                                       '2024-09-30', '2024-08-31', '2024-07-31'])
-        for sampling in ('daily', 'monthly'):
-            result = build(data, condition_tenor='DGS2', lower_bp=36.4, upper_bp=36.6, sampling=sampling)
-            ends = data.index[::-1] if sampling == 'daily' else monthly_ends
+        for step in (1, 5, 20):
+            result = build(data, condition_tenor='DGS2', lower_bp=36.4, upper_bp=36.6, sampling_step_observations=step)
+            ends = data.index[data.index >= pd.Timestamp('2024-07-01')][::step][::-1]
             expected = []
             for end in ends:
                 start = end - pd.DateOffset(months=6)
-                if start < data.index[0]:
-                    continue
                 inside = [d for d in data.index if start <= d <= end]
                 if len(inside) < 2:
                     continue
@@ -196,32 +221,44 @@ class ScenarioTests(unittest.TestCase):
                 self.assertEqual((row.start_date, row.end_date), (first, last))
                 np.testing.assert_allclose([getattr(row,c) for c in CHANGE_COLUMNS], changes, atol=1e-10)
 
-    def test_insufficient_windows_excluded_and_count_accounting(self):
-        data = dated_frame(['2025-12-01', '2026-01-01', '2026-08-01'])
-        result = build(data)
-        counts = result.metadata['counts']
-        self.assertTrue(result.scenarios.empty)
-        self.assertEqual(counts['intended_windows'], 3)
-        self.assertEqual(counts['insufficient_observations_excluded'], 2)
+    def test_sampling_precedes_insufficient_and_shortfall_exclusions(self):
+        data = dated_frame(['2025-12-01', '2026-01-01', '2026-07-05', '2026-08-01'])
+        counts = build(data).metadata['counts']
+        self.assertEqual(counts['candidate_endpoints'], 2)
+        self.assertEqual(counts['insufficient_observations_excluded'], 1)
         self.assertEqual(counts['shortfall_excluded'], 1)
-        for sampling in ('daily', 'monthly'):
-            counts = build(sampling=sampling).metadata['counts']
+        sampled = build(data, sampling_step_observations=2).metadata['counts']
+        self.assertEqual(sampled['sampled_endpoints'], 1)
+        self.assertEqual(sampled['insufficient_observations_excluded'], 1)
+        self.assertEqual(sampled['shortfall_excluded'], 0)
+        for step in (1,5,20):
+            counts = build(sampling_step_observations=step).metadata['counts']
+            self.assertEqual(counts['sampled_endpoints'], counts['intended_windows'])
             self.assertEqual(counts['intended_windows'], counts['eligible_windows'] +
                              counts['insufficient_observations_excluded'] + counts['shortfall_excluded'])
 
-    def test_reference_bounds_control_latest_anchor_and_oldest_complete_window(self):
+    def test_reference_bounds_control_earliest_candidate_anchor(self):
         data = scenario_frame()
         data.loc['2024-01-01', 'DGS30'] = np.nan
-        result = build(data, reference_start='2024-01-01', reference_end='2024-11-30')
+        result = build(data, reference_start='2024-01-01', reference_end='2024-11-30', sampling_step_observations=5)
         self.assertEqual(result.metadata['reference'], dict(requested_start='2024-01-01',
                          requested_end='2024-11-30', effective_start='2024-01-02', effective_end='2024-11-29'))
-        self.assertEqual(result.metadata['sampling_anchor'], '2024-11-29')
-        self.assertEqual(result.scenarios.target_end_date.dt.day.tolist(), [29]*5)
+        self.assertEqual(result.metadata['sampling_anchor'], '2024-07-02')
         self.assertTrue((result.scenarios.target_start_date >= pd.Timestamp('2024-01-02')).all())
         self.assertEqual(build(data).metadata['counts']['reference_rows'], len(data)-1)
         self.assertEqual(build(data).metadata['counts']['incomplete_rows_excluded'], 0)
         with self.assertRaisesRegex(ValueError, 'No complete'):
             build(data, reference_start='2025-01-01')
+
+    def test_invalid_observation_steps_rejected_in_both_entry_points(self):
+        data = scenario_frame()
+        for value in (0, -1, 1.5, 1.0, True, False, np.bool_(True), None, '5', [], {}, np.nan, np.inf):
+            for function in (lambda **kw: build(data, **kw),
+                             lambda **kw: TreasuryMarketAnalysis(data).scenarios(condition_tenor='DGS10', lower_bp=-25, upper_bp=25, **kw)):
+                with self.subTest(value=value), self.assertRaisesRegex(ValueError, 'sampling_step_observations.*positive integer'):
+                    function(sampling_step_observations=value)
+        self.assertEqual(build(data, sampling_step_observations=np.int64(5)).metadata['sampling_step_observations'], 5)
+        self.assertEqual(len(build(data, sampling_step_observations=10**100).scenarios), 1)
 
     def test_ids_reproducible_across_bounds_order_and_source_mutation(self):
         data=scenario_frame()
@@ -260,7 +297,7 @@ class ScenarioTests(unittest.TestCase):
         for options in ({'condition_tenor':'DGS30'}, {'lower_bp':1,'upper_bp':0},
                         {'lower_bp':np.nan},{'upper_bp':np.inf},{'lower_bp':'0'}, {'lower_bp':True},
                         {'horizon_months':0},{'horizon_months':-1},{'horizon_months':1.5},
-                        {'horizon_months':True},{'sampling':'weekly'},
+                        {'horizon_months':True},
                         {'reference_start':'2025-02-01','reference_end':'2024-01-01'},
                         {'reference_start':'2024/01/01'}, {'reference_end':pd.NaT}):
             with self.subTest(options=options),self.assertRaises(ValueError):

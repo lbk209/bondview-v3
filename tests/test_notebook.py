@@ -117,7 +117,7 @@ assert pd.isna(curve.data.loc['DGS30', 'change_bp'])
 assert 'anywidget' not in sys.modules
 assert joint_scenarios.empty
 assert scenarios.metadata['counts']['selected_scenarios'] == 0
-assert scenario_summary.shape == (3, 5)
+assert scenarios.summary().shape == (3, 5)
 ''')
             NotebookClient(notebook, timeout=90, kernel_name='python3').execute(cwd=temp)
             self.assertEqual(before, {p.name:p.read_bytes() for p in directory.iterdir()})
@@ -138,23 +138,26 @@ assert scenario_summary.shape == (3, 5)
             notebook.cells.append(nbformat.v4.new_code_cell('''
 from bondview.analysis.scenarios import ScenarioSet
 assert isinstance(scenarios, ScenarioSet)
-assert len(joint_scenarios) == 6
-assert scenarios.metadata['counts']['eligible_windows'] == 6
+assert len(joint_scenarios) == 132
+assert scenarios.metadata['counts']['eligible_windows'] == 132
 assert joint_scenarios.iloc[0].scenario_id == 'UST_20240701_20241231'
 assert joint_scenarios.iloc[0].target_start_date.strftime('%Y-%m-%d') == '2024-06-30'
 assert joint_scenarios.iloc[0].shortfall_days == 1
 assert scenarios.metadata['max_shortfall_days'] == 7
+assert scenarios.metadata['sampling_step_observations'] == 1
+assert scenarios.metadata['sampling_anchor'] == '2024-07-01'
 assert 'decomposition' not in globals()
 assert 'kw_observations' not in globals()
 assert 'curve' not in globals()
-assert scenario_summary.shape == (3,5)
+assert scenarios.summary().shape == (3,5)
 assert len(scenario_figure.data) == 1
 # Both conditioning axes can be selected on a rerun without other analyses.
 condition_tenor = 'DGS2'
+sampling_step_observations = 5
 '''))
             config = next(cell for cell in notebook.cells if cell.source.startswith('scenarios ='))
             notebook.cells.append(nbformat.v4.new_code_cell(config.source))
-            notebook.cells.append(nbformat.v4.new_code_cell("assert scenarios.metadata['condition']['tenor'] == 'DGS2'"))
+            notebook.cells.append(nbformat.v4.new_code_cell("assert scenarios.metadata['condition']['tenor'] == 'DGS2'\nassert scenarios.metadata['sampling_step_observations'] == 5"))
             NotebookClient(notebook, timeout=90, kernel_name='python3').execute(cwd=temp)
 
 

@@ -63,11 +63,12 @@ class TreasuryMarketAnalysis:
         ))
 
     def scenarios(self, *, condition_tenor, lower_bp, upper_bp, horizon_months=6,
-                  sampling="monthly", reference_start=None, reference_end=None, metadata=None):
+                  sampling_step_observations=1, reference_start=None, reference_end=None, metadata=None):
         from bondview.analysis.scenarios import build_conditional_scenarios
 
         return build_conditional_scenarios(
             self.observations, condition_tenor=condition_tenor, lower_bp=lower_bp,
-            upper_bp=upper_bp, horizon_months=horizon_months, sampling=sampling,
+            upper_bp=upper_bp, horizon_months=horizon_months,
+            sampling_step_observations=sampling_step_observations,
             reference_start=reference_start, reference_end=reference_end, metadata=metadata,
         )
