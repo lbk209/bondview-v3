@@ -1,0 +1,325 @@
+{
+  "source": "Existing local retrieval snapshots, not a new download or point-in-time vintage audit",
+  "snapshot_files": [
+    {
+      "path": "data/fred/DGS10_20261028.csv",
+      "sha256": "362eafe6edf043d6003f493eb7a3b7ad0563dc95bcd666023dbeb9013f249b97"
+    },
+    {
+      "path": "data/fred/DGS2_20261028.csv",
+      "sha256": "f781480e6821109b9c7bf7840431603d3c6c79f57a3726b397b64ab83ba173e8"
+    },
+    {
+      "path": "data/fred/DGS30_20261028.csv",
+      "sha256": "6fa8335e11a0e45caad623cc173897b88fcf8834547dde01410223f1667f19d3"
+    }
+  ],
+  "results": {
+    "monthly": {
+      "metadata": {
+        "schema_version": "bondview.scenario_set.v1",
+        "scenario_type": "observed_historical_joint_yield_changes",
+        "factors": [
+          "DGS2",
+          "DGS10",
+          "DGS30"
+        ],
+        "input_units": "Percent",
+        "change_units": "bp",
+        "condition": {
+          "tenor": "DGS10",
+          "lower_bp": -25.0,
+          "upper_bp": 25.0,
+          "inclusive": true
+        },
+        "horizon_months": 6,
+        "sampling": "monthly",
+        "start_convention": "last_complete_observation_per_calendar_month",
+        "endpoint_convention": "last_complete_on_or_before_target_in_target_month",
+        "target_convention": "actual_start_plus_calendar_months_clipped_at_month_end",
+        "reference": {
+          "requested_start": null,
+          "requested_end": null,
+          "effective_start": "1977-02-15",
+          "effective_end": "2026-10-26"
+        },
+        "counts": {
+          "reference_rows": 12965,
+          "complete_observations": 12419,
+          "incomplete_rows_excluded": 546,
+          "sampled_starts": 597,
+          "immature_targets_excluded": 7,
+          "unmatched_target_months_excluded": 0,
+          "eligible_windows": 590,
+          "selected_scenarios": 153
+        },
+        "provenance": {
+          "DGS2": {
+            "title": "Market Yield on U.S. Treasury Securities at 2-Year Constant Maturity, Quoted on an Investment Basis",
+            "units": "Percent",
+            "frequency": "D",
+            "source": "FRED",
+            "source_url": "https://fred.stlouisfed.org/series/DGS2",
+            "last_updated": "2026-10-27 15:16:40-05",
+            "retrieved_at_utc": "2026-10-28T09:16:47.760560+00:00",
+            "transport": "FRED API; untransformed observations at source frequency",
+            "requested_start": null,
+            "requested_end": null,
+            "realtime_start": "2026-10-28",
+            "realtime_end": "2026-10-28",
+            "missing_policy": "No filling or date substitution; empty CSV fields mean unavailable.",
+            "availability": "Known at retrieval; historical release availability is not reconstructed.",
+            "vintage": "Retrieval-time snapshot; source observations may be revised."
+          },
+          "DGS10": {
+            "title": "Market Yield on U.S. Treasury Securities at 10-Year Constant Maturity, Quoted on an Investment Basis",
+            "units": "Percent",
+            "frequency": "D",
+            "source": "FRED",
+            "source_url": "https://fred.stlouisfed.org/series/DGS10",
+            "last_updated": "2026-10-27 15:16:37-05",
+            "retrieved_at_utc": "2026-10-28T09:16:47.760560+00:00",
+            "transport": "FRED API; untransformed observations at source frequency",
+            "requested_start": null,
+            "requested_end": null,
+            "realtime_start": "2026-10-28",
+            "realtime_end": "2026-10-28",
+            "missing_policy": "No filling or date substitution; empty CSV fields mean unavailable.",
+            "availability": "Known at retrieval; historical release availability is not reconstructed.",
+            "vintage": "Retrieval-time snapshot; source observations may be revised."
+          },
+          "DGS30": {
+            "title": "Market Yield on U.S. Treasury Securities at 30-Year Constant Maturity, Quoted on an Investment Basis",
+            "units": "Percent",
+            "frequency": "D",
+            "source": "FRED",
+            "source_url": "https://fred.stlouisfed.org/series/DGS30",
+            "last_updated": "2026-10-27 15:16:36-05",
+            "retrieved_at_utc": "2026-10-28T09:16:47.760560+00:00",
+            "transport": "FRED API; untransformed observations at source frequency",
+            "requested_start": null,
+            "requested_end": null,
+            "realtime_start": "2026-10-28",
+            "realtime_end": "2026-10-28",
+            "missing_policy": "No filling or date substitution; empty CSV fields mean unavailable.",
+            "availability": "Known at retrieval; historical release availability is not reconstructed.",
+            "vintage": "Retrieval-time snapshot; source observations may be revised."
+          }
+        },
+        "missing_policy": "Complete common observation dates only; no fill, interpolation or averaging.",
+        "overlapping_windows": true,
+        "interpretation": "Descriptive overlapping historical scenarios, not independent event frequencies or forecast probabilities.",
+        "quantile_method": "linear interpolation (pandas default); marginal summaries only"
+      },
+      "summary_bp": {
+        "DGS2": {
+          "minimum": -226.0,
+          "P10": -58.8,
+          "median": 2.0,
+          "P90": 53.8,
+          "maximum": 118.0
+        },
+        "DGS10": {
+          "minimum": -25.0,
+          "P10": -19.8,
+          "median": -1.0,
+          "P90": 21.0,
+          "maximum": 25.0
+        },
+        "DGS30": {
+          "minimum": -52.0,
+          "P10": -27.4,
+          "median": 0.0,
+          "P90": 27.8,
+          "maximum": 70.0
+        }
+      },
+      "examples": [
+        {
+          "scenario_id": "UST_19770228_19770826",
+          "start_date": "1977-02-28T00:00:00.000",
+          "target_end_date": "1977-08-28T00:00:00.000",
+          "end_date": "1977-08-26T00:00:00.000",
+          "elapsed_days": 179,
+          "DGS2_change_bp": 54.0,
+          "DGS10_change_bp": -18.0,
+          "DGS30_change_bp": -22.0
+        },
+        {
+          "scenario_id": "UST_19770331_19770930",
+          "start_date": "1977-03-31T00:00:00.000",
+          "target_end_date": "1977-09-30T00:00:00.000",
+          "end_date": "1977-09-30T00:00:00.000",
+          "elapsed_days": 183,
+          "DGS2_change_bp": 81.0,
+          "DGS10_change_bp": -1.0,
+          "DGS30_change_bp": -11.0
+        },
+        {
+          "scenario_id": "UST_19770429_19771028",
+          "start_date": "1977-04-29T00:00:00.000",
+          "target_end_date": "1977-10-29T00:00:00.000",
+          "end_date": "1977-10-28T00:00:00.000",
+          "elapsed_days": 182,
+          "DGS2_change_bp": 100.0,
+          "DGS10_change_bp": 11.0,
+          "DGS30_change_bp": 1.0
+        }
+      ],
+      "check": "Every selected vector verified by independent source endpoint subtraction; bounds and elapsed days verified"
+    },
+    "daily": {
+      "metadata": {
+        "schema_version": "bondview.scenario_set.v1",
+        "scenario_type": "observed_historical_joint_yield_changes",
+        "factors": [
+          "DGS2",
+          "DGS10",
+          "DGS30"
+        ],
+        "input_units": "Percent",
+        "change_units": "bp",
+        "condition": {
+          "tenor": "DGS10",
+          "lower_bp": -25.0,
+          "upper_bp": 25.0,
+          "inclusive": true
+        },
+        "horizon_months": 6,
+        "sampling": "daily",
+        "start_convention": "every_complete_observation",
+        "endpoint_convention": "last_complete_on_or_before_target_in_target_month",
+        "target_convention": "actual_start_plus_calendar_months_clipped_at_month_end",
+        "reference": {
+          "requested_start": null,
+          "requested_end": null,
+          "effective_start": "1977-02-15",
+          "effective_end": "2026-10-26"
+        },
+        "counts": {
+          "reference_rows": 12965,
+          "complete_observations": 12419,
+          "incomplete_rows_excluded": 546,
+          "sampled_starts": 12419,
+          "immature_targets_excluded": 126,
+          "unmatched_target_months_excluded": 151,
+          "eligible_windows": 12142,
+          "selected_scenarios": 3230
+        },
+        "provenance": {
+          "DGS2": {
+            "title": "Market Yield on U.S. Treasury Securities at 2-Year Constant Maturity, Quoted on an Investment Basis",
+            "units": "Percent",
+            "frequency": "D",
+            "source": "FRED",
+            "source_url": "https://fred.stlouisfed.org/series/DGS2",
+            "last_updated": "2026-10-27 15:16:40-05",
+            "retrieved_at_utc": "2026-10-28T09:16:47.760560+00:00",
+            "transport": "FRED API; untransformed observations at source frequency",
+            "requested_start": null,
+            "requested_end": null,
+            "realtime_start": "2026-10-28",
+            "realtime_end": "2026-10-28",
+            "missing_policy": "No filling or date substitution; empty CSV fields mean unavailable.",
+            "availability": "Known at retrieval; historical release availability is not reconstructed.",
+            "vintage": "Retrieval-time snapshot; source observations may be revised."
+          },
+          "DGS10": {
+            "title": "Market Yield on U.S. Treasury Securities at 10-Year Constant Maturity, Quoted on an Investment Basis",
+            "units": "Percent",
+            "frequency": "D",
+            "source": "FRED",
+            "source_url": "https://fred.stlouisfed.org/series/DGS10",
+            "last_updated": "2026-10-27 15:16:37-05",
+            "retrieved_at_utc": "2026-10-28T09:16:47.760560+00:00",
+            "transport": "FRED API; untransformed observations at source frequency",
+            "requested_start": null,
+            "requested_end": null,
+            "realtime_start": "2026-10-28",
+            "realtime_end": "2026-10-28",
+            "missing_policy": "No filling or date substitution; empty CSV fields mean unavailable.",
+            "availability": "Known at retrieval; historical release availability is not reconstructed.",
+            "vintage": "Retrieval-time snapshot; source observations may be revised."
+          },
+          "DGS30": {
+            "title": "Market Yield on U.S. Treasury Securities at 30-Year Constant Maturity, Quoted on an Investment Basis",
+            "units": "Percent",
+            "frequency": "D",
+            "source": "FRED",
+            "source_url": "https://fred.stlouisfed.org/series/DGS30",
+            "last_updated": "2026-10-27 15:16:36-05",
+            "retrieved_at_utc": "2026-10-28T09:16:47.760560+00:00",
+            "transport": "FRED API; untransformed observations at source frequency",
+            "requested_start": null,
+            "requested_end": null,
+            "realtime_start": "2026-10-28",
+            "realtime_end": "2026-10-28",
+            "missing_policy": "No filling or date substitution; empty CSV fields mean unavailable.",
+            "availability": "Known at retrieval; historical release availability is not reconstructed.",
+            "vintage": "Retrieval-time snapshot; source observations may be revised."
+          }
+        },
+        "missing_policy": "Complete common observation dates only; no fill, interpolation or averaging.",
+        "overlapping_windows": true,
+        "interpretation": "Descriptive overlapping historical scenarios, not independent event frequencies or forecast probabilities.",
+        "quantile_method": "linear interpolation (pandas default); marginal summaries only"
+      },
+      "summary_bp": {
+        "DGS2": {
+          "minimum": -226.0,
+          "P10": -59.0,
+          "median": 1.0,
+          "P90": 61.1,
+          "maximum": 135.0
+        },
+        "DGS10": {
+          "minimum": -25.0,
+          "P10": -21.0,
+          "median": -2.0,
+          "P90": 20.0,
+          "maximum": 25.0
+        },
+        "DGS30": {
+          "minimum": -67.0,
+          "P10": -31.0,
+          "median": -2.0,
+          "P90": 26.0,
+          "maximum": 93.0
+        }
+      },
+      "examples": [
+        {
+          "scenario_id": "UST_19770215_19770815",
+          "start_date": "1977-02-15T00:00:00.000",
+          "target_end_date": "1977-08-15T00:00:00.000",
+          "end_date": "1977-08-15T00:00:00.000",
+          "elapsed_days": 181,
+          "DGS2_change_bp": 67.0,
+          "DGS10_change_bp": 12.0,
+          "DGS30_change_bp": 4.0
+        },
+        {
+          "scenario_id": "UST_19770216_19770816",
+          "start_date": "1977-02-16T00:00:00.000",
+          "target_end_date": "1977-08-16T00:00:00.000",
+          "end_date": "1977-08-16T00:00:00.000",
+          "elapsed_days": 181,
+          "DGS2_change_bp": 72.0,
+          "DGS10_change_bp": 14.0,
+          "DGS30_change_bp": 7.0
+        },
+        {
+          "scenario_id": "UST_19770217_19770817",
+          "start_date": "1977-02-17T00:00:00.000",
+          "target_end_date": "1977-08-17T00:00:00.000",
+          "end_date": "1977-08-17T00:00:00.000",
+          "elapsed_days": 181,
+          "DGS2_change_bp": 73.0,
+          "DGS10_change_bp": 18.0,
+          "DGS30_change_bp": 5.0
+        }
+      ],
+      "check": "Every selected vector verified by independent source endpoint subtraction; bounds and elapsed days verified"
+    }
+  }
+}

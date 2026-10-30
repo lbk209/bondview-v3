@@ -125,3 +125,30 @@ analyses:
       legend: Treasury tenor
       trace: "{tenor} ({series_id})"
       hover: "%{x|%Y-%m-%d}<br>%{y:.2f}%<extra>%{fullData.name}</extra>"
+
+  conditional_scenarios:
+    summary: >-
+      Condition: {tenor} change [{lower:g}, {upper:g}] bp (inclusive).
+      Horizon: {months} calendar months; {sampling} starts.
+      Complete reference history: {start} to {end}.
+      Selected scenarios: {selected} / {eligible} eligible windows.
+    qualification: >-
+      Statistics are in bp. Overlapping intervals and marginal quantiles are
+      descriptive, not independent event frequencies or forecast probabilities.
+      Targets use calendar months; endpoints use the last complete observation
+      on or before the target within that month. Targets beyond the complete
+      reference history and unmatched target months are excluded.
+    tenor_axis: Treasury tenor
+    statistics:
+      minimum: Minimum (bp)
+      P10: P10 (bp)
+      median: Median (bp)
+      P90: P90 (bp)
+      maximum: Maximum (bp)
+    change: "Δ{tenor} (bp)"
+    plot_title: Conditional historical joint Treasury yield changes
+    fields:
+      start_date: Historical start
+      end_date: Historical end
+      target_end_date: Calendar target
+      elapsed_days: Elapsed days
