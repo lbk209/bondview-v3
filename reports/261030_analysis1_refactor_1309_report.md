@@ -393,6 +393,7 @@ beyond the documented necessary summary formatter argument change.
 | Facade/results | PASS | `2a06247` | [#52](https://github.com/lbk209/bondview-v3/pull/52), merged into session |
 | Conditional scenarios | PASS | `d876a80` | [#53](https://github.com/lbk209/bondview-v3/pull/53), verified and published into session review workflow |
 | Window correction | PASS | `a0356c7` | [#55](https://github.com/lbk209/bondview-v3/pull/55), published into the same session |
+| Observation steps | PASS | `a0b963f` | [#56](https://github.com/lbk209/bondview-v3/pull/56), published into the same session |
 
 All three output contracts, the window correction and the observation-step update are satisfied. Source baseline remains fixed at
 `ee79747b25ad0f45dffa7c040823560415159890`. The final session-to-main [PR #54](https://github.com/lbk209/bondview-v3/pull/54)

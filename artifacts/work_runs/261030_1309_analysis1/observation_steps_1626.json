@@ -559,5 +559,12 @@
     "tests/README.md",
     "tests/test_notebook.py",
     "tests/test_scenarios.py"
-  ]
+  ],
+  "publication": {
+    "implementation_commit": "a0b963f",
+    "task_pr": "https://github.com/lbk209/bondview-v3/pull/56",
+    "session_branch": "codex/session/261030_1309",
+    "session_pr": "https://github.com/lbk209/bondview-v3/pull/54",
+    "session_pr_policy": "Leave open and unmerged for user review"
+  }
 }
