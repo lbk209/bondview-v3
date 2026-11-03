@@ -11,7 +11,11 @@ def plot_scenarios(
     labels = load_labels(labels_path)
     text = labels["analyses"]["conditional_scenarios"]
     condition = result.metadata["condition"]["tenor"]
-    x = "DGS2" if condition == "DGS10" else "DGS10"
+    x, y = {
+        "DGS2": ("DGS10", "DGS30"),
+        "DGS10": ("DGS2", "DGS30"),
+        "DGS30": ("DGS2", "DGS10"),
+    }[condition]
     frame = result.scenarios.copy()
 
     for column in ("start_date", "target_end_date", "end_date"):
@@ -26,7 +30,7 @@ def plot_scenarios(
     return px.scatter(
         frame,
         x=f"{x}_change_bp",
-        y="DGS30_change_bp",
+        y=f"{y}_change_bp",
         color=f"{condition}_change_bp",
         hover_name="scenario_id",
         hover_data={
