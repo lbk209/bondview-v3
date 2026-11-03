@@ -78,7 +78,7 @@ def build_conditional_scenarios(
     endpoints and are stable across conditioning bounds, sampling and row order.
     Input metadata must satisfy the existing daily Percent Treasury contract.
     """
-    if condition_tenor not in ("DGS2", "DGS10"):
+    if condition_tenor not in ("DGS2", "DGS10", "DGS30"):
         raise ValueError("condition_tenor must be DGS2 or DGS10.")
     if any(isinstance(v, bool) or not isinstance(v, Real) or not math.isfinite(v)
            for v in (lower_bp, upper_bp)) or lower_bp > upper_bp:
